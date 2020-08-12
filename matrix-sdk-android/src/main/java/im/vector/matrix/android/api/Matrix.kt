@@ -23,7 +23,7 @@ import androidx.work.WorkManager
 import com.zhuinden.monarchy.Monarchy
 import im.vector.matrix.android.BuildConfig
 import im.vector.matrix.android.api.auth.AuthenticationService
-import im.vector.matrix.android.api.crypto.MXCryptoConfig
+import im.vector.matrix.android.api.legacy.LegacySessionImporter
 import im.vector.matrix.android.internal.SessionManager
 import im.vector.matrix.android.internal.crypto.attachments.ElementToDecrypt
 import im.vector.matrix.android.internal.crypto.attachments.MXEncryptedAttachments
@@ -32,18 +32,9 @@ import im.vector.matrix.android.internal.network.UserAgentHolder
 import im.vector.matrix.android.internal.util.BackgroundDetectionObserver
 import org.matrix.olm.OlmManager
 import java.io.InputStream
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-
-data class MatrixConfiguration(
-        val applicationFlavor: String = "Default-application-flavor",
-        val cryptoConfig: MXCryptoConfig = MXCryptoConfig()
-) {
-
-    interface Provider {
-        fun providesMatrixConfiguration(): MatrixConfiguration
-    }
-}
 
 /**
  * This is the main entry point to the matrix sdk.
@@ -51,6 +42,7 @@ data class MatrixConfiguration(
  */
 class Matrix private constructor(context: Context, matrixConfiguration: MatrixConfiguration) {
 
+    @Inject internal lateinit var legacySessionImporter: LegacySessionImporter
     @Inject internal lateinit var authenticationService: AuthenticationService
     @Inject internal lateinit var userAgentHolder: UserAgentHolder
     @Inject internal lateinit var backgroundDetectionObserver: BackgroundDetectionObserver
@@ -61,7 +53,7 @@ class Matrix private constructor(context: Context, matrixConfiguration: MatrixCo
         Monarchy.init(context)
         DaggerMatrixComponent.factory().create(context, matrixConfiguration).inject(this)
         if (context.applicationContext !is Configuration.Provider) {
-            WorkManager.initialize(context, Configuration.Builder().build())
+            WorkManager.initialize(context, Configuration.Builder().setExecutor(Executors.newCachedThreadPool()).build())
         }
         ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundDetectionObserver)
     }
@@ -70,6 +62,10 @@ class Matrix private constructor(context: Context, matrixConfiguration: MatrixCo
 
     fun authenticationService(): AuthenticationService {
         return authenticationService
+    }
+
+    fun legacySessionImporter(): LegacySessionImporter {
+        return legacySessionImporter
     }
 
     companion object {

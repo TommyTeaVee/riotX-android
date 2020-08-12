@@ -17,7 +17,6 @@
 package im.vector.matrix.android.internal.auth.login
 
 import android.util.Patterns
-import dagger.Lazy
 import im.vector.matrix.android.api.MatrixCallback
 import im.vector.matrix.android.api.auth.data.Credentials
 import im.vector.matrix.android.api.auth.login.LoginWizard
@@ -30,6 +29,7 @@ import im.vector.matrix.android.internal.auth.PendingSessionStore
 import im.vector.matrix.android.internal.auth.SessionCreator
 import im.vector.matrix.android.internal.auth.data.PasswordLoginParams
 import im.vector.matrix.android.internal.auth.data.ThreePidMedium
+import im.vector.matrix.android.internal.auth.data.TokenLoginParams
 import im.vector.matrix.android.internal.auth.db.PendingSessionData
 import im.vector.matrix.android.internal.auth.registration.AddThreePidRegistrationParams
 import im.vector.matrix.android.internal.auth.registration.AddThreePidRegistrationResponse
@@ -38,16 +38,17 @@ import im.vector.matrix.android.internal.network.RetrofitFactory
 import im.vector.matrix.android.internal.network.executeRequest
 import im.vector.matrix.android.internal.task.launchToCallback
 import im.vector.matrix.android.internal.util.MatrixCoroutineDispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 internal class DefaultLoginWizard(
-        okHttpClient: Lazy<OkHttpClient>,
+        okHttpClient: OkHttpClient,
         retrofitFactory: RetrofitFactory,
         private val coroutineDispatchers: MatrixCoroutineDispatchers,
         private val sessionCreator: SessionCreator,
-        private val pendingSessionStore: PendingSessionStore
+        private val pendingSessionStore: PendingSessionStore,
+        private val coroutineScope: CoroutineScope
 ) : LoginWizard {
 
     private var pendingSessionData: PendingSessionData = pendingSessionStore.getPendingSessionData() ?: error("Pending session data should exist here")
@@ -59,8 +60,24 @@ internal class DefaultLoginWizard(
                        password: String,
                        deviceName: String,
                        callback: MatrixCallback<Session>): Cancelable {
-        return GlobalScope.launchToCallback(coroutineDispatchers.main, callback) {
+        return coroutineScope.launchToCallback(coroutineDispatchers.main, callback) {
             loginInternal(login, password, deviceName)
+        }
+    }
+
+    /**
+     * Ref: https://matrix.org/docs/spec/client_server/latest#handling-the-authentication-endpoint
+     */
+    override fun loginWithToken(loginToken: String, callback: MatrixCallback<Session>): Cancelable {
+        return coroutineScope.launchToCallback(coroutineDispatchers.main, callback) {
+            val loginParams = TokenLoginParams(
+                    token = loginToken
+            )
+            val credentials = executeRequest<Credentials>(null) {
+                apiCall = authAPI.login(loginParams)
+            }
+
+            sessionCreator.createSession(credentials, pendingSessionData.homeServerConnectionConfig)
         }
     }
 
@@ -80,7 +97,7 @@ internal class DefaultLoginWizard(
     }
 
     override fun resetPassword(email: String, newPassword: String, callback: MatrixCallback<Unit>): Cancelable {
-        return GlobalScope.launchToCallback(coroutineDispatchers.main, callback) {
+        return coroutineScope.launchToCallback(coroutineDispatchers.main, callback) {
             resetPasswordInternal(email, newPassword)
         }
     }
@@ -108,7 +125,7 @@ internal class DefaultLoginWizard(
             callback.onFailure(IllegalStateException("developer error, no reset password in progress"))
             return NoOpCancellable
         }
-        return GlobalScope.launchToCallback(coroutineDispatchers.main, callback) {
+        return coroutineScope.launchToCallback(coroutineDispatchers.main, callback) {
             resetPasswordMailConfirmedInternal(safeResetPasswordData)
         }
     }

@@ -101,7 +101,7 @@
     <string name="user_directory_header">Directori de l\'usuari</string>
     <string name="matrix_only_filter">Només contactes de Matrix</string>
     <string name="no_conversation_placeholder">Cap conversa</string>
-    <string name="no_contact_access_placeholder">No vau donar permís al Riot per accedir als contactes locals</string>
+    <string name="no_contact_access_placeholder">No vau donar permís al Element per accedir als contactes locals</string>
     <string name="no_result_placeholder">Cap resultat</string>
 
     <!-- Rooms fragment -->
@@ -211,7 +211,6 @@
     <string name="login_error_unable_register">No s\'ha pogut fer el registre</string>
     <string name="login_error_unable_register_mail_ownership">No s\'ha pogut fer el registre: s\'ha produït una errada en la propietat del correu electrònic</string>
     <string name="login_error_invalid_home_server">Introduïu una URL vàlida</string>
-    <string name="login_mobile_device">Mòbil</string>
 
     <string name="login_error_forbidden">El nom d\'usuari/contrasenya és invàlid</string>
     <string name="login_error_unknown_token">No s\'ha reconegut el testimoni d\'accés</string>
@@ -222,9 +221,6 @@
     <string name="login_error_login_email_not_yet">L\'enllaç del correu electrònic que encara no heu fet clic</string>
 
     <!-- crypto warnings -->
-    <string name="e2e_need_log_in_again">Heu de tornar a iniciar sessió per tal de generar claus de xifrat d\'extrema a extrem per a aquest dispositiu i enviar la clau pública al vostre servidor base.
-\nAixò només s\'ha de fer un cop.
-\nDisculpeu les molèsties.</string>
 
     <!-- read receipts list Screen -->
     <string name="read_receipts_list">Llegit per</string>
@@ -274,16 +270,16 @@
 
     <!-- permissions Android M -->
     <string name="permissions_rationale_popup_title">Informació</string>
-    <string name="permissions_rationale_msg_storage">Per poder enviar i desar adjunts, el Riot necessita permís d\'accés a la galeria de fotos i vídeos.\n\nA la següent finestra emergent, doneu-li el permís d\'accés i així podreu enviar fitxers des del telefon.</string>
-    <string name="permissions_rationale_msg_camera">Per poder fer fotos i vídeotrucades, el Riot necessita permís d\'accés a la càmera.</string>
+    <string name="permissions_rationale_msg_storage">Per poder enviar i desar adjunts, el Element necessita permís d\'accés a la galeria de fotos i vídeos.\n\nA la següent finestra emergent, doneu-li el permís d\'accés i així podreu enviar fitxers des del telefon.</string>
+    <string name="permissions_rationale_msg_camera">Per poder fer fotos i vídeotrucades, el Element necessita permís d\'accés a la càmera.</string>
     <string name="permissions_rationale_msg_camera_explanation">\n\nA la següent finestra emergent, doneu permís d\'accés per tal de poder fer la trucada.</string>
-    <string name="permissions_rationale_msg_record_audio">Per tal de fer trucades de veu, el Riot necessita permís d\'accés al microfon.</string>
+    <string name="permissions_rationale_msg_record_audio">Per tal de fer trucades de veu, el Element necessita permís d\'accés al microfon.</string>
     <string name="permissions_rationale_msg_record_audio_explanation">\n\nA la següent finestra emergent, doneu permís d\'accés per tal de poder fer la trucada.</string>
-    <string name="permissions_rationale_msg_camera_and_audio">Per tal de fer vídeotrucades, el Riot necessita permís d\'accés a la càmera i al microfon.\n\nA la següent finestra emergent, doneu permís d\'accés per tal de poder fer la trucada.</string>
-    <string name="permissions_rationale_msg_contacts">Riot pot comprovar la vostra agenda de contactes per tal de trobar altres usuaris de Matrix basant-se en les seves adreces de correu i números de telèfon.
+    <string name="permissions_rationale_msg_camera_and_audio">Per tal de fer vídeotrucades, el Element necessita permís d\'accés a la càmera i al microfon.\n\nA la següent finestra emergent, doneu permís d\'accés per tal de poder fer la trucada.</string>
+    <string name="permissions_rationale_msg_contacts">Element pot comprovar la vostra agenda de contactes per tal de trobar altres usuaris de Matrix basant-se en les seves adreces de correu i números de telèfon.
 \n
 \nSi accepteu compartir la vostra agenda de contactes amb aquesta finalitat, si us plau permeteu l\'accés de la següent finestra emergent.</string>
-    <string name="permissions_msg_contacts_warning_other_androids">Per tal de trobar altres usuaris de Matrix a partir dels seus correus electrònics o dels seus números de telefon, el Riot necessita permís d\'accés a l\'agenda de contactes.\n\nPermeteu que Riot accedeixi als vostres contactes?</string>
+    <string name="permissions_msg_contacts_warning_other_androids">Per tal de trobar altres usuaris de Matrix a partir dels seus correus electrònics o dels seus números de telefon, el Element necessita permís d\'accés a l\'agenda de contactes.\n\nPermeteu que Element accedeixi als vostres contactes?</string>
 
     <string name="permissions_action_not_performed_missing_permissions">No s\'ha realitzat l\'acció per falta de permisos</string>
 
@@ -708,8 +704,6 @@ Atenció: es podria eliminar aquest fitxer si es desinstal·la l\'aplicació.</s
     <string name="encryption_information_verify_device_warning2">Si coincideix, premeu el botó per verificar. Si no coincideix, algú està interceptant aquest dispositiu i probablement voldreu prémer el botó per bloquejar-lo. En un futur aquest procés de verificació serà més sofisticat.</string>
     <string name="encryption_information_verify_key_match">Verifica que les claus coincideixen</string>
 
-    <string name="e2e_enabling_on_app_update">El Riot ara permet l\'ús d\'encriptació d\'extrem a extrem però us heu de tronar a connectar per tal d\'activar-la.\n\nHo podeu fer ara o més tard des de les preferències de l\'aplicació.</string>
-
     <!-- unknown devices management -->
     <string name="unknown_devices_alert_title">La sala conté dispositius desconeguts</string>
     <string name="unknown_devices_alert_message">Aquesta sala conté dispositius desconeguts que no han estat verificats.\nAixò vol dir que no hi ha cap garantia que aquests dispositius siguin dels usuaris corresponents.\nEs recomana que feu el procés de verificació per a cada dispositiu abans de continuar, tot i que, si ho preferiu, podeu reenviar el missatge sense verificar.\n\nDispositius desconeguts:</string>
@@ -738,8 +732,6 @@ Atenció: es podria eliminar aquest fitxer si es desinstal·la l\'aplicació.</s
     <!-- Widget-->
     <string name="widget_no_power_to_manage">No teniu permisos per a gestionar ginys en aquesta sala</string>
     <string name="widget_creation_failure">Ha fallat la creació del giny</string>
-    <string name="event_formatter_widget_added">%1$s afegit per %2$s</string>
-    <string name="event_formatter_widget_removed">%1$s retirat per %2$s</string>
     <string name="settings_labs_create_conference_with_jitsi">Fes conferències amb jitsi</string>
     <string name="widget_delete_message_confirmation">Confirmeu que voleu esborrar el giny d\'aquesta sala?</string>
 
@@ -885,7 +877,7 @@ Atenció: es podria eliminar aquest fitxer si es desinstal·la l\'aplicació.</s
     <string name="e2e_re_request_encryption_key_sent">Petició de clau enviada.</string>
 
     <string name="e2e_re_request_encryption_key_dialog_title">Sol·licitud enviada</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">Si us plau, engega Riot a un altre dispositiu que pugui desencriptar el missatge de manera que pugui enviar la clau a aquest dispositiu.</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">Si us plau, engega Element a un altre dispositiu que pugui desencriptar el missatge de manera que pugui enviar la clau a aquest dispositiu.</string>
 
     <string name="settings_notification_privacy_normal">Normal</string>
     <string name="status_theme">Tema Status.im</string>
@@ -920,9 +912,6 @@ En voleu afegir algun?</string>
     <string name="room_participants_now">Ara %1$s</string>
     <string name="room_participants_ago">%1$s fa %2$s</string>
 
-    <string name="room_participants_action_unignore_prompt">Mostrar tots els missatges d\'aquest usuari?
-
-Tingueu en compte que aquesta acció reiniciarà l\'aplicació i pot trigar una estona.</string>
     <string name="room_participants_invite_join_names">"%1$s,· "</string>
     <string name="room_participants_invite_join_names_and">%1$s i %2$s</string>
     <string name="room_participants_invite_join_names_combined">%1$s %2$s</string>
@@ -949,13 +938,13 @@ Tingueu en compte que aquesta acció reiniciarà l\'aplicació i pot trigar una 
     <string name="settings_deactivate_my_account">Desactivar el meu compte</string>
 
     <string name="startup_notification_privacy_title">Notificació de privacitat</string>
-    <string name="startup_notification_privacy_message">El Riot pot funcionar en segon pla per gestionar les vostres notificacions de forma segura i privada. Això podria afectar el consum de bateria.</string>
+    <string name="startup_notification_privacy_message">El Element pot funcionar en segon pla per gestionar les vostres notificacions de forma segura i privada. Això podria afectar el consum de bateria.</string>
     <string name="startup_notification_privacy_button_grant">Concedir permís</string>
     <string name="startup_notification_privacy_button_other">Escolliu una altra opció</string>
 
     <string name="settings_opt_in_of_analytics">Envia dades d\'anàlisi</string>
-    <string name="settings_opt_in_of_analytics_summary">Riot recopila dades d\'anàlisi anònimes per tal de permetre\'ns millorar l\'aplicació.</string>
-    <string name="settings_opt_in_of_analytics_prompt">Si us plau, activeu les dades d\'anàlisi per ajudar-nos a millorar Riot.</string>
+    <string name="settings_opt_in_of_analytics_summary">Element recopila dades d\'anàlisi anònimes per tal de permetre\'ns millorar l\'aplicació.</string>
+    <string name="settings_opt_in_of_analytics_prompt">Si us plau, activeu les dades d\'anàlisi per ajudar-nos a millorar Element.</string>
     <string name="settings_opt_in_of_analytics_ok">Sí, vull ajudar!</string>
 
     <string name="settings_without_flair">No sou ara mateix membre de cap comunitat.</string>
@@ -1040,15 +1029,11 @@ Tingueu en compte que aquesta acció reiniciarà l\'aplicació i pot trigar una 
     <string name="accept">Acceptar</string>
 
     <string name="settings_call_category">Trucada</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">Useu el to de Riot per defecte per les trucades entrants</string>
+    <string name="settings_call_ringtone_use_app_ringtone">Useu el to de Element per defecte per les trucades entrants</string>
     <string name="settings_call_ringtone_title">To de trucada entrant</string>
     <string name="settings_call_ringtone_dialog_title">Escolliu el to per les trucades:</string>
 
     <string name="room_participants_action_kick">Expulsar</string>
-    <plurals name="room_participants_kick_prompt_msg">
-        <item quantity="one">Esteu segur que voleu expulsar aquest usuari d\'aquest xat?</item>
-        <item quantity="other">Esteu segur que voleu expulsar aquests usuaris d\'aquest xat?</item>
-    </plurals>
     <string name="reason_hint">Motiu</string>
 
     <string name="settings_inline_url_preview_summary">Mostra la vista prèvia dels enllaços dins del xat en cas que el vostre servidor base suporti aquesta funcionalitat.</string>
@@ -1095,12 +1080,12 @@ Proveu de reiniciar l\'aplicació.</string>
     <string name="settings_troubleshoot_test_bg_restricted_quickfix">Inhabilita les restriccions</string>
 
     <string name="settings_troubleshoot_test_battery_title">Optimització de bateria</string>
-    <string name="settings_troubleshoot_test_battery_success">El Riot no està afectat per l\'optimització de bateria.</string>
+    <string name="settings_troubleshoot_test_battery_success">El Element no està afectat per l\'optimització de bateria.</string>
     <string name="settings_show_join_leave_messages">Mostra els esdeveniments d\'entrada i sortida</string>
     <string name="settings_show_avatar_display_name_changes_messages_summary">Inclou els canvis d\'avatar i àlies.</string>
     <string name="startup_notification_fdroid_battery_optim_title">Connexió al rerefons</string>
-    <string name="startup_notification_fdroid_battery_optim_message">El Riot necessita mantenir una connexió de baix impacte al rerefons, per tal de tindre notificacions fiables.
-A la pantalla següent se us demanarà que permeteu al Riot executar-se sempre al rerefons, si us plau, accepteu-ho.</string>
+    <string name="startup_notification_fdroid_battery_optim_message">El Element necessita mantenir una connexió de baix impacte al rerefons, per tal de tindre notificacions fiables.
+A la pantalla següent se us demanarà que permeteu al Element executar-se sempre al rerefons, si us plau, accepteu-ho.</string>
     <string name="settings_password">Contrasenya</string>
     <string name="account_additional_info">Informació addicional: %s</string>
 
@@ -1122,11 +1107,6 @@ A la pantalla següent se us demanarà que permeteu al Riot executar-se sempre a
     <string name="x_plus">%d+</string>
     <string name="no_valid_google_play_services_apk">No s\'ha trobat cap APK de Google Play Services vàlid. Les notificacions poden no funcionar correctament.</string>
 
-    <string name="store_title">Riot.im - Comunica\'t, a la teva manera</string>
-    <string name="store_whats_new">"Sempre hi som fent canvis i millores al Riot.im.
-Podeu trobar el registre de canvis complet aquí: %1$s.
-Per assegurar-vos que no us perdeu res, només heu de mantenir les actualitzacions automàtiques habilitades."</string>
-    <string name="store_short_description">Una aplicació de xat universal i segura sota el vostre control.</string>
     <string name="title_activity_keys_backup_setup">Còpia de seguretat de la clau</string>
     <string name="title_activity_keys_backup_restore">Empra una còpia de seguretat de la clau</string>
 
@@ -1134,7 +1114,6 @@ Per assegurar-vos que no us perdeu res, només heu de mantenir les actualitzacio
     <string name="done">Fet</string>
 
     <string name="settings_notification_advanced">Paràmetres avançats de notificacions</string>
-    <string name="settings_notification_advanced_summary">Estableix la importància de les notificacions per tipus d\'esdeveniment, configura el so, led i vibració</string>
     <string name="settings_notification_by_event">Importància de les notificacions per esdeveniment</string>
 
     <string name="settings_notification_troubleshoot">Diagnostica les notificacions</string>
@@ -1142,7 +1121,7 @@ Per assegurar-vos que no us perdeu res, només heu de mantenir les actualitzacio
     <string name="settings_troubleshoot_diagnostic_failure_status_no_quickfix">Ha fallat una o més proves, envieu un informe d\'error per ajudar-nos a investigar-ho.</string>
 
     <string name="settings_troubleshoot_test_device_settings_failed">Les notificacions no són permeses per a aquest dispositiu.
-Comproveu els paràmetres del Riot.</string>
+Comproveu els paràmetres del Element.</string>
     <string name="settings_troubleshoot_test_bing_settings_title">Paràmetres personalitzats.</string>
     <string name="settings_troubleshoot_test_bing_settings_success_with_warn">Teniu en compte que alguns tipus de missatge estan configurats per a ser silenciosos (això produirà una notificació sense so).</string>
     <string name="settings_troubleshoot_test_bing_settings_failed">Algunes notificacions estan inhabilitades als vostres paràmetres personalitzats.</string>
@@ -1151,7 +1130,7 @@ Comproveu els paràmetres del Riot.</string>
 
     <string name="settings_troubleshoot_test_play_services_title">Comprovació dels serveis de Play</string>
     <string name="settings_troubleshoot_test_play_services_success">L\'APK dels serveis de Google Play és disponible i al dia.</string>
-    <string name="settings_troubleshoot_test_play_services_failed">El Riot empra els serveis de Google Play per a lliurar les notificacions, però no sembla que estiguen configurats correctament.
+    <string name="settings_troubleshoot_test_play_services_failed">El Element empra els serveis de Google Play per a lliurar les notificacions, però no sembla que estiguen configurats correctament.
 %1$s</string>
     <string name="settings_troubleshoot_test_fcm_title">Testimoni del Firebase</string>
     <string name="settings_troubleshoot_test_fcm_success">S\'ha recuperat el testimoni FCM correctament.
@@ -1159,7 +1138,7 @@ Comproveu els paràmetres del Riot.</string>
     <string name="settings_troubleshoot_test_fcm_failed">No s\'ha pogut recuperar el testimonu FCM:
 %1$s</string>
     <string name="settings_troubleshoot_test_fcm_failed_too_many_registration">[%1$s]
-Aquest error és fora del control del Riot i segons Google aquest error indica que aquest dispositiu té massa aplicacions registrades amb FCM. L\'error només ocorre en casos en què hi ha un nombre extrem d\'aplicacions, i no hauria d\'afectar un usuari normal.</string>
+Aquest error és fora del control del Element i segons Google aquest error indica que aquest dispositiu té massa aplicacions registrades amb FCM. L\'error només ocorre en casos en què hi ha un nombre extrem d\'aplicacions, i no hauria d\'afectar un usuari normal.</string>
     <string name="settings_troubleshoot_test_fcm_failed_account_missing_quick_fix">Afegeix un compte</string>
 
     <string name="settings_troubleshoot_test_token_registration_title">Registre del testimoni</string>
@@ -1172,7 +1151,7 @@ Aquest error és fora del control del Riot i segons Google aquest error indica q
     <string name="settings_troubleshoot_test_service_restart_failed">No s\'ha pogut iniciar el servei</string>
 
     <string name="settings_troubleshoot_test_service_boot_success">El servei s\'iniciarà quan s\'iniciï el dispositiu.</string>
-    <string name="settings_troubleshoot_test_service_boot_failed">El servei no s\'iniciarà quan el dispositiu s\'iniciï, per la qual cosa no rebreu notificacions fins que el Riot s\'haja obert una vegada.</string>
+    <string name="settings_troubleshoot_test_service_boot_failed">El servei no s\'iniciarà quan el dispositiu s\'iniciï, per la qual cosa no rebreu notificacions fins que el Element s\'haja obert una vegada.</string>
     <string name="settings_troubleshoot_test_service_boot_quickfix">Habilita l\'inici durant l\'arrencada</string>
 
     <string name="settings_troubleshoot_test_bg_restricted_title">Comprova les restriccions del rerefons</string>
@@ -1202,7 +1181,7 @@ Aquest error és fora del control del Riot i segons Google aquest error indica q
     <string name="passphrase_empty_error_message">Introduïu una frase de pas</string>
     <string name="passphrase_passphrase_too_weak">La frase de pas és massa feble</string>
 
-    <string name="keys_backup_passphrase_not_empty_error_message">Suprimiu la frase de pas si voleu que el Riot generi una clau de recuperació.</string>
+    <string name="keys_backup_passphrase_not_empty_error_message">Suprimiu la frase de pas si voleu que el Element generi una clau de recuperació.</string>
     <string name="keys_backup_no_session_error">No hi ha cap sessió de Matrix disponible</string>
 
     <string name="keys_backup_setup_step1_title">No perdeu mai els missatges xifrats</string>
@@ -1237,30 +1216,15 @@ Avís: és possible que calgui suprimir el fitxer si es desinstal·la l\'aplicac
 
     <string name="keys_backup_restore_with_key_helper">Heu perdut la vostra clau de recuperació? Podeu establir una nova a les preferències.</string>
     <string name="settings_troubleshoot_test_fcm_failed_service_not_available">"[%1$s]
-Aquest error és fora del control del Riot. Pot ocórrer per diferents raons. És possible que funcioni si ho torneu a provar més endavant. També podeu comprovar que el servei de Google Play no està restringit a l\'ús  de dades a les preferències del sistema, o que el rellotge del dispositiu marca l\'hora correcta. També pot passar amb ROM personalitzades."</string>
+Aquest error és fora del control del Element. Pot ocórrer per diferents raons. És possible que funcioni si ho torneu a provar més endavant. També podeu comprovar que el servei de Google Play no està restringit a l\'ús  de dades a les preferències del sistema, o que el rellotge del dispositiu marca l\'hora correcta. També pot passar amb ROM personalitzades."</string>
     <string name="settings_troubleshoot_test_fcm_failed_account_missing">[%1$s]
-Aquest error és fora del control del Riot. No hi ha cap compte de Google al telèfon. Obrir el gestor de comptes i afegiu un compte de Google.</string>
-    <string name="settings_troubleshoot_test_bg_restricted_success">Les restriccions de rerefons són inhabilitades per al Riot. Aquesta prova s\'hauria d\'executar emprant dades mòbils (sense wifi).
+Aquest error és fora del control del Element. No hi ha cap compte de Google al telèfon. Obrir el gestor de comptes i afegiu un compte de Google.</string>
+    <string name="settings_troubleshoot_test_bg_restricted_success">Les restriccions de rerefons són inhabilitades per al Element. Aquesta prova s\'hauria d\'executar emprant dades mòbils (sense wifi).
 %1$s</string>
-    <string name="settings_troubleshoot_test_bg_restricted_failed">Les restriccions de rerefons són habilitades per al Riot.
+    <string name="settings_troubleshoot_test_bg_restricted_failed">Les restriccions de rerefons són habilitades per al Element.
 Les tasques que l\'aplicació intenta fer estaran restringides agressivament mentre estigui al rerefons, i això pot afectar les notificacions.
 %1$s</string>
     <string name="settings_troubleshoot_test_battery_failed">Si un usuari deixa un dispositiu sense endollar i immòbil durant un període de temps, amb la pantalla apagada, el dispositiu entra en el mode d\'estalvi d\'energia. Això impedeix les aplicacions d\'accedir a la xarxa i ajorna les seves tasques, sincronitzacions i alarmes estàndard.</string>
-    <string name="store_full_description">"Una aplicació de xat, sota el vostre control i totalment flexible. El Riot us permet comunicar-vos de la manera que preferiu. Fet per al [matrix] - l’estàndard per a la comunicació oberta i descentralitzada.
-
-Obteniu un compte gratuït de matrix.org, executeu el vostre servidor propi a https://modular.im, o empreu un altre servidor de Matrix.
-
-Per què triar Riot.im?
-
-• COMUNICACIÓ COMPLETA: Creeu sales al voltant dels vostres equips, els vostre amics o la vostra comunitat - de la manera que preferiu! Converseu, compartiu fitxers, afegiu ginys i feu trucades de veu i vídeo - tot de manera gratuïta.
-
-• INTEGRACIONS POTENTS: Empreu el Riot.im amb les eines que ja coneixeu i us agraden. Amb el Riot.im fins i tot podeu conversar amb usuaris i grups d’altres aplicacions de xat.
-
-• PRIVAT I SEGUR: Mantingueu les vostres converses en secret. Xifratge punt a punt us assegura que les comunicacions privades continuaran sent privades.
-
-• OBERT, NO TANCAT: Programari lliure, i construït damunt de Matrix. Sigueu els propietaris de les vostres dades hostatjant el vostre servidor propi, o emprant un en què confieu.
-
-• ALLÀ ON SIGUEU: Esteu en contacte allà on esteu amb una sincronització total de l’historial dels missatges en tots els vostres dispositius, i en línia a https://riot.im."</string>
 
 
     <string name="keys_backup_setup_step3_generating_key_status">S\'està generant la clau de recuperació emprant una frase de pas. Aquest procés pot trigar uns segons.</string>
@@ -1451,7 +1415,7 @@ Per què triar Riot.im?
 
     <string name="keys_backup_settings_checking_backup_state">Comprovant l\'estat de la còpia de seguretat</string>
     <string name="autodiscover_well_known_autofill_dialog_title">Opcions d\'autocompleció del servidor</string>
-    <string name="autodiscover_well_known_autofill_dialog_message">Riot ha detectat una configuració de servidor personalitzat pel domini del seu identificador d\'usuari \"%1$s\":
+    <string name="autodiscover_well_known_autofill_dialog_message">Element ha detectat una configuració de servidor personalitzat pel domini del seu identificador d\'usuari \"%1$s\":
 \n%2$s</string>
     <string name="invalid_or_expired_credentials">Us heu desconnectat a causa de credencials incorrectes o caducades.</string>
 
@@ -1539,7 +1503,7 @@ Per què triar Riot.im?
     <string name="group_all_communities">Totes les comunitats</string>
 
     <string name="room_preview_no_preview">Aquesta sala no es pot pre-visualitzar</string>
-    <string name="room_preview_world_readable_room_not_supported_yet">RiotX encara no suporta la pre-visualització de sales llegibles per tothom</string>
+    <string name="room_preview_world_readable_room_not_supported_yet">Element encara no suporta la pre-visualització de sales llegibles per tothom</string>
 
     <string name="fab_menu_create_room">Sales</string>
     <string name="fab_menu_create_chat">Missatges directes</string>
@@ -1554,12 +1518,6 @@ Per què triar Riot.im?
 
     <string name="keys_backup_unable_to_get_trust_info">Hi ha hagut un error rebent informació de confança</string>
     <string name="keys_backup_unable_to_get_keys_backup_data">Hi ha hagut un error rebent dades de la còpia de seguretat de les claus</string>
-
-    <string name="alpha_disclaimer_title">Benvinguts a la beta!</string>
-    <string name="alpha_disclaimer_content_line_1">Mentre RiotX estigui en les primeres etapes de desenvolupament, faltaran algunes funcions i podríeu experimentar alguns errors.</string>
-    <string name="alpha_disclaimer_content_line_2_gplay">L\'última llista de característiques està sempre a %1$s, i si trobeu errors si us plau reporteu informe des de la part superior esquerra del menú d\'Inici, i el resoldrem tan aviat com puguem.</string>
-    <string name="alpha_disclaimer_content_line_2_gplay_colored_part">Descripció de la Play Store</string>
-    <string name="alpha_disclaimer_content_line_2_fdroid">Si trobeu errors si us plau envieu un informe d\'errors des de la part superior esquerra del menú d\'Inici, i el resoldrem tan aviat com puguem.</string>
 
     <string name="import_e2e_keys_from_file">Importar claus e2e des del fitxer \"%1$s\".</string>
 

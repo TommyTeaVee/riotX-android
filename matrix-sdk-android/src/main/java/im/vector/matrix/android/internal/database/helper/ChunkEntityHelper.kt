@@ -60,10 +60,9 @@ internal fun ChunkEntity.merge(roomId: String, chunkToMerge: ChunkEntity, direct
     chunkToMerge.stateEvents.forEach { stateEvent ->
         addStateEvent(roomId, stateEvent, direction)
     }
-    return eventsToMerge
-            .forEach {
-                addTimelineEventFromMerge(localRealm, it, direction)
-            }
+    eventsToMerge.forEach {
+        addTimelineEventFromMerge(localRealm, it, direction)
+    }
 }
 
 internal fun ChunkEntity.addStateEvent(roomId: String, stateEvent: EventEntity, direction: PaginationDirection) {
@@ -116,6 +115,7 @@ internal fun ChunkEntity.addTimelineEvent(roomId: String,
             true
         }
     }
+    numberOfTimelineEvents++
     timelineEvents.add(timelineEventEntity)
 }
 
@@ -123,17 +123,18 @@ private fun computeIsUnique(
         realm: Realm,
         roomId: String,
         isLastForward: Boolean,
-        myRoomMemberContent: RoomMemberContent,
+        senderRoomMemberContent: RoomMemberContent,
         roomMemberContentsByUser: Map<String, RoomMemberContent?>
 ): Boolean {
     val isHistoricalUnique = roomMemberContentsByUser.values.find {
-        it != myRoomMemberContent && it?.displayName == myRoomMemberContent.displayName
+        it != senderRoomMemberContent && it?.displayName == senderRoomMemberContent.displayName
     } == null
     return if (isLastForward) {
         val isLiveUnique = RoomMemberSummaryEntity
                 .where(realm, roomId)
-                .equalTo(RoomMemberSummaryEntityFields.DISPLAY_NAME, myRoomMemberContent.displayName)
-                .findAll().none {
+                .equalTo(RoomMemberSummaryEntityFields.DISPLAY_NAME, senderRoomMemberContent.displayName)
+                .findAll()
+                .none {
                     !roomMemberContentsByUser.containsKey(it.userId)
                 }
         isHistoricalUnique && isLiveUnique

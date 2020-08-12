@@ -17,23 +17,35 @@
 package im.vector.matrix.rx
 
 import androidx.paging.PagedList
+import im.vector.matrix.android.api.extensions.orFalse
+import im.vector.matrix.android.api.query.QueryStringValue
 import im.vector.matrix.android.api.session.Session
+import im.vector.matrix.android.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
+import im.vector.matrix.android.api.session.crypto.crosssigning.MASTER_KEY_SSSS_NAME
 import im.vector.matrix.android.api.session.crypto.crosssigning.MXCrossSigningInfo
+import im.vector.matrix.android.api.session.crypto.crosssigning.SELF_SIGNING_KEY_SSSS_NAME
+import im.vector.matrix.android.api.session.crypto.crosssigning.USER_SIGNING_KEY_SSSS_NAME
 import im.vector.matrix.android.api.session.group.GroupSummaryQueryParams
 import im.vector.matrix.android.api.session.group.model.GroupSummary
+import im.vector.matrix.android.api.session.identity.ThreePid
 import im.vector.matrix.android.api.session.pushers.Pusher
 import im.vector.matrix.android.api.session.room.RoomSummaryQueryParams
+import im.vector.matrix.android.api.session.room.members.ChangeMembershipState
 import im.vector.matrix.android.api.session.room.model.RoomSummary
 import im.vector.matrix.android.api.session.room.model.create.CreateRoomParams
 import im.vector.matrix.android.api.session.sync.SyncState
 import im.vector.matrix.android.api.session.user.model.User
+import im.vector.matrix.android.api.session.widgets.model.Widget
 import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.api.util.Optional
 import im.vector.matrix.android.api.util.toOptional
 import im.vector.matrix.android.internal.crypto.model.CryptoDeviceInfo
-import im.vector.matrix.android.internal.session.sync.model.accountdata.UserAccountDataEvent
+import im.vector.matrix.android.internal.crypto.model.rest.DeviceInfo
+import im.vector.matrix.android.internal.crypto.store.PrivateKeysInfo
+import im.vector.matrix.android.api.session.accountdata.UserAccountDataEvent
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.functions.Function3
 
 class RxSession(private val session: Session) {
 
@@ -51,10 +63,17 @@ class RxSession(private val session: Session) {
                 }
     }
 
-    fun liveBreadcrumbs(): Observable<List<RoomSummary>> {
-        return session.getBreadcrumbsLive().asObservable()
+    fun liveBreadcrumbs(queryParams: RoomSummaryQueryParams): Observable<List<RoomSummary>> {
+        return session.getBreadcrumbsLive(queryParams).asObservable()
                 .startWithCallable {
-                    session.getBreadcrumbs()
+                    session.getBreadcrumbs(queryParams)
+                }
+    }
+
+    fun liveMyDeviceInfo(): Observable<List<DeviceInfo>> {
+        return session.cryptoService().getLiveMyDevicesInfo().asObservable()
+                .startWithCallable {
+                    session.cryptoService().getMyDevicesInfo()
                 }
     }
 
@@ -81,8 +100,13 @@ class RxSession(private val session: Session) {
         return session.getIgnoredUsersLive().asObservable()
     }
 
-    fun livePagedUsers(filter: String? = null): Observable<PagedList<User>> {
-        return session.getPagedUsersLive(filter).asObservable()
+    fun livePagedUsers(filter: String? = null, excludedUserIds: Set<String>? = null): Observable<PagedList<User>> {
+        return session.getPagedUsersLive(filter, excludedUserIds).asObservable()
+    }
+
+    fun liveThreePIds(refreshData: Boolean): Observable<List<ThreePid>> {
+        return session.getThreePidsLive(refreshData).asObservable()
+                .startWithCallable { session.getThreePids() }
     }
 
     fun createRoom(roomParams: CreateRoomParams): Single<String> = singleBuilder {
@@ -123,11 +147,66 @@ class RxSession(private val session: Session) {
                 }
     }
 
+    fun liveCrossSigningPrivateKeys(): Observable<Optional<PrivateKeysInfo>> {
+        return session.cryptoService().crossSigningService().getLiveCrossSigningPrivateKeys().asObservable()
+                .startWithCallable {
+                    session.cryptoService().crossSigningService().getCrossSigningPrivateKeys().toOptional()
+                }
+    }
+
     fun liveAccountData(types: Set<String>): Observable<List<UserAccountDataEvent>> {
         return session.getLiveAccountDataEvents(types).asObservable()
                 .startWithCallable {
                     session.getAccountDataEvents(types)
                 }
+    }
+
+    fun liveRoomWidgets(
+            roomId: String,
+            widgetId: QueryStringValue,
+            widgetTypes: Set<String>? = null,
+            excludedTypes: Set<String>? = null
+    ): Observable<List<Widget>> {
+        return session.widgetService().getRoomWidgetsLive(roomId, widgetId, widgetTypes, excludedTypes).asObservable()
+                .startWithCallable {
+                    session.widgetService().getRoomWidgets(roomId, widgetId, widgetTypes, excludedTypes)
+                }
+    }
+
+    fun liveRoomChangeMembershipState(): Observable<Map<String, ChangeMembershipState>> {
+        return session.getChangeMembershipsLive().asObservable()
+    }
+
+    fun liveSecretSynchronisationInfo(): Observable<SecretsSynchronisationInfo> {
+        return Observable.combineLatest<List<UserAccountDataEvent>, Optional<MXCrossSigningInfo>, Optional<PrivateKeysInfo>, SecretsSynchronisationInfo>(
+                liveAccountData(setOf(MASTER_KEY_SSSS_NAME, USER_SIGNING_KEY_SSSS_NAME, SELF_SIGNING_KEY_SSSS_NAME, KEYBACKUP_SECRET_SSSS_NAME)),
+                liveCrossSigningInfo(session.myUserId),
+                liveCrossSigningPrivateKeys(),
+                Function3 { _, crossSigningInfo, pInfo ->
+                    // first check if 4S is already setup
+                    val is4SSetup = session.sharedSecretStorageService.isRecoverySetup()
+                    val isCrossSigningEnabled = crossSigningInfo.getOrNull() != null
+                    val isCrossSigningTrusted = crossSigningInfo.getOrNull()?.isTrusted() == true
+                    val allPrivateKeysKnown = pInfo.getOrNull()?.allKnown().orFalse()
+
+                    val keysBackupService = session.cryptoService().keysBackupService()
+                    val currentBackupVersion = keysBackupService.currentBackupVersion
+                    val megolmBackupAvailable = currentBackupVersion != null
+                    val savedBackupKey = keysBackupService.getKeyBackupRecoveryKeyInfo()
+
+                    val megolmKeyKnown = savedBackupKey?.version == currentBackupVersion
+                    SecretsSynchronisationInfo(
+                            isBackupSetup = is4SSetup,
+                            isCrossSigningEnabled = isCrossSigningEnabled,
+                            isCrossSigningTrusted = isCrossSigningTrusted,
+                            allPrivateKeysKnown = allPrivateKeysKnown,
+                            megolmBackupAvailable = megolmBackupAvailable,
+                            megolmSecretKnown = megolmKeyKnown,
+                            isMegolmKeyIn4S = session.sharedSecretStorageService.isMegolmKeyInBackup()
+                    )
+                }
+        )
+                .distinctUntilChanged()
     }
 }
 

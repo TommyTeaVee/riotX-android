@@ -66,6 +66,8 @@ import im.vector.matrix.android.internal.crypto.tasks.DefaultDownloadKeysForUser
 import im.vector.matrix.android.internal.crypto.tasks.DefaultEncryptEventTask
 import im.vector.matrix.android.internal.crypto.tasks.DefaultGetDeviceInfoTask
 import im.vector.matrix.android.internal.crypto.tasks.DefaultGetDevicesTask
+import im.vector.matrix.android.internal.crypto.tasks.DefaultInitializeCrossSigningTask
+import im.vector.matrix.android.internal.crypto.tasks.DefaultSendEventTask
 import im.vector.matrix.android.internal.crypto.tasks.DefaultSendToDeviceTask
 import im.vector.matrix.android.internal.crypto.tasks.DefaultSendVerificationMessageTask
 import im.vector.matrix.android.internal.crypto.tasks.DefaultSetDeviceNameTask
@@ -78,6 +80,8 @@ import im.vector.matrix.android.internal.crypto.tasks.DownloadKeysForUsersTask
 import im.vector.matrix.android.internal.crypto.tasks.EncryptEventTask
 import im.vector.matrix.android.internal.crypto.tasks.GetDeviceInfoTask
 import im.vector.matrix.android.internal.crypto.tasks.GetDevicesTask
+import im.vector.matrix.android.internal.crypto.tasks.InitializeCrossSigningTask
+import im.vector.matrix.android.internal.crypto.tasks.SendEventTask
 import im.vector.matrix.android.internal.crypto.tasks.SendToDeviceTask
 import im.vector.matrix.android.internal.crypto.tasks.SendVerificationMessageTask
 import im.vector.matrix.android.internal.crypto.tasks.SetDeviceNameTask
@@ -110,6 +114,7 @@ internal abstract class CryptoModule {
         @SessionScope
         fun providesRealmConfiguration(@SessionFilesDirectory directory: File,
                                        @UserMd5 userMd5: String,
+                                       realmCryptoStoreMigration: RealmCryptoStoreMigration,
                                        realmKeysUtils: RealmKeysUtils): RealmConfiguration {
             return RealmConfiguration.Builder()
                     .directory(directory)
@@ -119,7 +124,7 @@ internal abstract class CryptoModule {
                     .name("crypto_store.realm")
                     .modules(RealmCryptoStoreModule())
                     .schemaVersion(RealmCryptoStoreMigration.CRYPTO_STORE_SCHEMA_VERSION)
-                    .migration(RealmCryptoStoreMigration)
+                    .migration(realmCryptoStoreMigration)
                     .build()
         }
 
@@ -245,4 +250,10 @@ internal abstract class CryptoModule {
 
     @Binds
     abstract fun bindComputeShieldTrustTask(task: DefaultComputeTrustTask): ComputeTrustTask
+
+    @Binds
+    abstract fun bindInitializeCrossSigningTask(task: DefaultInitializeCrossSigningTask): InitializeCrossSigningTask
+
+    @Binds
+    abstract fun bindSendEventTask(task: DefaultSendEventTask): SendEventTask
 }

@@ -17,7 +17,6 @@
 package im.vector.matrix.android.internal.session
 
 import androidx.annotation.MainThread
-import androidx.lifecycle.LiveData
 import dagger.Lazy
 import im.vector.matrix.android.api.MatrixCallback
 import im.vector.matrix.android.api.auth.data.SessionParams
@@ -25,14 +24,18 @@ import im.vector.matrix.android.api.failure.GlobalError
 import im.vector.matrix.android.api.pushrules.PushRuleService
 import im.vector.matrix.android.api.session.InitialSyncProgressService
 import im.vector.matrix.android.api.session.Session
+import im.vector.matrix.android.api.session.account.AccountService
 import im.vector.matrix.android.api.session.accountdata.AccountDataService
 import im.vector.matrix.android.api.session.cache.CacheService
+import im.vector.matrix.android.api.session.call.CallSignalingService
 import im.vector.matrix.android.api.session.content.ContentUploadStateTracker
 import im.vector.matrix.android.api.session.content.ContentUrlResolver
 import im.vector.matrix.android.api.session.crypto.CryptoService
+import im.vector.matrix.android.api.session.file.ContentDownloadStateTracker
 import im.vector.matrix.android.api.session.file.FileService
 import im.vector.matrix.android.api.session.group.GroupService
 import im.vector.matrix.android.api.session.homeserver.HomeServerCapabilitiesService
+import im.vector.matrix.android.api.session.integrationmanager.IntegrationManagerService
 import im.vector.matrix.android.api.session.profile.ProfileService
 import im.vector.matrix.android.api.session.pushers.PushersService
 import im.vector.matrix.android.api.session.room.RoomDirectoryService
@@ -41,21 +44,28 @@ import im.vector.matrix.android.api.session.securestorage.SecureStorageService
 import im.vector.matrix.android.api.session.securestorage.SharedSecretStorageService
 import im.vector.matrix.android.api.session.signout.SignOutService
 import im.vector.matrix.android.api.session.sync.FilterService
-import im.vector.matrix.android.api.session.sync.SyncState
+import im.vector.matrix.android.api.session.terms.TermsService
+import im.vector.matrix.android.api.session.typing.TypingUsersTracker
 import im.vector.matrix.android.api.session.user.UserService
+import im.vector.matrix.android.api.session.widgets.WidgetService
 import im.vector.matrix.android.internal.auth.SessionParamsStore
 import im.vector.matrix.android.internal.crypto.DefaultCryptoService
-import im.vector.matrix.android.internal.crypto.crosssigning.ShieldTrustUpdater
-import im.vector.matrix.android.internal.database.LiveEntityObserver
+import im.vector.matrix.android.internal.di.SessionDatabase
 import im.vector.matrix.android.internal.di.SessionId
+import im.vector.matrix.android.internal.di.UnauthenticatedWithCertificate
 import im.vector.matrix.android.internal.di.WorkManagerProvider
+import im.vector.matrix.android.internal.session.identity.DefaultIdentityService
 import im.vector.matrix.android.internal.session.room.timeline.TimelineEventDecryptor
 import im.vector.matrix.android.internal.session.sync.SyncTokenStore
 import im.vector.matrix.android.internal.session.sync.job.SyncThread
 import im.vector.matrix.android.internal.session.sync.job.SyncWorker
+import im.vector.matrix.android.internal.task.TaskExecutor
+import im.vector.matrix.android.internal.util.MatrixCoroutineDispatchers
+import im.vector.matrix.android.internal.util.createUIHandler
+import io.realm.RealmConfiguration
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -70,7 +80,8 @@ internal class DefaultSession @Inject constructor(
         private val eventBus: EventBus,
         @SessionId
         override val sessionId: String,
-        private val liveEntityObservers: Set<@JvmSuppressWildcards LiveEntityObserver>,
+        @SessionDatabase private val realmConfiguration: RealmConfiguration,
+        private val lifecycleObservers: Set<@JvmSuppressWildcards SessionLifecycleObserver>,
         private val sessionListeners: SessionListeners,
         private val roomService: Lazy<RoomService>,
         private val roomDirectoryService: Lazy<RoomDirectoryService>,
@@ -81,22 +92,33 @@ internal class DefaultSession @Inject constructor(
         private val signOutService: Lazy<SignOutService>,
         private val pushRuleService: Lazy<PushRuleService>,
         private val pushersService: Lazy<PushersService>,
+        private val termsService: Lazy<TermsService>,
         private val cryptoService: Lazy<DefaultCryptoService>,
-        private val fileService: Lazy<FileService>,
+        private val defaultFileService: Lazy<FileService>,
         private val secureStorageService: Lazy<SecureStorageService>,
         private val profileService: Lazy<ProfileService>,
+        private val widgetService: Lazy<WidgetService>,
         private val syncThreadProvider: Provider<SyncThread>,
         private val contentUrlResolver: ContentUrlResolver,
         private val syncTokenStore: SyncTokenStore,
         private val sessionParamsStore: SessionParamsStore,
         private val contentUploadProgressTracker: ContentUploadStateTracker,
+        private val typingUsersTracker: TypingUsersTracker,
+        private val contentDownloadStateTracker: ContentDownloadStateTracker,
         private val initialSyncProgressService: Lazy<InitialSyncProgressService>,
         private val homeServerCapabilitiesService: Lazy<HomeServerCapabilitiesService>,
         private val accountDataService: Lazy<AccountDataService>,
         private val _sharedSecretStorageService: Lazy<SharedSecretStorageService>,
+        private val accountService: Lazy<AccountService>,
         private val timelineEventDecryptor: TimelineEventDecryptor,
-        private val shieldTrustUpdater: ShieldTrustUpdater)
-    : Session,
+        private val coroutineDispatchers: MatrixCoroutineDispatchers,
+        private val defaultIdentityService: DefaultIdentityService,
+        private val integrationManagerService: IntegrationManagerService,
+        private val taskExecutor: TaskExecutor,
+        private val callSignalingService: Lazy<CallSignalingService>,
+        @UnauthenticatedWithCertificate
+        private val unauthenticatedWithCertificateOkHttpClient: Lazy<OkHttpClient>
+) : Session,
         RoomService by roomService.get(),
         RoomDirectoryService by roomDirectoryService.get(),
         GroupService by groupService.get(),
@@ -105,12 +127,13 @@ internal class DefaultSession @Inject constructor(
         FilterService by filterService.get(),
         PushRuleService by pushRuleService.get(),
         PushersService by pushersService.get(),
-        FileService by fileService.get(),
+        TermsService by termsService.get(),
         InitialSyncProgressService by initialSyncProgressService.get(),
         SecureStorageService by secureStorageService.get(),
         HomeServerCapabilitiesService by homeServerCapabilitiesService.get(),
         ProfileService by profileService.get(),
-        AccountDataService by accountDataService.get() {
+        AccountDataService by accountDataService.get(),
+        AccountService by accountService.get() {
 
     override val sharedSecretStorageService: SharedSecretStorageService
         get() = _sharedSecretStorageService.get()
@@ -119,6 +142,8 @@ internal class DefaultSession @Inject constructor(
 
     private var syncThread: SyncThread? = null
 
+    private val uiHandler = createUIHandler()
+
     override val isOpenable: Boolean
         get() = sessionParamsStore.get(sessionId)?.isTokenValid ?: false
 
@@ -126,10 +151,12 @@ internal class DefaultSession @Inject constructor(
     override fun open() {
         assert(!isOpen)
         isOpen = true
-        liveEntityObservers.forEach { it.start() }
+        cryptoService.get().ensureDevice()
+        uiHandler.post {
+            lifecycleObservers.forEach { it.onStart() }
+        }
         eventBus.register(this)
         timelineEventDecryptor.start()
-        shieldTrustUpdater.start()
     }
 
     override fun requireBackgroundSync() {
@@ -167,16 +194,17 @@ internal class DefaultSession @Inject constructor(
         assert(isOpen)
         stopSync()
         timelineEventDecryptor.destroy()
-        liveEntityObservers.forEach { it.dispose() }
+        uiHandler.post {
+            lifecycleObservers.forEach { it.onStop() }
+        }
         cryptoService.get().close()
         isOpen = false
         eventBus.unregister(this)
-        shieldTrustUpdater.stop()
     }
 
-    override fun getSyncStateLive(): LiveData<SyncState> {
-        return getSyncThread().liveState()
-    }
+    override fun getSyncStateLive() = getSyncThread().liveState()
+
+    override fun getSyncState() = getSyncThread().currentState()
 
     override fun hasAlreadySynced(): Boolean {
         return syncTokenStore.getLastToken() != null
@@ -191,7 +219,9 @@ internal class DefaultSession @Inject constructor(
     override fun clearCache(callback: MatrixCallback<Unit>) {
         stopSync()
         stopAnyBackgroundSync()
-        liveEntityObservers.forEach { it.cancelProcess() }
+        uiHandler.post {
+            lifecycleObservers.forEach { it.onClearCache() }
+        }
         cacheService.get().clearCache(callback)
         workManagerProvider.cancelAllWorks()
     }
@@ -201,7 +231,7 @@ internal class DefaultSession @Inject constructor(
         if (globalError is GlobalError.InvalidToken
                 && globalError.softLogout) {
             // Mark the token has invalid
-            GlobalScope.launch(Dispatchers.IO) {
+            taskExecutor.executorScope.launch(Dispatchers.IO) {
                 sessionParamsStore.setTokenInvalid(sessionId)
             }
         }
@@ -213,7 +243,25 @@ internal class DefaultSession @Inject constructor(
 
     override fun contentUploadProgressTracker() = contentUploadProgressTracker
 
+    override fun typingUsersTracker() = typingUsersTracker
+
+    override fun contentDownloadProgressTracker(): ContentDownloadStateTracker = contentDownloadStateTracker
+
     override fun cryptoService(): CryptoService = cryptoService.get()
+
+    override fun identityService() = defaultIdentityService
+
+    override fun fileService(): FileService = defaultFileService.get()
+
+    override fun widgetService(): WidgetService = widgetService.get()
+
+    override fun integrationManagerService() = integrationManagerService
+
+    override fun callSignalingService(): CallSignalingService = callSignalingService.get()
+
+    override fun getOkHttpClient(): OkHttpClient {
+        return unauthenticatedWithCertificateOkHttpClient.get()
+    }
 
     override fun addListener(listener: Session.Listener) {
         sessionListeners.addListener(listener)
@@ -225,6 +273,6 @@ internal class DefaultSession @Inject constructor(
 
     // For easy debugging
     override fun toString(): String {
-        return "$myUserId - ${sessionParams.credentials.deviceId}"
+        return "$myUserId - ${sessionParams.deviceId}"
     }
 }

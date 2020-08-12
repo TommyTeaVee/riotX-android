@@ -20,13 +20,18 @@ import dagger.Binds
 import dagger.Module
 import im.vector.matrix.android.api.session.content.ContentUploadStateTracker
 import im.vector.matrix.android.api.session.content.ContentUrlResolver
+import im.vector.matrix.android.api.session.file.ContentDownloadStateTracker
+import im.vector.matrix.android.internal.session.download.DefaultContentDownloadStateTracker
 
 @Module
 internal abstract class ContentModule {
 
     @Binds
-    abstract fun bindContentUploadStateTracker(contentUploadStateTracker: DefaultContentUploadStateTracker): ContentUploadStateTracker
+    abstract fun bindContentUploadStateTracker(tracker: DefaultContentUploadStateTracker): ContentUploadStateTracker
 
     @Binds
-    abstract fun bindContentUrlResolver(contentUrlResolver: DefaultContentUrlResolver): ContentUrlResolver
+    abstract fun bindContentDownloadStateTracker(tracker: DefaultContentDownloadStateTracker): ContentDownloadStateTracker
+
+    @Binds
+    abstract fun bindContentUrlResolver(resolver: DefaultContentUrlResolver): ContentUrlResolver
 }

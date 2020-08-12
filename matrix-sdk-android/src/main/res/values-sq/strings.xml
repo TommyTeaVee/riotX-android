@@ -4,8 +4,8 @@
     <string name="summary_user_sent_image">%1$s dërgoi një figurë.</string>
     <string name="notice_room_invite">%1$s ftoi %2$s</string>
     <string name="notice_room_invite_you">%1$s ju ftoi</string>
-    <string name="notice_room_join">%1$s u bë pjesë</string>
-    <string name="notice_room_leave">%1$s iku</string>
+    <string name="notice_room_join">%1$s hyri në dhomë</string>
+    <string name="notice_room_leave">%1$s doli nga dhoma</string>
     <string name="notice_room_reject">%1$s hodhi tej ftesën</string>
     <string name="notice_room_kick">%1$s përzuri %2$s</string>
     <string name="notice_room_ban">%1$s dëboi %2$s</string>
@@ -34,8 +34,6 @@
     <string name="notice_crypto_unable_to_decrypt">** S’arrihet të shfshehtëzohet: %s **</string>
     <string name="notice_crypto_error_unkwown_inbound_session_id">Pajisja e dërguesit nuk na ka dërguar kyçet për këtë mesazh.</string>
 
-    <string name="message_reply_to_prefix">Në përgjigje të</string>
-
     <string name="could_not_redact">S’u redaktua dot</string>
     <string name="unable_to_send_message">S’arrihet të dërgohet mesazh</string>
 
@@ -50,11 +48,6 @@
 
     <string name="medium_email">Adresë email</string>
     <string name="medium_phone_number">Numër telefoni</string>
-
-    <string name="reply_to_an_image">dërgoi një figurë.</string>
-    <string name="reply_to_a_video">dërgoi një video.</string>
-    <string name="reply_to_an_audio_file">dërgoi një kartelë audio.</string>
-    <string name="reply_to_a_file">dërgoi një kartelë.</string>
 
     <string name="room_displayname_invite_from">Ftesë nga %s</string>
     <string name="room_displayname_room_invite">Ftesë Dhome</string>
@@ -172,8 +165,8 @@
     <string name="notice_room_invite_no_invitee_with_reason">Ftesë e %1$s. Arsye: %2$s</string>
     <string name="notice_room_invite_with_reason">%1$s ftoi %2$s. Arsye: %3$s</string>
     <string name="notice_room_invite_you_with_reason">%1$s ju ftoi. Arsye: %2$s</string>
-    <string name="notice_room_join_with_reason">%1$s erdhi. Arsye: %2$s</string>
-    <string name="notice_room_leave_with_reason">%1$s iku. Arsye: %2$s</string>
+    <string name="notice_room_join_with_reason">%1$s erdhi në dhomë. Arsye: %2$s</string>
+    <string name="notice_room_leave_with_reason">%1$s doli nga dhoma. Arsye: %2$s</string>
     <string name="notice_room_reject_with_reason">%1$s hodhi poshtë ftesën. Arsye: %2$s</string>
     <string name="notice_room_kick_with_reason">%1$s përzuri %2$s. Arsye: %3$s</string>
     <string name="notice_room_unban_with_reason">%1$s hoqi dëbimin për %2$s. Arsye: %3$s</string>
@@ -197,5 +190,16 @@
 
     <string name="notice_room_canonical_alias_set">%1$s caktoi %2$s si adresë kryesore për këtë dhomë.</string>
     <string name="notice_room_canonical_alias_unset">%1$s hoqi adresën kryesore për këtë dhomë.</string>
+
+    <string name="notice_room_guest_access_can_join">%1$s ka lejuar vizitorë të marrin pjesë në dhomë.</string>
+    <string name="notice_room_guest_access_forbidden">%1$s ka penguar vizitorë të marrin pjesë në dhomë.</string>
+
+    <string name="notice_end_to_end_ok">%1$s aktivizoi fshehtëzim skaj-më-skaj.</string>
+    <string name="notice_end_to_end_unknown_algorithm">%1$s aktivizoi fshehtëzim skaj-më-skaj (algoritëm i papranuar %2$s).</string>
+
+    <string name="key_verification_request_fallback_message">%s po kërkon të verifikojë kyçin tuaj, por klienti juaj nuk mbulon verifikim kyçesh brenda fjalosjeje. Që të verifikoni kyça, do t’ju duhet të përdorni verifikim të dikurshëm kyçesh.</string>
+
+    <string name="notice_room_created">%1$s krijo dhomën</string>
+    <string name="verification_emoji_pin">Fiksoje</string>
 
 </resources>

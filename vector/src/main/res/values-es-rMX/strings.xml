@@ -83,7 +83,7 @@
     <string name="local_address_book_header">Libreta local de direcciones</string>
     <string name="matrix_only_filter">Solamente contactos Matrix</string>
     <string name="no_conversation_placeholder">Sin conversaciones</string>
-    <string name="no_contact_access_placeholder">No ha permitido a Riot acceder a sus contactos locales</string>
+    <string name="no_contact_access_placeholder">No ha permitido a Element acceder a sus contactos locales</string>
     <string name="no_result_placeholder">Sin resultados</string>
 
     <!-- Rooms fragment -->
@@ -191,9 +191,6 @@
     <string name="login_error_login_email_not_yet">El enlace que no siguió</string>
 
     <!-- crypto warnings -->
-    <string name="e2e_need_log_in_again">Necesitas entrar de nuevo para generar claves de cifrado de extremo-a-extremo nuevas de este dispositivo y enviar la clave pública a el servidor.
-Esto sólo ocurre una vez.
-Disculpe por la inconveniencia.</string>
 
     <!-- read receipts list Screen -->
     <string name="read_receipts_list">Lista de Recibos de Lectura</string>
@@ -243,16 +240,16 @@ Disculpe por la inconveniencia.</string>
 
     <!-- permissions Android M -->
     <string name="permissions_rationale_popup_title">Información</string>
-    <string name="permissions_rationale_msg_storage">Riot necesita tu permiso para entrar en tu almacenaje de fotos y videos para enviar y guardar archivos.\n\nPor favor permite el acceso en el siguiente mensaje para poder enviar archivos desde su dispostivo.</string>
-    <string name="permissions_rationale_msg_camera">Riot necesita tu permiso para usar tu cámara para tomar fotos y hacer llamadas de video.</string>
+    <string name="permissions_rationale_msg_storage">Element necesita tu permiso para entrar en tu almacenaje de fotos y videos para enviar y guardar archivos.\n\nPor favor permite el acceso en el siguiente mensaje para poder enviar archivos desde su dispostivo.</string>
+    <string name="permissions_rationale_msg_camera">Element necesita tu permiso para usar tu cámara para tomar fotos y hacer llamadas de video.</string>
     <string name="permissions_rationale_msg_camera_explanation">\n\nPor favor permite el acceso en el siguiente mensaje para poder hacer la llamada.</string>
-    <string name="permissions_rationale_msg_record_audio">Riot necesita tu permiso para usar tu micrófono para hacer llamadas de voz.</string>
+    <string name="permissions_rationale_msg_record_audio">Element necesita tu permiso para usar tu micrófono para hacer llamadas de voz.</string>
     <string name="permissions_rationale_msg_record_audio_explanation">\n\nPor favor permite el acceso en el siguiente mensaje para poder hacer la llamada.</string>
-    <string name="permissions_rationale_msg_camera_and_audio">Riot necesita tu permiso para usar su cámara y micrófono para hacer llamadas de video.\n\nPor favor permite el acceso en el siguiente mensaje para poder hacer la llamada.</string>
-    <string name="permissions_rationale_msg_contacts">Riot necesita tu permiso para leer tus contactos y directorio para encontrar a otros usuarios por sus correos electrónicos y números telefónicos.\n\nPor favor permite el acceso en el siguiente mensaje para encontrar usuarios de Riot en su directorio.</string>
-    <string name="permissions_msg_contacts_warning_other_androids">Riot necesita tu permiso para leer los contactos de tu directorio para encontrar otros usuarios de Matrix por sus correos electrónicos y números telefónicos.
+    <string name="permissions_rationale_msg_camera_and_audio">Element necesita tu permiso para usar su cámara y micrófono para hacer llamadas de video.\n\nPor favor permite el acceso en el siguiente mensaje para poder hacer la llamada.</string>
+    <string name="permissions_rationale_msg_contacts">Element necesita tu permiso para leer tus contactos y directorio para encontrar a otros usuarios por sus correos electrónicos y números telefónicos.\n\nPor favor permite el acceso en el siguiente mensaje para encontrar usuarios de Element en su directorio.</string>
+    <string name="permissions_msg_contacts_warning_other_androids">Element necesita tu permiso para leer los contactos de tu directorio para encontrar otros usuarios de Matrix por sus correos electrónicos y números telefónicos.
 
-¿Permitir el acceso a Riot para leer tus contactos ?</string>
+¿Permitir el acceso a Element para leer tus contactos ?</string>
 
     <string name="permissions_action_not_performed_missing_permissions">Perdón. Operación no realizada debido a permisos faltantes</string>
 
@@ -636,10 +633,6 @@ Disculpe por la inconveniencia.</string>
     <string name="encryption_information_verify_device_warning2">Si coinciden, seleccione Verificar. Si no, otro esta interceptando este dispositivo y vas a querer bloquearlo.\nEn el futuro, este procceso será mas sofisticado.</string>
     <string name="encryption_information_verify_key_match">Verifico que las claves coinciden</string>
 
-    <string name="e2e_enabling_on_app_update">Riot ahora cuenta con cifrado de extremo-a-extremo pero necesitas reingresar tu cuenta para encenderlo.
-
-Lo puedes hacer ahora o luego desde las configuraciones de la aplicación.</string>
-
     <!-- unknown devices management -->
     <string name="unknown_devices_alert_title">Esta sala contiene dispositivos desconocidos</string>
     <string name="unknown_devices_alert_message">Esta sala contiene dispositivos desconocidos que no se han verificado.
@@ -680,8 +673,6 @@ Dispositivos desconocidos:</string>
     <string name="option_take_video">Grabar video</string>
 
     <string name="error_no_external_application_found">Lo sentimos, no se encontró una aplicación externa para completar esta acción.</string>
-
-    <string name="login_mobile_device">Móvil</string>
 
     <string name="e2e_re_request_encryption_key_dialog_title">Solicitud enviada</string>
     <string name="groups_list">Lista de grupos</string>
@@ -771,7 +762,7 @@ Dispositivos desconocidos:</string>
     <string name="title_activity_verify_device">Verificar dispositivo</string>
 
     <string name="settings_call_category">Llamadas</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">Usar el tono de llamada normal de Riot para llamadas entrantes</string>
+    <string name="settings_call_ringtone_use_app_ringtone">Usar el tono de llamada normal de Element para llamadas entrantes</string>
     <string name="settings_call_ringtone_title">Tono para llamadas entrantes</string>
     <string name="settings_call_ringtone_dialog_title">Elegir sonido de llamadas:</string>
 

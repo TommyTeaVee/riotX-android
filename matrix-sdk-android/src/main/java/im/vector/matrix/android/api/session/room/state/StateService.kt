@@ -16,9 +16,14 @@
 
 package im.vector.matrix.android.api.session.room.state
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import im.vector.matrix.android.api.MatrixCallback
+import im.vector.matrix.android.api.query.QueryStringValue
 import im.vector.matrix.android.api.session.events.model.Event
+import im.vector.matrix.android.api.session.room.model.RoomHistoryVisibility
+import im.vector.matrix.android.api.util.Cancelable
+import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.api.util.Optional
 
 interface StateService {
@@ -26,9 +31,40 @@ interface StateService {
     /**
      * Update the topic of the room
      */
-    fun updateTopic(topic: String, callback: MatrixCallback<Unit>)
+    fun updateTopic(topic: String, callback: MatrixCallback<Unit>): Cancelable
 
-    fun getStateEvent(eventType: String, stateKey: String): Event?
+    /**
+     * Update the name of the room
+     */
+    fun updateName(name: String, callback: MatrixCallback<Unit>): Cancelable
 
-    fun getStateEventLive(eventType: String, stateKey: String): LiveData<Optional<Event>>
+    /**
+     * Add new alias to the room.
+     */
+    fun addRoomAlias(roomAlias: String, callback: MatrixCallback<Unit>): Cancelable
+
+    /**
+     * Update the canonical alias of the room
+     */
+    fun updateCanonicalAlias(alias: String, callback: MatrixCallback<Unit>): Cancelable
+
+    /**
+     * Update the history readability of the room
+     */
+    fun updateHistoryReadability(readability: RoomHistoryVisibility, callback: MatrixCallback<Unit>): Cancelable
+
+    /**
+     * Update the avatar of the room
+     */
+    fun updateAvatar(avatarUri: Uri, fileName: String, callback: MatrixCallback<Unit>): Cancelable
+
+    fun sendStateEvent(eventType: String, stateKey: String?, body: JsonDict, callback: MatrixCallback<Unit>): Cancelable
+
+    fun getStateEvent(eventType: String, stateKey: QueryStringValue = QueryStringValue.NoCondition): Event?
+
+    fun getStateEventLive(eventType: String, stateKey: QueryStringValue = QueryStringValue.NoCondition): LiveData<Optional<Event>>
+
+    fun getStateEvents(eventTypes: Set<String>, stateKey: QueryStringValue = QueryStringValue.NoCondition): List<Event>
+
+    fun getStateEventsLive(eventTypes: Set<String>, stateKey: QueryStringValue = QueryStringValue.NoCondition): LiveData<List<Event>>
 }

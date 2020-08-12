@@ -23,17 +23,23 @@ import im.vector.matrix.android.api.session.Session
 import im.vector.matrix.android.internal.crypto.CancelGossipRequestWorker
 import im.vector.matrix.android.internal.crypto.CryptoModule
 import im.vector.matrix.android.internal.crypto.SendGossipRequestWorker
+import im.vector.matrix.android.internal.crypto.SendGossipWorker
 import im.vector.matrix.android.internal.crypto.verification.SendVerificationMessageWorker
 import im.vector.matrix.android.internal.di.MatrixComponent
 import im.vector.matrix.android.internal.di.SessionAssistedInjectModule
 import im.vector.matrix.android.internal.network.NetworkConnectivityChecker
+import im.vector.matrix.android.internal.session.account.AccountModule
 import im.vector.matrix.android.internal.session.cache.CacheModule
+import im.vector.matrix.android.internal.session.call.CallModule
 import im.vector.matrix.android.internal.session.content.ContentModule
 import im.vector.matrix.android.internal.session.content.UploadContentWorker
 import im.vector.matrix.android.internal.session.filter.FilterModule
 import im.vector.matrix.android.internal.session.group.GetGroupDataWorker
 import im.vector.matrix.android.internal.session.group.GroupModule
 import im.vector.matrix.android.internal.session.homeserver.HomeServerCapabilitiesModule
+import im.vector.matrix.android.internal.session.identity.IdentityModule
+import im.vector.matrix.android.internal.session.integrationmanager.IntegrationManagerModule
+import im.vector.matrix.android.internal.session.openid.OpenIdModule
 import im.vector.matrix.android.internal.session.profile.ProfileModule
 import im.vector.matrix.android.internal.session.pushers.AddHttpPusherWorker
 import im.vector.matrix.android.internal.session.pushers.PushersModule
@@ -48,30 +54,39 @@ import im.vector.matrix.android.internal.session.sync.SyncModule
 import im.vector.matrix.android.internal.session.sync.SyncTask
 import im.vector.matrix.android.internal.session.sync.SyncTokenStore
 import im.vector.matrix.android.internal.session.sync.job.SyncWorker
+import im.vector.matrix.android.internal.session.terms.TermsModule
 import im.vector.matrix.android.internal.session.user.UserModule
 import im.vector.matrix.android.internal.session.user.accountdata.AccountDataModule
+import im.vector.matrix.android.internal.session.widgets.WidgetModule
 import im.vector.matrix.android.internal.task.TaskExecutor
 import im.vector.matrix.android.internal.util.MatrixCoroutineDispatchers
 
 @Component(dependencies = [MatrixComponent::class],
-           modules = [
-               SessionModule::class,
-               RoomModule::class,
-               SyncModule::class,
-               HomeServerCapabilitiesModule::class,
-               SignOutModule::class,
-               GroupModule::class,
-               UserModule::class,
-               FilterModule::class,
-               GroupModule::class,
-               ContentModule::class,
-               CacheModule::class,
-               CryptoModule::class,
-               PushersModule::class,
-               AccountDataModule::class,
-               ProfileModule::class,
-               SessionAssistedInjectModule::class
-           ]
+        modules = [
+            SessionModule::class,
+            RoomModule::class,
+            SyncModule::class,
+            HomeServerCapabilitiesModule::class,
+            SignOutModule::class,
+            GroupModule::class,
+            UserModule::class,
+            FilterModule::class,
+            GroupModule::class,
+            ContentModule::class,
+            CacheModule::class,
+            CryptoModule::class,
+            PushersModule::class,
+            OpenIdModule::class,
+            WidgetModule::class,
+            IntegrationManagerModule::class,
+            IdentityModule::class,
+            TermsModule::class,
+            AccountDataModule::class,
+            ProfileModule::class,
+            SessionAssistedInjectModule::class,
+            AccountModule::class,
+            CallModule::class
+        ]
 )
 @SessionScope
 internal interface SessionComponent {
@@ -109,7 +124,10 @@ internal interface SessionComponent {
     fun inject(worker: SendVerificationMessageWorker)
 
     fun inject(worker: SendGossipRequestWorker)
+
     fun inject(worker: CancelGossipRequestWorker)
+
+    fun inject(worker: SendGossipWorker)
 
     @Component.Factory
     interface Factory {

@@ -33,6 +33,7 @@ import im.vector.matrix.android.api.session.room.send.SendState
 import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
 import im.vector.matrix.android.api.util.Cancelable
 import im.vector.matrix.android.api.util.CancelableBag
+import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.internal.di.SessionId
 import im.vector.matrix.android.internal.di.WorkManagerProvider
 import im.vector.matrix.android.internal.session.content.UploadContentWorker
@@ -57,7 +58,8 @@ internal class DefaultSendService @AssistedInject constructor(
         private val localEchoEventFactory: LocalEchoEventFactory,
         private val cryptoService: CryptoService,
         private val taskExecutor: TaskExecutor,
-        private val localEchoRepository: LocalEchoRepository
+        private val localEchoRepository: LocalEchoRepository,
+        private val roomEventSender: RoomEventSender
 ) : SendService {
 
     @AssistedInject.Factory
@@ -67,46 +69,47 @@ internal class DefaultSendService @AssistedInject constructor(
 
     private val workerFutureListenerExecutor = Executors.newSingleThreadExecutor()
 
+    override fun sendEvent(eventType: String, content: JsonDict?): Cancelable {
+        return localEchoEventFactory.createEvent(roomId, eventType, content)
+                .also { createLocalEcho(it) }
+                .let { sendEvent(it) }
+    }
+
     override fun sendTextMessage(text: CharSequence, msgType: String, autoMarkdown: Boolean): Cancelable {
-        val event = localEchoEventFactory.createTextEvent(roomId, msgType, text, autoMarkdown).also {
-            createLocalEcho(it)
+        return localEchoEventFactory.createTextEvent(roomId, msgType, text, autoMarkdown)
+                .also { createLocalEcho(it) }
+                .let { sendEvent(it) }
+    }
+
+    // For test only
+    private fun sendTextMessages(text: CharSequence, msgType: String, autoMarkdown: Boolean, times: Int): Cancelable {
+        return CancelableBag().apply {
+            // Send the event several times
+            repeat(times) { i ->
+                localEchoEventFactory.createTextEvent(roomId, msgType, "$text - $i", autoMarkdown)
+                        .also { createLocalEcho(it) }
+                        .let { sendEvent(it) }
+                        .also { add(it) }
+            }
         }
-        return sendEvent(event)
     }
 
     override fun sendFormattedTextMessage(text: String, formattedText: String, msgType: String): Cancelable {
-        val event = localEchoEventFactory.createFormattedTextEvent(roomId, TextContent(text, formattedText), msgType).also {
-            createLocalEcho(it)
-        }
-        return sendEvent(event)
+        return localEchoEventFactory.createFormattedTextEvent(roomId, TextContent(text, formattedText), msgType)
+                .also { createLocalEcho(it) }
+                .let { sendEvent(it) }
     }
 
     override fun sendPoll(question: String, options: List<OptionItem>): Cancelable {
-        val event = localEchoEventFactory.createPollEvent(roomId, question, options).also {
-            createLocalEcho(it)
-        }
-        return sendEvent(event)
+        return localEchoEventFactory.createPollEvent(roomId, question, options)
+                .also { createLocalEcho(it) }
+                .let { sendEvent(it) }
     }
 
     override fun sendOptionsReply(pollEventId: String, optionIndex: Int, optionValue: String): Cancelable {
-        val event = localEchoEventFactory.createOptionsReplyEvent(roomId, pollEventId, optionIndex, optionValue).also {
-            createLocalEcho(it)
-        }
-        return sendEvent(event)
-    }
-
-    private fun sendEvent(event: Event): Cancelable {
-        // Encrypted room handling
-        return if (cryptoService.isRoomEncrypted(roomId)) {
-            Timber.v("Send event in encrypted room")
-            val encryptWork = createEncryptEventWork(event, true)
-            // Note that event will be replaced by the result of the previous work
-            val sendWork = createSendEventWork(event, false)
-            timelineSendEventWorkCommon.postSequentialWorks(roomId, encryptWork, sendWork)
-        } else {
-            val sendWork = createSendEventWork(event, true)
-            timelineSendEventWorkCommon.postWork(roomId, sendWork)
-        }
+        return localEchoEventFactory.createOptionsReplyEvent(roomId, pollEventId, optionIndex, optionValue)
+                .also { createLocalEcho(it) }
+                .let { sendEvent(it) }
     }
 
     override fun sendMedias(attachments: List<ContentAttachmentData>,
@@ -119,12 +122,13 @@ internal class DefaultSendService @AssistedInject constructor(
 
     override fun redactEvent(event: Event, reason: String?): Cancelable {
         // TODO manage media/attachements?
-        val redactWork = createRedactEventWork(event, reason)
-        return timelineSendEventWorkCommon.postWork(roomId, redactWork)
+        return createRedactEventWork(event, reason)
+                .let { timelineSendEventWorkCommon.postWork(roomId, it) }
     }
 
     override fun resendTextMessage(localEcho: TimelineEvent): Cancelable? {
         if (localEcho.root.isTextMessage() && localEcho.root.sendState.hasFailed()) {
+            localEchoRepository.updateSendState(localEcho.eventId, SendState.UNSENT)
             return sendEvent(localEcho.root)
         }
         return null
@@ -228,7 +232,7 @@ internal class DefaultSendService @AssistedInject constructor(
                     keys.forEach { isRoomEncrypted ->
                         // Should never be empty
                         val localEchoes = get(isRoomEncrypted).orEmpty()
-                        val uploadWork = createUploadMediaWork(localEchoes, attachment, isRoomEncrypted, compressBeforeSending, startChain = true)
+                        val uploadWork = createUploadMediaWork(localEchoes, attachment, isRoomEncrypted, compressBeforeSending)
 
                         val dispatcherWork = createMultipleEventDispatcherWork(isRoomEncrypted)
 
@@ -253,6 +257,10 @@ internal class DefaultSendService @AssistedInject constructor(
         return cancelableBag
     }
 
+    private fun sendEvent(event: Event): Cancelable {
+        return roomEventSender.sendEvent(event)
+    }
+
     private fun createLocalEcho(event: Event) {
         localEchoEventFactory.createLocalEcho(event)
     }
@@ -263,44 +271,36 @@ internal class DefaultSendService @AssistedInject constructor(
 
     private fun createEncryptEventWork(event: Event, startChain: Boolean): OneTimeWorkRequest {
         // Same parameter
-        val params = EncryptEventWorker.Params(sessionId, event)
-        val sendWorkData = WorkerParamsFactory.toData(params)
-
-        return workManagerProvider.matrixOneTimeWorkRequestBuilder<EncryptEventWorker>()
-                .setConstraints(WorkManagerProvider.workConstraints)
-                .setInputData(sendWorkData)
-                .startChain(startChain)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkManagerProvider.BACKOFF_DELAY, TimeUnit.MILLISECONDS)
-                .build()
-    }
-
-    private fun createSendEventWork(event: Event, startChain: Boolean): OneTimeWorkRequest {
-        val sendContentWorkerParams = SendEventWorker.Params(sessionId, event)
-        val sendWorkData = WorkerParamsFactory.toData(sendContentWorkerParams)
-
-        return timelineSendEventWorkCommon.createWork<SendEventWorker>(sendWorkData, startChain)
+        return EncryptEventWorker.Params(sessionId, event)
+                .let { WorkerParamsFactory.toData(it) }
+                .let {
+                    workManagerProvider.matrixOneTimeWorkRequestBuilder<EncryptEventWorker>()
+                            .setConstraints(WorkManagerProvider.workConstraints)
+                            .setInputData(it)
+                            .startChain(startChain)
+                            .setBackoffCriteria(BackoffPolicy.LINEAR, WorkManagerProvider.BACKOFF_DELAY, TimeUnit.MILLISECONDS)
+                            .build()
+                }
     }
 
     private fun createRedactEventWork(event: Event, reason: String?): OneTimeWorkRequest {
-        val redactEvent = localEchoEventFactory.createRedactEvent(roomId, event.eventId!!, reason).also {
-            createLocalEcho(it)
-        }
-        val sendContentWorkerParams = RedactEventWorker.Params(sessionId, redactEvent.eventId!!, roomId, event.eventId, reason)
-        val redactWorkData = WorkerParamsFactory.toData(sendContentWorkerParams)
-        return timelineSendEventWorkCommon.createWork<RedactEventWorker>(redactWorkData, true)
+        return localEchoEventFactory.createRedactEvent(roomId, event.eventId!!, reason)
+                .also { createLocalEcho(it) }
+                .let { RedactEventWorker.Params(sessionId, it.eventId!!, roomId, event.eventId, reason) }
+                .let { WorkerParamsFactory.toData(it) }
+                .let { timelineSendEventWorkCommon.createWork<RedactEventWorker>(it, true) }
     }
 
     private fun createUploadMediaWork(allLocalEchos: List<Event>,
                                       attachment: ContentAttachmentData,
                                       isRoomEncrypted: Boolean,
-                                      compressBeforeSending: Boolean,
-                                      startChain: Boolean): OneTimeWorkRequest {
+                                      compressBeforeSending: Boolean): OneTimeWorkRequest {
         val uploadMediaWorkerParams = UploadContentWorker.Params(sessionId, allLocalEchos, attachment, isRoomEncrypted, compressBeforeSending)
         val uploadWorkData = WorkerParamsFactory.toData(uploadMediaWorkerParams)
 
         return workManagerProvider.matrixOneTimeWorkRequestBuilder<UploadContentWorker>()
                 .setConstraints(WorkManagerProvider.workConstraints)
-                .startChain(startChain)
+                .startChain(true)
                 .setInputData(uploadWorkData)
                 .setBackoffCriteria(BackoffPolicy.LINEAR, WorkManagerProvider.BACKOFF_DELAY, TimeUnit.MILLISECONDS)
                 .build()

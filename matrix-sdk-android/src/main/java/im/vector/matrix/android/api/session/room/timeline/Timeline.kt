@@ -58,7 +58,7 @@ interface Timeline {
 
     /**
      * Check if the timeline can be enriched by paginating.
-     * @param the direction to check in
+     * @param direction the direction to check in
      * @return true if timeline can be enriched
      */
     fun hasMoreToLoad(direction: Direction): Boolean
@@ -104,6 +104,7 @@ interface Timeline {
     interface Listener {
         /**
          * Call when the timeline has been updated through pagination or sync.
+         * The latest event is the first in the list
          * @param snapshot the most up to date snapshot
          */
         fun onTimelineUpdated(snapshot: List<TimelineEvent>)

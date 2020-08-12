@@ -19,6 +19,7 @@ package im.vector.matrix.android.api.session.room.model
 import im.vector.matrix.android.api.crypto.RoomEncryptionTrustLevel
 import im.vector.matrix.android.api.session.room.model.tag.RoomTag
 import im.vector.matrix.android.api.session.room.send.UserDraft
+import im.vector.matrix.android.api.session.room.sender.SenderInfo
 import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
 
 /**
@@ -27,7 +28,9 @@ import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
  */
 data class RoomSummary constructor(
         val roomId: String,
+        // Computed display name
         val displayName: String = "",
+        val name: String = "",
         val topic: String = "",
         val avatarUrl: String = "",
         val canonicalAlias: String? = null,
@@ -46,11 +49,12 @@ data class RoomSummary constructor(
         val readMarkerId: String? = null,
         val userDrafts: List<UserDraft> = emptyList(),
         val isEncrypted: Boolean,
+        val encryptionEventTs: Long?,
+        val typingUsers: List<SenderInfo>,
         val inviterId: String? = null,
-        val typingRoomMemberIds: List<String> = emptyList(),
         val breadcrumbsIndex: Int = NOT_IN_BREADCRUMBS,
-        // TODO Plug it
-        val roomEncryptionTrustLevel: RoomEncryptionTrustLevel? = null
+        val roomEncryptionTrustLevel: RoomEncryptionTrustLevel? = null,
+        val hasFailedSending: Boolean = false
 ) {
 
     val isVersioned: Boolean
@@ -58,6 +62,12 @@ data class RoomSummary constructor(
 
     val hasNewMessages: Boolean
         get() = notificationCount != 0
+
+    val isFavorite: Boolean
+        get() = tags.any { it.name == RoomTag.ROOM_TAG_FAVOURITE }
+
+    val canStartCall: Boolean
+        get() = joinedMembersCount == 2
 
     companion object {
         const val NOT_IN_BREADCRUMBS = -1

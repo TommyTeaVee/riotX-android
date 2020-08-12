@@ -6,13 +6,13 @@
     android:addStatesFromChildren="true"
     android:background="?attr/selectableItemBackground">
 
-    <im.vector.riotx.core.platform.CheckableView
+    <im.vector.app.core.platform.CheckableView
         android:id="@+id/messageSelectedBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignBottom="@+id/readReceiptsView"
         android:layout_alignParentTop="true"
-        android:background="?riotx_highlighted_message_background" />
+        android:background="@drawable/highlighted_message_background" />
 
     <View
         android:id="@+id/messageStartGuideline"
@@ -54,9 +54,35 @@
             tools:layout_marginTop="160dp"
             tools:visibility="visible" />
 
+        <ViewStub
+            android:id="@+id/messageContentMergedCreationStub"
+            style="@style/TimelineContentStubBaseParams"
+            android:layout="@layout/item_timeline_event_merged_room_creation_stub"
+            tools:layout_marginTop="240dp"
+            tools:visibility="visible" />
+
+        <ViewStub
+            android:id="@+id/messageContentMergedUTDStub"
+            style="@style/TimelineContentStubBaseParams"
+            android:layout="@layout/item_timeline_event_merged_utd_stub"
+            tools:layout_marginTop="380dp"
+            tools:visibility="visible" />
+
     </FrameLayout>
 
-    <im.vector.riotx.core.ui.views.ReadReceiptsView
+    <ImageView
+        android:id="@+id/messageE2EDecoration"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="8dp"
+        android:layout_toStartOf="@id/viewStubContainer"
+        android:visibility="gone"
+        tools:src="@drawable/ic_shield_warning"
+        tools:visibility="visible" />
+
+
+    <im.vector.app.core.ui.views.ReadReceiptsView
         android:id="@+id/readReceiptsView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -16,24 +16,26 @@
 
 package im.vector.matrix.android.internal.session.room.send
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import androidx.exifinterface.media.ExifInterface
 import im.vector.matrix.android.R
 import im.vector.matrix.android.api.permalinks.PermalinkFactory
 import im.vector.matrix.android.api.session.content.ContentAttachmentData
+import im.vector.matrix.android.api.session.events.model.Content
 import im.vector.matrix.android.api.session.events.model.Event
 import im.vector.matrix.android.api.session.events.model.EventType
 import im.vector.matrix.android.api.session.events.model.LocalEcho
 import im.vector.matrix.android.api.session.events.model.RelationType
 import im.vector.matrix.android.api.session.events.model.UnsignedData
 import im.vector.matrix.android.api.session.events.model.toContent
-import im.vector.matrix.android.api.session.events.model.toModel
 import im.vector.matrix.android.api.session.room.model.message.AudioInfo
 import im.vector.matrix.android.api.session.room.model.message.FileInfo
 import im.vector.matrix.android.api.session.room.model.message.ImageInfo
 import im.vector.matrix.android.api.session.room.model.message.MessageAudioContent
 import im.vector.matrix.android.api.session.room.model.message.MessageContent
+import im.vector.matrix.android.api.session.room.model.message.MessageContentWithFormattedBody
 import im.vector.matrix.android.api.session.room.model.message.MessageFileContent
 import im.vector.matrix.android.api.session.room.model.message.MessageFormat
 import im.vector.matrix.android.api.session.room.model.message.MessageImageContent
@@ -47,21 +49,18 @@ import im.vector.matrix.android.api.session.room.model.message.OPTION_TYPE_POLL
 import im.vector.matrix.android.api.session.room.model.message.OptionItem
 import im.vector.matrix.android.api.session.room.model.message.ThumbnailInfo
 import im.vector.matrix.android.api.session.room.model.message.VideoInfo
-import im.vector.matrix.android.api.session.room.model.message.isReply
 import im.vector.matrix.android.api.session.room.model.relation.ReactionContent
 import im.vector.matrix.android.api.session.room.model.relation.ReactionInfo
 import im.vector.matrix.android.api.session.room.model.relation.RelationDefaultContent
 import im.vector.matrix.android.api.session.room.model.relation.ReplyToContent
 import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
 import im.vector.matrix.android.api.session.room.timeline.getLastMessageContent
+import im.vector.matrix.android.api.session.room.timeline.isReply
 import im.vector.matrix.android.internal.di.UserId
 import im.vector.matrix.android.internal.session.content.ThumbnailExtractor
 import im.vector.matrix.android.internal.session.room.send.pills.TextPillsUtils
 import im.vector.matrix.android.internal.task.TaskExecutor
 import im.vector.matrix.android.internal.util.StringProvider
-import kotlinx.coroutines.launch
-import org.commonmark.parser.Parser
-import org.commonmark.renderer.html.HtmlRenderer
 import javax.inject.Inject
 
 /**
@@ -74,35 +73,26 @@ import javax.inject.Inject
  * The transactionId is used as loc
  */
 internal class LocalEchoEventFactory @Inject constructor(
+        private val context: Context,
         @UserId private val userId: String,
         private val stringProvider: StringProvider,
+        private val markdownParser: MarkdownParser,
         private val textPillsUtils: TextPillsUtils,
         private val taskExecutor: TaskExecutor,
         private val localEchoRepository: LocalEchoRepository
 ) {
-    // TODO Inject
-    private val parser = Parser.builder().build()
-    // TODO Inject
-    private val renderer = HtmlRenderer.builder().build()
-
     fun createTextEvent(roomId: String, msgType: String, text: CharSequence, autoMarkdown: Boolean): Event {
         if (msgType == MessageType.MSGTYPE_TEXT || msgType == MessageType.MSGTYPE_EMOTE) {
             return createFormattedTextEvent(roomId, createTextContent(text, autoMarkdown), msgType)
         }
         val content = MessageTextContent(msgType = msgType, body = text.toString())
-        return createEvent(roomId, content)
+        return createMessageEvent(roomId, content)
     }
 
     private fun createTextContent(text: CharSequence, autoMarkdown: Boolean): TextContent {
         if (autoMarkdown) {
-            val source = textPillsUtils.processSpecialSpansToMarkdown(text)
-                    ?: text.toString()
-            val document = parser.parse(source)
-            val htmlText = renderer.render(document)
-
-            if (isFormattedTextPertinent(source, htmlText)) {
-                return TextContent(text.toString(), htmlText)
-            }
+            val source = textPillsUtils.processSpecialSpansToMarkdown(text) ?: text.toString()
+            return markdownParser.parse(source)
         } else {
             // Try to detect pills
             textPillsUtils.processSpecialSpansToHtml(text)?.let {
@@ -113,11 +103,8 @@ internal class LocalEchoEventFactory @Inject constructor(
         return TextContent(text.toString())
     }
 
-    private fun isFormattedTextPertinent(text: String, htmlText: String?) =
-            text != htmlText && htmlText != "<p>${text.trim()}</p>\n"
-
     fun createFormattedTextEvent(roomId: String, textContent: TextContent, msgType: String): Event {
-        return createEvent(roomId, textContent.toMessageTextContent(msgType))
+        return createMessageEvent(roomId, textContent.toMessageTextContent(msgType))
     }
 
     fun createReplaceTextEvent(roomId: String,
@@ -126,7 +113,7 @@ internal class LocalEchoEventFactory @Inject constructor(
                                newBodyAutoMarkdown: Boolean,
                                msgType: String,
                                compatibilityText: String): Event {
-        return createEvent(roomId,
+        return createMessageEvent(roomId,
                 MessageTextContent(
                         msgType = msgType,
                         body = compatibilityText,
@@ -141,7 +128,7 @@ internal class LocalEchoEventFactory @Inject constructor(
                                 pollEventId: String,
                                 optionIndex: Int,
                                 optionLabel: String): Event {
-        return createEvent(roomId,
+        return createMessageEvent(roomId,
                 MessagePollResponseContent(
                         body = optionLabel,
                         relatesTo = RelationDefaultContent(
@@ -163,7 +150,7 @@ internal class LocalEchoEventFactory @Inject constructor(
                 append(it.value)
             }
         }
-        return createEvent(
+        return createMessageEvent(
                 roomId,
                 MessageOptionsContent(
                         body = compatLabel,
@@ -185,13 +172,13 @@ internal class LocalEchoEventFactory @Inject constructor(
         val userLink = originalEvent.root.senderId?.let { PermalinkFactory.createPermalink(it) }
                 ?: ""
 
-        val body = bodyForReply(originalEvent.getLastMessageContent(), originalEvent.root.getClearContent().toModel())
+        val body = bodyForReply(originalEvent.getLastMessageContent(), originalEvent.isReply())
         val replyFormatted = REPLY_PATTERN.format(
                 permalink,
-                stringProvider.getString(R.string.message_reply_to_prefix),
                 userLink,
-                originalEvent.getDisambiguatedDisplayName(),
-                body.takeFormatted(),
+                originalEvent.senderInfo.disambiguatedDisplayName,
+                // Remove inner mx_reply tags if any
+                body.takeFormatted().replace(MX_REPLY_REGEX, ""),
                 createTextContent(newBodyText, newBodyAutoMarkdown).takeFormatted()
         )
         //
@@ -199,7 +186,7 @@ internal class LocalEchoEventFactory @Inject constructor(
         //
         val replyFallback = buildReplyFallback(body, originalEvent.root.senderId ?: "", newBodyText)
 
-        return createEvent(roomId,
+        return createMessageEvent(roomId,
                 MessageTextContent(
                         msgType = msgType,
                         body = compatibilityText,
@@ -266,14 +253,14 @@ internal class LocalEchoEventFactory @Inject constructor(
                         height = height?.toInt() ?: 0,
                         size = attachment.size.toInt()
                 ),
-                url = attachment.path
+                url = attachment.queryUri.toString()
         )
-        return createEvent(roomId, content)
+        return createMessageEvent(roomId, content)
     }
 
     private fun createVideoEvent(roomId: String, attachment: ContentAttachmentData): Event {
         val mediaDataRetriever = MediaMetadataRetriever()
-        mediaDataRetriever.setDataSource(attachment.path)
+        mediaDataRetriever.setDataSource(context, attachment.queryUri)
 
         // Use frame to calculate height and width as we are sure to get the right ones
         val firstFrame: Bitmap? = mediaDataRetriever.frameAtTime
@@ -281,7 +268,7 @@ internal class LocalEchoEventFactory @Inject constructor(
         val width = firstFrame?.width ?: 0
         mediaDataRetriever.release()
 
-        val thumbnailInfo = ThumbnailExtractor.extractThumbnail(attachment)?.let {
+        val thumbnailInfo = ThumbnailExtractor.extractThumbnail(context, attachment)?.let {
             ThumbnailInfo(
                     width = it.width,
                     height = it.height,
@@ -299,12 +286,12 @@ internal class LocalEchoEventFactory @Inject constructor(
                         size = attachment.size,
                         duration = attachment.duration?.toInt() ?: 0,
                         // Glide will be able to use the local path and extract a thumbnail.
-                        thumbnailUrl = attachment.path,
+                        thumbnailUrl = attachment.queryUri.toString(),
                         thumbnailInfo = thumbnailInfo
                 ),
-                url = attachment.path
+                url = attachment.queryUri.toString()
         )
-        return createEvent(roomId, content)
+        return createMessageEvent(roomId, content)
     }
 
     private fun createAudioEvent(roomId: String, attachment: ContentAttachmentData): Event {
@@ -312,12 +299,12 @@ internal class LocalEchoEventFactory @Inject constructor(
                 msgType = MessageType.MSGTYPE_AUDIO,
                 body = attachment.name ?: "audio",
                 audioInfo = AudioInfo(
-                        mimeType = attachment.getSafeMimeType()?.takeIf { it.isNotBlank() } ?: "audio/mpeg",
+                        mimeType = attachment.getSafeMimeType()?.takeIf { it.isNotBlank() },
                         size = attachment.size
                 ),
-                url = attachment.path
+                url = attachment.queryUri.toString()
         )
-        return createEvent(roomId, content)
+        return createMessageEvent(roomId, content)
     }
 
     private fun createFileEvent(roomId: String, attachment: ContentAttachmentData): Event {
@@ -325,24 +312,27 @@ internal class LocalEchoEventFactory @Inject constructor(
                 msgType = MessageType.MSGTYPE_FILE,
                 body = attachment.name ?: "file",
                 info = FileInfo(
-                        mimeType = attachment.getSafeMimeType()?.takeIf { it.isNotBlank() }
-                                ?: "application/octet-stream",
+                        mimeType = attachment.getSafeMimeType()?.takeIf { it.isNotBlank() },
                         size = attachment.size
                 ),
-                url = attachment.path
+                url = attachment.queryUri.toString()
         )
-        return createEvent(roomId, content)
+        return createMessageEvent(roomId, content)
     }
 
-    private fun createEvent(roomId: String, content: Any? = null): Event {
+    private fun createMessageEvent(roomId: String, content: MessageContent? = null): Event {
+        return createEvent(roomId, EventType.MESSAGE, content.toContent())
+    }
+
+    fun createEvent(roomId: String, type: String, content: Content?): Event {
         val localId = LocalEcho.createLocalEchoId()
         return Event(
                 roomId = roomId,
                 originServerTs = dummyOriginServerTs(),
                 senderId = userId,
                 eventId = localId,
-                type = EventType.MESSAGE,
-                content = content.toContent(),
+                type = type,
+                content = content,
                 unsignedData = UnsignedData(age = null, transactionId = localId)
         )
     }
@@ -377,13 +367,13 @@ internal class LocalEchoEventFactory @Inject constructor(
         val userId = eventReplied.root.senderId ?: return null
         val userLink = PermalinkFactory.createPermalink(userId) ?: return null
 
-        val body = bodyForReply(eventReplied.getLastMessageContent(), eventReplied.root.getClearContent().toModel())
+        val body = bodyForReply(eventReplied.getLastMessageContent(), eventReplied.isReply())
         val replyFormatted = REPLY_PATTERN.format(
                 permalink,
-                stringProvider.getString(R.string.message_reply_to_prefix),
                 userLink,
                 userId,
-                body.takeFormatted(),
+                // Remove inner mx_reply tags if any
+                body.takeFormatted().replace(MX_REPLY_REGEX, ""),
                 createTextContent(replyText, autoMarkdown).takeFormatted()
         )
         //
@@ -399,7 +389,7 @@ internal class LocalEchoEventFactory @Inject constructor(
                 formattedBody = replyFormatted,
                 relatesTo = RelationDefaultContent(null, null, ReplyToContent(eventId))
         )
-        return createEvent(roomId, content)
+        return createMessageEvent(roomId, content)
     }
 
     private fun buildReplyFallback(body: TextContent, originalSenderId: String?, newBodyText: String): String {
@@ -423,31 +413,28 @@ internal class LocalEchoEventFactory @Inject constructor(
 
     /**
      * Returns a TextContent used for the fallback event representation in a reply message.
-     * We also pass the original content, because in case of an edit of a reply the last content is not
+     * In case of an edit of a reply the last content is not
      * himself a reply, but it will contain the fallbacks, so we have to trim them.
      */
-    private fun bodyForReply(content: MessageContent?, originalContent: MessageContent?): TextContent {
+    private fun bodyForReply(content: MessageContent?, isReply: Boolean): TextContent {
         when (content?.msgType) {
             MessageType.MSGTYPE_EMOTE,
             MessageType.MSGTYPE_TEXT,
             MessageType.MSGTYPE_NOTICE -> {
                 var formattedText: String? = null
-                if (content is MessageTextContent) {
-                    if (content.format == MessageFormat.FORMAT_MATRIX_HTML) {
-                        formattedText = content.formattedBody
-                    }
+                if (content is MessageContentWithFormattedBody) {
+                    formattedText = content.matrixFormattedBody
                 }
-                val isReply = content.isReply() || originalContent.isReply()
                 return if (isReply) {
                     TextContent(content.body, formattedText).removeInReplyFallbacks()
                 } else {
                     TextContent(content.body, formattedText)
                 }
             }
-            MessageType.MSGTYPE_FILE   -> return TextContent(stringProvider.getString(R.string.reply_to_a_file))
-            MessageType.MSGTYPE_AUDIO  -> return TextContent(stringProvider.getString(R.string.reply_to_an_audio_file))
-            MessageType.MSGTYPE_IMAGE  -> return TextContent(stringProvider.getString(R.string.reply_to_an_image))
-            MessageType.MSGTYPE_VIDEO  -> return TextContent(stringProvider.getString(R.string.reply_to_a_video))
+            MessageType.MSGTYPE_FILE   -> return TextContent("sent a file.")
+            MessageType.MSGTYPE_AUDIO  -> return TextContent("sent an audio file.")
+            MessageType.MSGTYPE_IMAGE  -> return TextContent("sent an image.")
+            MessageType.MSGTYPE_VIDEO  -> return TextContent("sent a video.")
             else                       -> return TextContent(content?.body ?: "")
         }
     }
@@ -484,9 +471,7 @@ internal class LocalEchoEventFactory @Inject constructor(
 
     fun createLocalEcho(event: Event) {
         checkNotNull(event.roomId) { "Your event should have a roomId" }
-        taskExecutor.executorScope.launch {
-            localEchoRepository.createLocalEcho(event)
-        }
+        localEchoRepository.createLocalEcho(event)
     }
 
     companion object {
@@ -499,6 +484,9 @@ internal class LocalEchoEventFactory @Inject constructor(
         //     </blockquote>
         // </mx-reply>
         // No whitespace because currently breaks temporary formatted text to Span
-        const val REPLY_PATTERN = """<mx-reply><blockquote><a href="%s">%s</a><a href="%s">%s</a><br />%s</blockquote></mx-reply>%s"""
+        const val REPLY_PATTERN = """<mx-reply><blockquote><a href="%s">In reply to</a> <a href="%s">%s</a><br />%s</blockquote></mx-reply>%s"""
+
+        // This is used to replace inner mx-reply tags
+        val MX_REPLY_REGEX = "<mx-reply>.*</mx-reply>".toRegex()
     }
 }

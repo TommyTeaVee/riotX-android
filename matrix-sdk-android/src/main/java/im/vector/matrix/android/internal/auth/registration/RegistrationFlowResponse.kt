@@ -18,12 +18,12 @@ package im.vector.matrix.android.internal.auth.registration
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import im.vector.matrix.android.api.auth.data.LoginFlowTypes
 import im.vector.matrix.android.api.auth.registration.FlowResult
 import im.vector.matrix.android.api.auth.registration.Stage
 import im.vector.matrix.android.api.auth.registration.TermPolicies
 import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.internal.auth.data.InteractiveAuthenticationFlow
-import im.vector.matrix.android.internal.auth.data.LoginFlowTypes
 
 @JsonClass(generateAdapter = true)
 data class RegistrationFlowResponse(
@@ -76,7 +76,7 @@ fun RegistrationFlowResponse.toFlowResult(): FlowResult {
     this.flows?.forEach { it.stages?.mapTo(allFlowTypes) { type -> type } }
 
     allFlowTypes.forEach { type ->
-        val isMandatory = flows?.all { type in it.stages ?: emptyList() } == true
+        val isMandatory = flows?.all { type in it.stages.orEmpty() } == true
 
         val stage = when (type) {
             LoginFlowTypes.RECAPTCHA      -> Stage.ReCaptcha(isMandatory, ((params?.get(type) as? Map<*, *>)?.get("public_key") as? String)
@@ -88,7 +88,7 @@ fun RegistrationFlowResponse.toFlowResult(): FlowResult {
             else                          -> Stage.Other(isMandatory, type, (params?.get(type) as? Map<*, *>))
         }
 
-        if (type in completedStages ?: emptyList()) {
+        if (type in completedStages.orEmpty()) {
             completedStage.add(stage)
         } else {
             missingStage.add(stage)

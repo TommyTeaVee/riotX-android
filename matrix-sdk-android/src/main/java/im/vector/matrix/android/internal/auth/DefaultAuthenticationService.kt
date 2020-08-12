@@ -23,28 +23,35 @@ import im.vector.matrix.android.api.auth.AuthenticationService
 import im.vector.matrix.android.api.auth.data.Credentials
 import im.vector.matrix.android.api.auth.data.HomeServerConnectionConfig
 import im.vector.matrix.android.api.auth.data.LoginFlowResult
-import im.vector.matrix.android.api.auth.data.SessionParams
-import im.vector.matrix.android.api.auth.data.Versions
-import im.vector.matrix.android.api.auth.data.isLoginAndRegistrationSupportedBySdk
-import im.vector.matrix.android.api.auth.data.isSupportedBySdk
 import im.vector.matrix.android.api.auth.login.LoginWizard
 import im.vector.matrix.android.api.auth.registration.RegistrationWizard
+import im.vector.matrix.android.api.auth.wellknown.WellknownResult
 import im.vector.matrix.android.api.failure.Failure
 import im.vector.matrix.android.api.session.Session
 import im.vector.matrix.android.api.util.Cancelable
+import im.vector.matrix.android.api.util.NoOpCancellable
 import im.vector.matrix.android.internal.SessionManager
 import im.vector.matrix.android.internal.auth.data.LoginFlowResponse
 import im.vector.matrix.android.internal.auth.data.RiotConfig
 import im.vector.matrix.android.internal.auth.db.PendingSessionData
 import im.vector.matrix.android.internal.auth.login.DefaultLoginWizard
+import im.vector.matrix.android.internal.auth.login.DirectLoginTask
 import im.vector.matrix.android.internal.auth.registration.DefaultRegistrationWizard
+import im.vector.matrix.android.internal.auth.version.Versions
+import im.vector.matrix.android.internal.auth.version.isLoginAndRegistrationSupportedBySdk
+import im.vector.matrix.android.internal.auth.version.isSupportedBySdk
 import im.vector.matrix.android.internal.di.Unauthenticated
 import im.vector.matrix.android.internal.network.RetrofitFactory
 import im.vector.matrix.android.internal.network.executeRequest
+import im.vector.matrix.android.internal.network.httpclient.addSocketFactory
+import im.vector.matrix.android.internal.network.ssl.UnrecognizedCertificateException
+import im.vector.matrix.android.internal.task.TaskExecutor
+import im.vector.matrix.android.internal.task.configureWith
 import im.vector.matrix.android.internal.task.launchToCallback
 import im.vector.matrix.android.internal.util.MatrixCoroutineDispatchers
+import im.vector.matrix.android.internal.util.exhaustive
 import im.vector.matrix.android.internal.util.toCancelable
-import kotlinx.coroutines.GlobalScope
+import im.vector.matrix.android.internal.wellknown.GetWellknownTask
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -59,7 +66,10 @@ internal class DefaultAuthenticationService @Inject constructor(
         private val sessionParamsStore: SessionParamsStore,
         private val sessionManager: SessionManager,
         private val sessionCreator: SessionCreator,
-        private val pendingSessionStore: PendingSessionStore
+        private val pendingSessionStore: PendingSessionStore,
+        private val getWellknownTask: GetWellknownTask,
+        private val directLoginTask: DirectLoginTask,
+        private val taskExecutor: TaskExecutor
 ) : AuthenticationService {
 
     private var pendingSessionData: PendingSessionData? = pendingSessionStore.getPendingSessionData()
@@ -78,14 +88,21 @@ internal class DefaultAuthenticationService @Inject constructor(
         }
     }
 
-    override fun getSession(sessionParams: SessionParams): Session? {
-        return sessionManager.getOrCreateSession(sessionParams)
+    override fun getLoginFlowOfSession(sessionId: String, callback: MatrixCallback<LoginFlowResult>): Cancelable {
+        val homeServerConnectionConfig = sessionParamsStore.get(sessionId)?.homeServerConnectionConfig
+
+        return if (homeServerConnectionConfig == null) {
+            callback.onFailure(IllegalStateException("Session not found"))
+            NoOpCancellable
+        } else {
+            getLoginFlow(homeServerConnectionConfig, callback)
+        }
     }
 
     override fun getLoginFlow(homeServerConnectionConfig: HomeServerConnectionConfig, callback: MatrixCallback<LoginFlowResult>): Cancelable {
         pendingSessionData = null
 
-        return GlobalScope.launch(coroutineDispatchers.main) {
+        return taskExecutor.executorScope.launch(coroutineDispatchers.main) {
             pendingSessionStore.delete()
 
             val result = runCatching {
@@ -106,7 +123,11 @@ internal class DefaultAuthenticationService @Inject constructor(
                         callback.onSuccess(it)
                     },
                     {
-                        callback.onFailure(it)
+                        if (it is UnrecognizedCertificateException) {
+                            callback.onFailure(Failure.UnrecognizedCertificateFailure(homeServerConnectionConfig.homeServerUri.toString(), it.fingerprint))
+                        } else {
+                            callback.onFailure(it)
+                        }
                     }
             )
         }
@@ -148,27 +169,71 @@ internal class DefaultAuthenticationService @Inject constructor(
         val authAPI = buildAuthAPI(homeServerConnectionConfig)
 
         // Ok, try to get the config.json file of a RiotWeb client
-        val riotConfig = executeRequest<RiotConfig>(null) {
-            apiCall = authAPI.getRiotConfig()
-        }
-
-        if (riotConfig.defaultHomeServerUrl?.isNotBlank() == true) {
-            // Ok, good sign, we got a default hs url
-            val newHomeServerConnectionConfig = homeServerConnectionConfig.copy(
-                    homeServerUri = Uri.parse(riotConfig.defaultHomeServerUrl)
-            )
-
-            val newAuthAPI = buildAuthAPI(newHomeServerConnectionConfig)
-
-            val versions = executeRequest<Versions>(null) {
-                apiCall = newAuthAPI.versions()
+        return runCatching {
+            executeRequest<RiotConfig>(null) {
+                apiCall = authAPI.getRiotConfig()
             }
-
-            return getLoginFlowResult(newAuthAPI, versions, riotConfig.defaultHomeServerUrl)
-        } else {
-            // Config exists, but there is no default homeserver url (ex: https://riot.im/app)
-            throw Failure.OtherServerError("", HttpsURLConnection.HTTP_NOT_FOUND /* 404 */)
         }
+                .map { riotConfig ->
+                    if (riotConfig.defaultHomeServerUrl?.isNotBlank() == true) {
+                        // Ok, good sign, we got a default hs url
+                        val newHomeServerConnectionConfig = homeServerConnectionConfig.copy(
+                                homeServerUri = Uri.parse(riotConfig.defaultHomeServerUrl)
+                        )
+
+                        val newAuthAPI = buildAuthAPI(newHomeServerConnectionConfig)
+
+                        val versions = executeRequest<Versions>(null) {
+                            apiCall = newAuthAPI.versions()
+                        }
+
+                        getLoginFlowResult(newAuthAPI, versions, riotConfig.defaultHomeServerUrl)
+                    } else {
+                        // Config exists, but there is no default homeserver url (ex: https://riot.im/app)
+                        throw Failure.OtherServerError("", HttpsURLConnection.HTTP_NOT_FOUND /* 404 */)
+                    }
+                }
+                .fold(
+                        {
+                            it
+                        },
+                        {
+                            if (it is Failure.OtherServerError
+                                    && it.httpCode == HttpsURLConnection.HTTP_NOT_FOUND /* 404 */) {
+                                // Try with wellknown
+                                getWellknownLoginFlowInternal(homeServerConnectionConfig)
+                            } else {
+                                throw it
+                            }
+                        }
+                )
+    }
+
+    private suspend fun getWellknownLoginFlowInternal(homeServerConnectionConfig: HomeServerConnectionConfig): LoginFlowResult {
+        val domain = homeServerConnectionConfig.homeServerUri.host
+                ?: throw Failure.OtherServerError("", HttpsURLConnection.HTTP_NOT_FOUND /* 404 */)
+
+        // Create a fake userId, for the getWellknown task
+        val fakeUserId = "@alice:$domain"
+        val wellknownResult = getWellknownTask.execute(GetWellknownTask.Params(fakeUserId, homeServerConnectionConfig))
+
+        return when (wellknownResult) {
+            is WellknownResult.Prompt -> {
+                val newHomeServerConnectionConfig = homeServerConnectionConfig.copy(
+                        homeServerUri = Uri.parse(wellknownResult.homeServerUrl),
+                        identityServerUri = wellknownResult.identityServerUrl?.let { Uri.parse(it) }
+                )
+
+                val newAuthAPI = buildAuthAPI(newHomeServerConnectionConfig)
+
+                val versions = executeRequest<Versions>(null) {
+                    apiCall = newAuthAPI.versions()
+                }
+
+                getLoginFlowResult(newAuthAPI, versions, wellknownResult.homeServerUrl)
+            }
+            else                      -> throw Failure.OtherServerError("", HttpsURLConnection.HTTP_NOT_FOUND /* 404 */)
+        }.exhaustive
     }
 
     private suspend fun getLoginFlowResult(authAPI: AuthAPI, versions: Versions, homeServerUrl: String): LoginFlowResult {
@@ -177,7 +242,7 @@ internal class DefaultAuthenticationService @Inject constructor(
             val loginFlowResponse = executeRequest<LoginFlowResponse>(null) {
                 apiCall = authAPI.getLoginFlows()
             }
-            LoginFlowResult.Success(loginFlowResponse, versions.isLoginAndRegistrationSupportedBySdk(), homeServerUrl)
+            LoginFlowResult.Success(loginFlowResponse.flows.orEmpty().mapNotNull { it.type }, versions.isLoginAndRegistrationSupportedBySdk(), homeServerUrl)
         } else {
             // Not supported
             LoginFlowResult.OutdatedHomeserver
@@ -189,11 +254,12 @@ internal class DefaultAuthenticationService @Inject constructor(
                 ?: let {
                     pendingSessionData?.homeServerConnectionConfig?.let {
                         DefaultRegistrationWizard(
-                                okHttpClient,
+                                buildClient(it),
                                 retrofitFactory,
                                 coroutineDispatchers,
                                 sessionCreator,
-                                pendingSessionStore
+                                pendingSessionStore,
+                                taskExecutor.executorScope
                         ).also {
                             currentRegistrationWizard = it
                         }
@@ -209,11 +275,12 @@ internal class DefaultAuthenticationService @Inject constructor(
                 ?: let {
                     pendingSessionData?.homeServerConnectionConfig?.let {
                         DefaultLoginWizard(
-                                okHttpClient,
+                                buildClient(it),
                                 retrofitFactory,
                                 coroutineDispatchers,
                                 sessionCreator,
-                                pendingSessionStore
+                                pendingSessionStore,
+                                taskExecutor.executorScope
                         ).also {
                             currentLoginWizard = it
                         }
@@ -230,7 +297,7 @@ internal class DefaultAuthenticationService @Inject constructor(
         pendingSessionData = pendingSessionData?.homeServerConnectionConfig
                 ?.let { PendingSessionData(it) }
                 .also {
-                    GlobalScope.launch(coroutineDispatchers.main) {
+                    taskExecutor.executorScope.launch(coroutineDispatchers.main) {
                         if (it == null) {
                             // Should not happen
                             pendingSessionStore.delete()
@@ -247,7 +314,7 @@ internal class DefaultAuthenticationService @Inject constructor(
 
         pendingSessionData = null
 
-        GlobalScope.launch(coroutineDispatchers.main) {
+        taskExecutor.executorScope.launch(coroutineDispatchers.main) {
             pendingSessionStore.delete()
         }
     }
@@ -255,9 +322,31 @@ internal class DefaultAuthenticationService @Inject constructor(
     override fun createSessionFromSso(homeServerConnectionConfig: HomeServerConnectionConfig,
                                       credentials: Credentials,
                                       callback: MatrixCallback<Session>): Cancelable {
-        return GlobalScope.launchToCallback(coroutineDispatchers.main, callback) {
+        return taskExecutor.executorScope.launchToCallback(coroutineDispatchers.main, callback) {
             createSessionFromSso(credentials, homeServerConnectionConfig)
         }
+    }
+
+    override fun getWellKnownData(matrixId: String,
+                                  homeServerConnectionConfig: HomeServerConnectionConfig?,
+                                  callback: MatrixCallback<WellknownResult>): Cancelable {
+        return getWellknownTask
+                .configureWith(GetWellknownTask.Params(matrixId, homeServerConnectionConfig)) {
+                    this.callback = callback
+                }
+                .executeBy(taskExecutor)
+    }
+
+    override fun directAuthentication(homeServerConnectionConfig: HomeServerConnectionConfig,
+                                      matrixId: String,
+                                      password: String,
+                                      initialDeviceName: String,
+                                      callback: MatrixCallback<Session>): Cancelable {
+        return directLoginTask
+                .configureWith(DirectLoginTask.Params(homeServerConnectionConfig, matrixId, password, initialDeviceName)) {
+                    this.callback = callback
+                }
+                .executeBy(taskExecutor)
     }
 
     private suspend fun createSessionFromSso(credentials: Credentials,
@@ -266,7 +355,14 @@ internal class DefaultAuthenticationService @Inject constructor(
     }
 
     private fun buildAuthAPI(homeServerConnectionConfig: HomeServerConnectionConfig): AuthAPI {
-        val retrofit = retrofitFactory.create(okHttpClient, homeServerConnectionConfig.homeServerUri.toString())
+        val retrofit = retrofitFactory.create(buildClient(homeServerConnectionConfig), homeServerConnectionConfig.homeServerUri.toString())
         return retrofit.create(AuthAPI::class.java)
+    }
+
+    private fun buildClient(homeServerConnectionConfig: HomeServerConnectionConfig): OkHttpClient {
+        return okHttpClient.get()
+                .newBuilder()
+                .addSocketFactory(homeServerConnectionConfig)
+                .build()
     }
 }

@@ -48,10 +48,11 @@ import im.vector.matrix.android.internal.di.SessionId
 import im.vector.matrix.android.internal.di.UserId
 import im.vector.matrix.android.internal.di.WorkManagerProvider
 import im.vector.matrix.android.internal.session.room.send.LocalEchoEventFactory
+import im.vector.matrix.android.internal.task.TaskExecutor
 import im.vector.matrix.android.internal.util.StringProvider
 import im.vector.matrix.android.internal.worker.WorkerParamsFactory
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.UUID
@@ -66,7 +67,8 @@ internal class VerificationTransportRoomMessage(
         private val userDeviceId: String?,
         private val roomId: String,
         private val localEchoEventFactory: LocalEchoEventFactory,
-        private val tx: DefaultVerificationTransaction?
+        private val tx: DefaultVerificationTransaction?,
+        private val coroutineScope: CoroutineScope
 ) : VerificationTransport {
 
     override fun <T> sendToOther(type: String,
@@ -115,7 +117,7 @@ internal class VerificationTransportRoomMessage(
                         ?.filter { it.state == WorkInfo.State.SUCCEEDED }
                         ?.firstOrNull { it.id == enqueueInfo.second }
                         ?.let { wInfo ->
-                            if (wInfo.outputData.getBoolean("failed", false)) {
+                            if (SendVerificationMessageWorker.hasFailed(wInfo.outputData)) {
                                 Timber.e("## SAS verification [${tx?.transactionId}] failed to send verification message in state : ${tx?.state}")
                                 tx?.cancel(onErrorReason)
                             } else {
@@ -131,7 +133,7 @@ internal class VerificationTransportRoomMessage(
         }
 
         // TODO listen to DB to get synced info
-        GlobalScope.launch(Dispatchers.Main) {
+        coroutineScope.launch(Dispatchers.Main) {
             workLiveData.observeForever(observer)
         }
     }
@@ -196,12 +198,15 @@ internal class VerificationTransportRoomMessage(
                         ?.filter { it.state == WorkInfo.State.SUCCEEDED }
                         ?.firstOrNull { it.id == workRequest.id }
                         ?.let { wInfo ->
-                            if (wInfo.outputData.getBoolean("failed", false)) {
+                            if (SendVerificationMessageWorker.hasFailed(wInfo.outputData)) {
                                 callback(null, null)
-                            } else if (wInfo.outputData.getString(localId) != null) {
-                                callback(wInfo.outputData.getString(localId), validInfo)
                             } else {
-                                callback(null, null)
+                                val eventId = wInfo.outputData.getString(localId)
+                                if (eventId != null) {
+                                    callback(eventId, validInfo)
+                                } else {
+                                    callback(null, null)
+                                }
                             }
                             workLiveData.removeObserver(this)
                         }
@@ -209,7 +214,7 @@ internal class VerificationTransportRoomMessage(
         }
 
         // TODO listen to DB to get synced info
-        GlobalScope.launch(Dispatchers.Main) {
+        coroutineScope.launch(Dispatchers.Main) {
             workLiveData.observeForever(observer)
         }
     }
@@ -262,7 +267,7 @@ internal class VerificationTransportRoomMessage(
         }
 
         // TODO listen to DB to get synced info
-        GlobalScope.launch(Dispatchers.Main) {
+        coroutineScope.launch(Dispatchers.Main) {
             workLiveData.observeForever(observer)
         }
     }
@@ -381,9 +386,19 @@ internal class VerificationTransportRoomMessageFactory @Inject constructor(
         private val userId: String,
         @DeviceId
         private val deviceId: String?,
-        private val localEchoEventFactory: LocalEchoEventFactory) {
+        private val localEchoEventFactory: LocalEchoEventFactory,
+        private val taskExecutor: TaskExecutor
+) {
 
     fun createTransport(roomId: String, tx: DefaultVerificationTransaction?): VerificationTransportRoomMessage {
-        return VerificationTransportRoomMessage(workManagerProvider, stringProvider, sessionId, userId, deviceId, roomId, localEchoEventFactory, tx)
+        return VerificationTransportRoomMessage(workManagerProvider,
+                stringProvider,
+                sessionId,
+                userId,
+                deviceId,
+                roomId,
+                localEchoEventFactory,
+                tx,
+                taskExecutor.executorScope)
     }
 }

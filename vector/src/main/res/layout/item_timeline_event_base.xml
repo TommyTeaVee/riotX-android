@@ -7,13 +7,13 @@
     android:addStatesFromChildren="true"
     android:background="?attr/selectableItemBackground">
 
-    <im.vector.riotx.core.platform.CheckableView
+    <im.vector.app.core.platform.CheckableView
         android:id="@+id/messageSelectedBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignBottom="@+id/informationBottom"
         android:layout_alignParentTop="true"
-        android:background="?riotx_highlighted_message_background" />
+        android:background="@drawable/highlighted_message_background" />
 
     <ImageView
         android:id="@+id/messageAvatarImageView"
@@ -23,7 +23,7 @@
         android:layout_marginTop="4dp"
         tools:src="@tools:sample/avatars" />
 
-    <im.vector.riotx.core.platform.EllipsizingTextView
+    <TextView
         android:id="@+id/messageMemberNameView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -61,6 +61,23 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         tools:layout_marginStart="52dp" />
+
+    <Space
+        android:id="@+id/decorationSpace"
+        android:layout_width="4dp"
+        android:layout_height="8dp"
+        android:layout_toEndOf="@id/messageStartGuideline" />
+
+    <ImageView
+        android:id="@+id/messageE2EDecoration"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignTop="@id/viewStubContainer"
+        android:layout_alignEnd="@id/decorationSpace"
+        android:layout_marginTop="7dp"
+        android:visibility="gone"
+        tools:src="@drawable/ic_shield_warning"
+        tools:visibility="visible" />
 
     <FrameLayout
         android:id="@+id/viewStubContainer"
@@ -101,7 +118,7 @@
         <ViewStub
             android:id="@+id/messageContentRedactedStub"
             style="@style/TimelineContentStubBaseParams"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="56dp"
             android:layout="@layout/item_timeline_event_redacted_stub" />
 
@@ -143,13 +160,13 @@
             tools:layout_height="40dp">
 
             <!-- ReactionButtons will be added here in the code -->
-            <!--im.vector.riotx.features.reactions.widget.ReactionButton
+            <!--im.vector.app.features.reactions.widget.ReactionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" /-->
 
         </com.google.android.flexbox.FlexboxLayout>
 
-        <im.vector.riotx.core.ui.views.ReadReceiptsView
+        <im.vector.app.core.ui.views.ReadReceiptsView
             android:id="@+id/readReceiptsView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

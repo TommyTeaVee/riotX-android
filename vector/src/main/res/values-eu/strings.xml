@@ -74,7 +74,7 @@
     <string name="local_address_book_header">Gailuko helbide liburua</string>
     <string name="matrix_only_filter">Matrixeko kontaktuak besterik ez</string>
     <string name="no_conversation_placeholder">Elkarrizketarik ez</string>
-    <string name="no_contact_access_placeholder">Ez diozu baimena eman Riot aplikazioari zure gailuko kontaktuak atzitzeko</string>
+    <string name="no_contact_access_placeholder">Ez diozu baimena eman Element aplikazioari zure gailuko kontaktuak atzitzeko</string>
     <string name="no_result_placeholder">Emaitzarik ez</string>
 
     <string name="rooms_header">Gelak</string>
@@ -218,15 +218,15 @@ E-mail helbide bat gehitu dezakezu zure profilaren ezarpenetan.</string>
     <string name="media_picker_cannot_record_video">Ezin izan da bideoa grabatu</string>
 
     <string name="permissions_rationale_popup_title">Informazioa</string>
-    <string name="permissions_rationale_msg_camera">Riotek zure kamera atzitzeko baimena behar du argazkiak eta bideoak atera ahal izateko.</string>
+    <string name="permissions_rationale_msg_camera">Elementek zure kamera atzitzeko baimena behar du argazkiak eta bideoak atera ahal izateko.</string>
     <string name="permissions_rationale_msg_camera_explanation">
 
 Baimendu sarbidea hurrengo laster-leihoan deia egin ahal izateko.</string>
-    <string name="permissions_rationale_msg_record_audio">Riotek zure mikrofonoa atzitzeko baimena behar du ahots deiak egin ahal izateko.</string>
+    <string name="permissions_rationale_msg_record_audio">Elementek zure mikrofonoa atzitzeko baimena behar du ahots deiak egin ahal izateko.</string>
     <string name="permissions_rationale_msg_record_audio_explanation">
 
 Baimendu sarbidea hurrengo laster-leihoan deia egin ahal izateko.</string>
-    <string name="permissions_rationale_msg_camera_and_audio">Riotek zure kamera eta mikrofonoa atzitzeko baimenak behar ditu bideo deiak egin ahal izateko.
+    <string name="permissions_rationale_msg_camera_and_audio">Elementek zure kamera eta mikrofonoa atzitzeko baimenak behar ditu bideo deiak egin ahal izateko.
 
 Baimendu sarbidea hurrengo laster-leihoan deia egin ahal izateko.</string>
     <string name="permissions_action_not_performed_missing_permissions">Ez da ekintza burutu baimenak falta direlako</string>
@@ -245,13 +245,12 @@ Baimendu sarbidea hurrengo laster-leihoan deia egin ahal izateko.</string>
     <string name="room_jump_to_first_unread">Jauzi irakurri gabeko lehen mezura.</string>
 
     <string name="room_preview_invitation_format">%s erabiltzaileak gela honetara elkartzera gonbidatu zaitu</string>
-    <string name="e2e_need_log_in_again">Berriro hasi behar duzu saioa muturretik muturrerako zifratzerako saio honentzako gakoak sortzeko eta gako publikoa zure hasiera zerbitzarira bidali. Hau behin bakarrik egin behar duzu. Barkatu eragozpenak.</string>
 
-    <string name="permissions_rationale_msg_storage">Riotek zure argazki eta bideoen liburutegia atzitzeko baimena behar du eranskinak gorde ahal izateko.
+    <string name="permissions_rationale_msg_storage">Elementek zure argazki eta bideoen liburutegia atzitzeko baimena behar du eranskinak gorde ahal izateko.
 
 Baimendu sarbidea hurrengo laster-leihoan zure telefonotik fitxategiak bidali ahal izateko.</string>
-    <string name="permissions_rationale_msg_contacts">Riot-ek zure helbide-liburua egiaztatu dezake Matrix erabiltzaileak bere e-mail helbide edo telefono zenbakiaren bidez aurkitzeko. Honetarako zure helbide-liburua partekatzea onartzen baduzu, sakatu onartu hurrengo laster-leihoan.</string>
-    <string name="permissions_msg_contacts_warning_other_androids">Riot-ek zure helbide-liburua egiaztatu dezake Matrix erabiltzaileak bere e-mail helbide edo telefono zenbakiaren bidez aurkitzeko. 
+    <string name="permissions_rationale_msg_contacts">Element-ek zure helbide-liburua egiaztatu dezake Matrix erabiltzaileak bere e-mail helbide edo telefono zenbakiaren bidez aurkitzeko. Honetarako zure helbide-liburua partekatzea onartzen baduzu, sakatu onartu hurrengo laster-leihoan.</string>
+    <string name="permissions_msg_contacts_warning_other_androids">Element-ek zure helbide-liburua egiaztatu dezake Matrix erabiltzaileak bere e-mail helbide edo telefono zenbakiaren bidez aurkitzeko.
 \n
 \nHonetarako zure helbide-liburua partekatzea onartzen duzu\?</string>
 
@@ -285,7 +284,7 @@ Baimendu sarbidea hurrengo laster-leihoan zure telefonotik fitxategiak bidali ah
     <string name="room_participants_action_unban">Debekua kendu</string>
     <string name="room_participants_action_set_default_power_level">Berrezarri erabiltzaile arrunt gisa</string>
     <string name="room_participants_action_set_moderator">Bihurtu moderatzaile</string>
-    <string name="room_participants_action_set_admin">Bihurtu kudeatzaile</string>
+    <string name="room_participants_action_set_admin">Bihurtu administratzaile</string>
     <string name="room_participants_action_ignore">Ezkutatu kide honen mezu guztiak</string>
     <string name="room_participants_action_unignore">Erakutsi kide honen mezu guztiak</string>
     <string name="room_participants_invite_search_another_user">Erabiltzailearen IDa, izena edo e-maila</string>
@@ -609,10 +608,6 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="encryption_information_verify_device_warning2">Bat badator, sakatu beheko egiaztatu botoia. Ez badator bat, beste inor saioa atzematen dago eta zerrenda beltzean sartu beharko zenuke. Etorkizunean egiaztaketa metodoa hobetuko da.</string>
     <string name="encryption_information_verify_key_match">Gakoak bat datozela egiaztatu dut</string>
 
-    <string name="e2e_enabling_on_app_update">Riotek orain muturretik muturrerako zifratzea onartzen du baina berriro hasi behar duzu saioa hau gaitzeko.
-
-Orain egin dezakezu edo gero aplikazioaren ezarpenetatik.</string>
-
     <string name="unknown_devices_alert_title">Gelan saio ezezagunak daude</string>
     <string name="unknown_devices_alert_message">Gela honetan egiaztatu gabeko saio ezezagunak daude. 
 \nEzin da bermatu saioak benetan dioten jabeenak direla. 
@@ -635,7 +630,7 @@ Orain egin dezakezu edo gero aplikazioaren ezarpenetatik.</string>
     <string name="people_search_user_directory">ERABILTZAILE DIREKTORIOA (%s)</string>
     <string name="settings_data_save_mode">Datuak gordetzeko modua</string>
 
-    <string name="settings_theme">Itxura</string>
+    <string name="settings_theme">Azala</string>
 
     <string name="font_size">Letra-tamaina</string>
     <string name="tiny">Oso txikia</string>
@@ -645,22 +640,18 @@ Orain egin dezakezu edo gero aplikazioaren ezarpenetatik.</string>
     <string name="larger">Oso handia</string>
     <string name="largest">Handiena</string>
     <string name="huge">Erraldoia</string>
-    <string name="light_theme">Itxura argia</string>
-    <string name="dark_theme">Itxura iluna</string>
-    <string name="black_them">Itxura beltza</string>
+    <string name="light_theme">Azal argia</string>
+    <string name="dark_theme">Azal iluna</string>
+    <string name="black_them">Azal beltza</string>
 
     <string name="notification_sync_in_progress">Sinkronizatzen…</string>
     <string name="notification_listening_for_events">Entzun gertaerak</string>
-
-    <string name="login_mobile_device">Mugikorra</string>
 
     <string name="settings_notification_ringtone">Jakinarazpen-soinua</string>
     <string name="settings_12_24_timestamps">Erakutsi denbora-zigiluak 12 ordutako formatuan</string>
 
     <string name="widget_no_power_to_manage">Baimena behar duzu gela honetako trepetak kudeatzeko</string>
     <string name="widget_creation_failure">Trepetaren sorrerak huts egin du</string>
-    <string name="event_formatter_widget_added">%1$s gehitu du %2$s erabiltzaileak</string>
-    <string name="event_formatter_widget_removed">%1$s kendu du %2$s erabiltzaileak</string>
     <string name="settings_labs_create_conference_with_jitsi">Sortu konferentzia deiak Jitsi bidez</string>
     <string name="widget_delete_message_confirmation">Ziur trepeta ezabatu nahi duzula gela honetatik?</string>
 
@@ -842,7 +833,7 @@ Orain egin dezakezu edo gero aplikazioaren ezarpenetatik.</string>
     <string name="settings_notification_privacy_message_content_not_shown">• Jakinarazpenek <b>ez dute mezuaren edukia erakutsiko</b></string>
 
     <string name="startup_notification_privacy_title">Jakinarazpenen pribatutasuna</string>
-    <string name="startup_notification_privacy_message">Riot bigarren planoan aritu daiteke zure jakinarazpenak modu seguru eta pribatuan kudeatzeko. Honek baterian eragina izan lezake.</string>
+    <string name="startup_notification_privacy_message">Element bigarren planoan aritu daiteke zure jakinarazpenak modu seguru eta pribatuan kudeatzeko. Honek baterian eragina izan lezake.</string>
     <string name="startup_notification_privacy_button_grant">Eman baimena</string>
     <string name="startup_notification_privacy_button_other">Aukeratu beste zerbait</string>
 
@@ -857,8 +848,8 @@ Baten bat gehitu orain?</string>
     <string name="settings_deactivate_my_account">Desaktibatu nire kontua</string>
 
     <string name="settings_opt_in_of_analytics">Bidali analitiketarako datuak</string>
-    <string name="settings_opt_in_of_analytics_summary">Riotek analitika anonimoak biltzen ditu aplikazioa hobetzeko.</string>
-    <string name="settings_opt_in_of_analytics_prompt">Gaitu analitikak Riot hobetzera laguntzeko.</string>
+    <string name="settings_opt_in_of_analytics_summary">Elementek analitika anonimoak biltzen ditu aplikazioa hobetzeko.</string>
+    <string name="settings_opt_in_of_analytics_prompt">Gaitu analitikak Element hobetzera laguntzeko.</string>
     <string name="settings_opt_in_of_analytics_ok">Bai, lagundu nahi dut!</string>
 
     <string name="widget_integration_missing_parameter">Behar den parametro bat falta da.</string>
@@ -881,12 +872,12 @@ Matrix-eko mezuen ikusgaitasuna e-mail sistemaren antekoa da. Guk zure mezuak ah
     <string name="download">Deskargatu</string>
     <string name="speak">Hitz egin</string>
     <string name="clear">Garbitu</string>
-    <string name="e2e_re_request_encryption_key"><u>Berriro eskatu zifratze-gakoak</u> zure beste saioetatik.</string>
+    <string name="e2e_re_request_encryption_key">Eskatu berriro zifratze-gakoak zure beste saioetatik.</string>
 
     <string name="e2e_re_request_encryption_key_sent">Gako eskaria bidalita.</string>
 
     <string name="e2e_re_request_encryption_key_dialog_title">Eskaria bidalita</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">Abiatu Riot beste mezua deszifratu dezakeen gailu batean, saio honetara gakoak bidali ditzan.</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">Abiatu Element beste mezua deszifratu dezakeen gailu batean, saio honetara gakoak bidali ditzan.</string>
 
     <string name="lock_screen_hint">Idatzi hemen…</string>
 
@@ -900,9 +891,6 @@ Matrix-eko mezuen ikusgaitasuna e-mail sistemaren antekoa da. Guk zure mezuak ah
     <string name="error_empty_field_your_password">Sartu zure pasahitza.</string>
 
     <string name="send_bug_report_description_in_english">Ahal dela idatzi deskripzioa ingelesez.</string>
-    <string name="room_participants_action_unignore_prompt">Erakutsi erabiltzaile honen mezu guztiak?
-
-Kontuan izan ekintza honek aplikazioa berrabiaraziko duela eta denbora bat beharko lukeela.</string>
     <string name="room_message_placeholder_reply_to_encrypted">Zifratutako erantzuna bidalita…</string>
     <string name="room_message_placeholder_reply_to_not_encrypted">Bidali erantzuna (zifratu gabea)…</string>
     <string name="settings_preview_media_before_sending">Aurreikusi multimedia bidali aurretik</string>
@@ -991,7 +979,7 @@ Kontuan izan ekintza honek aplikazioa berrabiaraziko duela eta denbora bat behar
 
     <string name="unknown_error">Errore bat gertatu da</string>
 
-    <string name="status_theme">Status.im itxura</string>
+    <string name="status_theme">Status.im azala</string>
 
     <string name="room_sliding_menu_version_x">%s bertsioa</string>
     <string name="encryption_export_notice">Sortu esportatutako gakoak zifratzeko pasaesaldi bat. Pasaesaldi hori gakoak inportatzeko sartu beharko duzu.</string>
@@ -1012,15 +1000,11 @@ Kontuan izan ekintza honek aplikazioa berrabiaraziko duela eta denbora bat behar
 
     <string name="call_anyway">Deitu hala ere</string>
     <string name="settings_call_category">Deiak</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">Erabili Rioten lehenetsitako dei-doinua jasotako deientzat</string>
+    <string name="settings_call_ringtone_use_app_ringtone">Erabili Elementen lehenetsitako dei-doinua jasotako deientzat</string>
     <string name="settings_call_ringtone_title">Jasotako deien doinua</string>
     <string name="settings_call_ringtone_dialog_title">Hautatu deientzako doinua:</string>
 
     <string name="room_participants_action_kick">Kanporatu</string>
-    <plurals name="room_participants_kick_prompt_msg">
-        <item quantity="one">Ziur erabiltzaile hau txat honetatik kanporatu nahi duzula?</item>
-        <item quantity="other">Ziur erabiltzaile hauek txat honetatik kanporatu nahi dituzula?</item>
-    </plurals>
     <string name="reason_hint">Arrazoia</string>
 
     <string name="settings_inline_url_preview_summary">Erakutsi txateko esteken aurrebista hasiera-zerbitzariak onartzen badu.</string>
@@ -1070,12 +1054,12 @@ Egiaztatu zure kontuaren ezarpenak.</string>
 
     <string name="settings_troubleshoot_test_device_settings_title">SAioaren ezarpenak.</string>
     <string name="settings_troubleshoot_test_device_settings_success">Jakinarazpenak aktibatuta daude saio honentzat.</string>
-    <string name="settings_troubleshoot_test_device_settings_failed">Jakinarazpenak ez daude aktibatuta saio honentzat. Egiaztatu Riot ezarpenak.</string>
+    <string name="settings_troubleshoot_test_device_settings_failed">Jakinarazpenak ez daude aktibatuta saio honentzat. Egiaztatu Element ezarpenak.</string>
     <string name="settings_troubleshoot_test_device_settings_quickfix">Aktibatu</string>
 
     <string name="settings_troubleshoot_test_play_services_title">Play Services egiaztaketa</string>
     <string name="settings_troubleshoot_test_play_services_success">Google Play Services APK eskuragarri eta egunean dago.</string>
-    <string name="settings_troubleshoot_test_play_services_failed">Riot-ek Google Play Services erabiltzen du baina antza ez dago ondo konfiguratuta:
+    <string name="settings_troubleshoot_test_play_services_failed">Element-ek Google Play Services erabiltzen du baina antza ez dago ondo konfiguratuta:
 %1$s</string>
     <string name="settings_troubleshoot_test_play_services_quickfix">Konpondu Play Services</string>
 
@@ -1102,19 +1086,19 @@ Berrabiarazi aplikazioa.</string>
 
     <string name="settings_troubleshoot_test_service_boot_title">Hasi abioan</string>
     <string name="settings_troubleshoot_test_service_boot_success">Zerbitzua gailua berrabiaraztean hasiko da.</string>
-    <string name="settings_troubleshoot_test_service_boot_failed">Zerbitzua ez da hasiko gailua berrabiaraztean, ez duzu jakinarazpenik jasoko Riot behin ireki arte.</string>
+    <string name="settings_troubleshoot_test_service_boot_failed">Zerbitzua ez da hasiko gailua berrabiaraztean, ez duzu jakinarazpenik jasoko Element behin ireki arte.</string>
     <string name="settings_troubleshoot_test_service_boot_quickfix">Gaitu abioan hastea</string>
 
     <string name="settings_troubleshoot_test_bg_restricted_title">Egiaztatu bigarren planoko murrizketak</string>
-    <string name="settings_troubleshoot_test_bg_restricted_success">Bigarren planoko murrizketak desaktibatuta daude Riot-entzat. Proba hau datu mugikorrekin egin behar da (Ez WiFi).
+    <string name="settings_troubleshoot_test_bg_restricted_success">Bigarren planoko murrizketak desaktibatuta daude Element-entzat. Proba hau datu mugikorrekin egin behar da (Ez WiFi).
 %1$s</string>
-    <string name="settings_troubleshoot_test_bg_restricted_failed">Bigarren planoko murrizketak aktibatuta daude Riot-entzat.
+    <string name="settings_troubleshoot_test_bg_restricted_failed">Bigarren planoko murrizketak aktibatuta daude Element-entzat.
 Aplikazioa egiten saiatzen ari dena agresiboki murriztuko zaio bigarren planoan dagoenean, eta honek jakinarazpenetan eragina izan dezake.
 %1$s</string>
     <string name="settings_troubleshoot_test_bg_restricted_quickfix">Desaktibatu murrizketak</string>
 
     <string name="settings_troubleshoot_test_battery_title">Bateria optimizazioa</string>
-    <string name="settings_troubleshoot_test_battery_success">Bateria optimizazioak ez du eraginik Riot-engan.</string>
+    <string name="settings_troubleshoot_test_battery_success">Bateria optimizazioak ez du eraginik Element-engan.</string>
     <string name="settings_troubleshoot_test_battery_quickfix">Ezikusi optimizazioa</string>
 
     <string name="startup_notification_fdroid_battery_optim_title">Bigaren planoko konexioa</string>
@@ -1127,32 +1111,12 @@ Aplikazioa egiten saiatzen ari dena agresiboki murriztuko zaio bigarren planoan 
 
     <string name="no_valid_google_play_services_apk">Ez da baliozko Google Play Services APK-rik aurkitu. Jakinarazpenak agian ez dira ongi ibiliko.</string>
 
-    <string name="store_title">Riot.im - Komunikatu, zure erara</string>
-    <string name="store_short_description">Txat seguru eta unibertsala zure kontrolpean erabat.</string>
     <string name="settings_troubleshoot_test_battery_failed">Erabiltzaile batek gailu bat deskonektatuta eta erabili gabe uzten badu denbora batez, pantaila itzalita duela, gailua kuluxka moduan sartzen da. Honek aplikazioak sarera konektatzea eragozten du eta beraien lanak atzeratzen ditu, baita ohiko alarmak.</string>
-    <string name="startup_notification_fdroid_battery_optim_message">Riot-ek bigarren planoko konexio arin bat behar du jakinarazpen fidagarriak izateko.
-Hurrengo pantailan Riot-i bigarren planoan aritzeko baimena eskatuko zaizu, onartu ezazu mesedez.</string>
-    <string name="store_full_description">"Txaterako aplikazio bat, zure kontrolpean eta erabat malgua. Riot-ek zuk nahi duzun eran komunikatzea ahalbidetzen dizu. [matrix] erabiltzeko egina, komunikaziorako estandar ireki eta deszentralizatua.
-\n
-\nEskuratu matrix.org kontu bat doan, ezarri zure zerbitzari propioa  https://modular.im bidez, edo erabili beste Matrix zerbitzari bat.
-\n
-\nZergatik erabili RIot.im\?
-\n
-\n* KOMUNIKAZIO OSOA: Sortu gelak zure lantalde, adiskide, edo komunitateentzat, zuk nahi bezalakoak! Txateatu, partekatu fitxategiak, gehitu trepetak eta egin ahots eta bideo deiak, den dena doan.
-\n
-\n* INTEGRAZIO AHALTSUAK: Erabili Riot.im jada ezagutu eta maite dituzun tresnekin. Riot.im erabiliz beste txat aplikazioetako erabiltzaileekin ere aritu zaitezke.
-\n
-\n* PRIBATUA ETA SEGURUA: Mantendu zure elkarrizketak sekretupean. Muturretik muturrerako zifratzeak pribatua den hori pribatu izaten jarraituko duela bermatzen du.
-\n
-\n* IREKIA, EZ ITXIA; Kode irekikoa, eta Matrix sarearen gainean eraikia. Izan zure datuen jabe zure zerbitzaria ostatatuz, edo zuretzat fidagarria den bat aukeratuz.
-\n
-\n* ZUREKIN EDONON: Mantendu kontaktua zure gailuetan zehar guztiz sinkronizatutako mezuen historial batekin, eta web bidez https://riot.im helbidean."</string>
+    <string name="startup_notification_fdroid_battery_optim_message">Element-ek bigarren planoko konexio arin bat behar du jakinarazpen fidagarriak izateko.
+Hurrengo pantailan Element-i bigarren planoan aritzeko baimena eskatuko zaizu, onartu ezazu mesedez.</string>
 
     <string name="video_call_in_progress">Bide-deia abioan…</string>
 
-    <string name="store_whats_new">"Etengabe egiten dizkiogu hobekuntzak eta aldaketak Riot.im aplikazioari.
-Aldaketen zerrenda osoa hemen aurkitu daiteke: %1$s.
-Ezer galtzen ez duzula ziurtatzeko, mantendu eguneraketak piztuta."</string>
     <string name="title_activity_keys_backup_setup">Gakoen babes-kopia</string>
     <string name="title_activity_keys_backup_restore">Erabili gakoen babes-kopia</string>
     <string name="keys_backup_is_not_finished_please_wait">Gakoen babes-kopia ez da amaitu, itxaron mesedez…</string>
@@ -1161,7 +1125,6 @@ Ezer galtzen ez duzula ziurtatzeko, mantendu eguneraketak piztuta."</string>
     <string name="done">Egina</string>
 
     <string name="settings_notification_advanced">Jakinarazpenen ezarpen aurreratuak</string>
-    <string name="settings_notification_advanced_summary">Ezarri jakinarazpenen garrantzia gertaerako, konfiguratu soinua, leda, bibrazioa</string>
     <string name="settings_notification_by_event">Jakinarazpenen garrantzia gertaerako</string>
 
     <string name="settings_troubleshoot_test_bing_settings_title">Ezarpen pertsonalizatuak.</string>
@@ -1182,7 +1145,7 @@ Ezer galtzen ez duzula ziurtatzeko, mantendu eguneraketak piztuta."</string>
     <string name="passphrase_empty_error_message">Idatzi pasaesaldia</string>
     <string name="passphrase_passphrase_too_weak">Pasaesaldia ahulegia da</string>
 
-    <string name="keys_backup_passphrase_not_empty_error_message">Ezabatu pasaesaldia Riot aplikazioak berreskuratze gako bat sortu dezan nahi baduzu.</string>
+    <string name="keys_backup_passphrase_not_empty_error_message">Ezabatu pasaesaldia Element aplikazioak berreskuratze gako bat sortu dezan nahi baduzu.</string>
     <string name="keys_backup_no_session_error">Ez dago Matrix saiorik eskuragarri</string>
 
     <string name="keys_backup_setup_step1_title">Ez galdu inoiz zifratutako mezuak</string>
@@ -1223,11 +1186,11 @@ Ezer galtzen ez duzula ziurtatzeko, mantendu eguneraketak piztuta."</string>
     <string name="settings_troubleshoot_test_bing_settings_failed">Jakinarazpen batzuk desgaituta daude zure ezarpen pertsonaletan.</string>
     <string name="settings_troubleshoot_test_bing_settings_failed_to_load_rules">Hutsegitea arau pertsonalak kargatzean, saiatu berriro.</string>
     <string name="settings_troubleshoot_test_fcm_failed_too_many_registration">[%1$s]
-Errore hau Riot-en kontroletik kanpo dago eta Google-en arabera, errore honek esan nahi du gailuko aplikazio gehiegik erabiltzen dutela FCM. Errore hau ezohiko aplikazio kopuru bat dagoenean gertatzen da, ez lioke erabiltzaile arrunt bati eragingo.</string>
+Errore hau Element-en kontroletik kanpo dago eta Google-en arabera, errore honek esan nahi du gailuko aplikazio gehiegik erabiltzen dutela FCM. Errore hau ezohiko aplikazio kopuru bat dagoenean gertatzen da, ez lioke erabiltzaile arrunt bati eragingo.</string>
     <string name="settings_troubleshoot_test_fcm_failed_service_not_available">"[%1$s]
-Errore hau Riot-en kontroletik kanpo dago. Hainbat arrazoiengatik gerta daiteke eta geroago berriro saiatzen bazara agian badabil,  egiaztatu ere Google Play Service-ek ez duela datuen erabilera mugatua sistemaren ezarpenetan, edo zure gailuaren ordua ondo ezarrita dagoela, ROM pertsonalizatuekin gertatu daiteke ere."</string>
+Errore hau Element-en kontroletik kanpo dago. Hainbat arrazoiengatik gerta daiteke eta geroago berriro saiatzen bazara agian badabil,  egiaztatu ere Google Play Service-ek ez duela datuen erabilera mugatua sistemaren ezarpenetan, edo zure gailuaren ordua ondo ezarrita dagoela, ROM pertsonalizatuekin gertatu daiteke ere."</string>
     <string name="settings_troubleshoot_test_fcm_failed_account_missing">[%1$s]
-Errore hau Riot-en kontroletik kanpo dago. Ez dago Google konturik gailuan. Ireki kontuen kudeatzailea eta gehitu Google kontu bat.</string>
+Errore hau Element-en kontroletik kanpo dago. Ez dago Google konturik gailuan. Ireki kontuen kudeatzailea eta gehitu Google kontu bat.</string>
     <string name="keys_backup_setup_step1_description">Zifratutako geletako mezuak muturretik muturrera zifratuta daude. Hartzaileak/ek eta zuk eta ez beste inork irakurri ditzakezue mezuok.
 \n
 \nEgin zure gakoen babes-kopia segurua mezuak ez galtzeko.</string>
@@ -1291,7 +1254,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="ignore">Ezikusi</string>
 
     <string name="action_sign_out_confirmation_simple">Ziur saioa amaitu nahi duzula\?</string>
-    <string name="auth_login_sso">Hasi saioa urrats batean</string>
+    <string name="auth_login_sso">Hasi saioa Single sign-on bidez</string>
     <string name="login_error_unknown_host">URL-a ez dago eskuragarri, egiaztatu mesedez</string>
     <string name="login_error_ssl_handshake">Zure gailuak zaharkitutako TLS segurtasun protokolo bat darabil, erasotu daitekeena, zure segurtasunerako ezin izango zara konektatu</string>
     <string name="settings_send_message_with_enter">Bidali mezua Sartu tekla sakatuta</string>
@@ -1344,7 +1307,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="keys_backup_banner_recover_line1">Ez galdu inoiz zifratutako mezuak</string>
     <string name="keys_backup_banner_recover_line2">Erabili gakoen babes-kopia</string>
 
-    <string name="keys_backup_banner_update_line1">Zifratutako mezuen gako berriak</string>
+    <string name="keys_backup_banner_update_line1">Mezu seguruen gako berriak</string>
     <string name="keys_backup_banner_update_line2">Kudeatu gakoen babes-kopian</string>
 
     <string name="keys_backup_banner_in_progress">Gakoen babes-kopia egiten…</string>
@@ -1361,7 +1324,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="autodiscover_invalid_response">Baliogabeko hasiera-zerbitzari deskubritze erantzuna</string>
     <string name="autodiscover_well_known_autofill_dialog_title">Automatikoki osatu zerbitzariaren aukerak</string>
-    <string name="autodiscover_well_known_autofill_dialog_message">"Riot-ek pertsonalizatutako zerbitzari konfigurazio bat antzeman du zure erabiltzaile id-arentzat \"%1$s\" domeinuan:
+    <string name="autodiscover_well_known_autofill_dialog_message">"Element-ek pertsonalizatutako zerbitzari konfigurazio bat antzeman du zure erabiltzaile id-arentzat \"%1$s\" domeinuan:
 \n%2$s"</string>
     <string name="autodiscover_well_known_autofill_confirm">Erabili konfigurazioa</string>
 
@@ -1493,7 +1456,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="group_all_communities">Komunitate guztiak</string>
 
     <string name="room_preview_no_preview">Gela hau ezin da aurreikusi</string>
-    <string name="room_preview_world_readable_room_not_supported_yet">Munduak irakurtzeko moduko gelaren aurrebista ez da oraindik onartzen RiotX bezeroan</string>
+    <string name="room_preview_world_readable_room_not_supported_yet">Munduak irakurtzeko moduko gelaren aurrebista ez da oraindik onartzen Element bezeroan</string>
 
     <string name="fab_menu_create_room">Gelak</string>
     <string name="fab_menu_create_chat">Mezu zuzenak</string>
@@ -1508,12 +1471,6 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="keys_backup_unable_to_get_trust_info">Errore bat gertatu da konfiantzazko informazioa jasotzean</string>
     <string name="keys_backup_unable_to_get_keys_backup_data">Errore bat gertatu da gakoen babes-kopiaren datuak jasotzean</string>
-
-    <string name="alpha_disclaimer_title">Ongi etorri betara!</string>
-    <string name="alpha_disclaimer_content_line_1">RiotX oraindik garapenean dagoenez, ezaugarri batzuk faltan bota ditzakezu eta akatsen bat aurkitu dezakezu.</string>
-    <string name="alpha_disclaimer_content_line_2_gplay">Azken ezaugarrien zerrenda hemen dago beti : %1$s, eta akatsak aurkitzen badituzu bidali mesedez akatsen txosten bat Hasiera pantailako goi ezkerreko menua erabiliz, eta ahalik eta lasterren konponduko dugu.</string>
-    <string name="alpha_disclaimer_content_line_2_gplay_colored_part">Play Store-ko deskripzioa</string>
-    <string name="alpha_disclaimer_content_line_2_fdroid">Akatsak aurkitzen badituzu bidali mesedez akatsen txosten bat Hasiera pantailako goi ezkerreko menua erabiliz, eta ahalik eta lasterren konponduko dugu.</string>
 
     <string name="import_e2e_keys_from_file">"Inportatu e2e gakoak \"%1$s\"  fitxategitik."</string>
 
@@ -1551,16 +1508,6 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="settings_labs_show_hidden_events_in_timeline">Erakutsi ezkutatutako gertaerak denbora lerroan</string>
 
-    <string name="store_riotx_title">RiotX - Hurrengo belaunaldiko Matrix bezeroa</string>
-    <string name="store_riotx_short_description">Matrix-erako bezero azkarrago eta arinago bat azken Android tresnak erabiliz eginak</string>
-    <string name="store_riotx_full_description">RiotX bezero berri bat da Matrix protokoloarentzako (Matrix.org): komunikazioa seguru eta deszentralizatuarentzako sare libre bat. RiotX Android plataformarako Riot bezeroaren berridazketa oso bat da, erabat berridatzitako Android SDK-n oinarritua.
-\n
-\nAbisua: hau beta bertsio bat da. RiotX garapen aktiboan dago eta baditu mugak zein akatsak (gehiegi ez espero dugu). Iruzkin guztiak ongi etorriak dira!
-\n
-\nRiotX bezeroak honakoa ahalbidetzen du: • Badagoen kontu batean saioa hasi • Gelak sortu eta gela publikoetara elkartu • Gonbidapenak onartu edo ukatu • Erabiltzailearen gelak zerrendatu • Gelaren xehetasunak ikusi • Testuzko mezuak bidali • Eranskinak bidali • Zifratutako geletan mezuak irakurri eta idatzi • Zifratzea: E2Egakoen babeskopia, gailuaren egiaztaketa aurreratua, gakoa partekatzeko eskaria eta erantzuna • Push jakinarazpena • Gai argia, iluna eta beltza
-\n
-\nEz dira oraindik Riot bezeroaren ezaugarri guztiak ezarri RiotX bezeroan. Falta diren (eta laster etorriko direnen) artean nabarmenak dira: • Gelaren ezarpenak (gelako kideak zerrendatzea, eta abar.) • Deiak • Trepetak • …</string>
-
     <string name="push_gateway_item_app_display_name">aplikazio_pantaila_izena:</string>
     <string name="bottom_action_people_x">Mezu zuzenak</string>
 
@@ -1574,9 +1521,6 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="downloaded_file">%1$s fitxategia deskargatu da!</string>
 
     <string name="edited_suffix">(editatua)</string>
-
-    <string name="riotx_no_registration_notice">%1$s kontua sortzeko.</string>
-    <string name="riotx_no_registration_notice_colored_part">Erabili aplikazio zaharra</string>
 
 
     <string name="message_edits">Mezuen edizioak</string>
@@ -1632,11 +1576,11 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="invite_no_identity_server_error">Gehitu identitate-zerbitzari bat zure ezarpenetan ekintza hau burutzeko.</string>
     <string name="settings_background_fdroid_sync_mode">Bigarren planoko sinkronizazio modua (Esperimentala)</string>
     <string name="settings_background_fdroid_sync_mode_battery">Bateria erabilerarako optimizatua</string>
-    <string name="settings_background_fdroid_sync_mode_battery_description">Riot bigarren planoan sinkronizatuko da gailuaren baliabide mugatuen erabilera ahal beste murriztuz (bateria).
+    <string name="settings_background_fdroid_sync_mode_battery_description">Element bigarren planoan sinkronizatuko da gailuaren baliabide mugatuen erabilera ahal beste murriztuz (bateria).
 \nZure gailuaren baliabideen egoeraren arabera, sistema eragileak sinkronizazioa atzeratu dezake.</string>
     <string name="settings_background_fdroid_sync_mode_real_time">Denbora errealerako optimizatua</string>
-    <string name="settings_background_fdroid_sync_mode_real_time_description">Riot bigarren planoan sinkronizatuko da maiztasun finkoarekin (konfiguragarria).
-\nHonek irrati eta bateriaren erabileran eragina izango du, eta Riot gertaerei adi dagoela dion jakinarazpen bat bistaratuko da etengabe.</string>
+    <string name="settings_background_fdroid_sync_mode_real_time_description">Element bigarren planoan sinkronizatuko da maiztasun finkoarekin (konfiguragarria).
+\nHonek irrati eta bateriaren erabileran eragina izango du, eta Element gertaerei adi dagoela dion jakinarazpen bat bistaratuko da etengabe.</string>
     <string name="settings_background_fdroid_sync_mode_disabled">Ez sinkronizatu bigarren planoan</string>
     <string name="settings_background_fdroid_sync_mode_disabled_description">Ez zaizu jasotako mezuei buruz jakinaraziko aplikazioa bigarren planoan dagoenean.</string>
     <string name="settings_background_sync_update_error">Huts egin du ezarpenak eguneratzean.</string>
@@ -1653,11 +1597,6 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="identity_server_not_defined">Ez duzu identitate zerbitzaririk erabiltzen</string>
     <string name="identity_server_not_defined_for_password_reset">Ez da identitate zerbitzaririk konfiguratu, zure pasahitza berrezartzeko beharrezkoa da.</string>
-
-    <string name="security_warning_identity_server">Riot bertsio zaharrek segurtasun akats bat zuten eta zure identitate zerbitzariak (%1$s) zure kontua atzitu zezakeen. %2$s fidagarritzat jotzen baduzu hau ezikusi dezakezu, bestela maiatu saioa eta hasi berriro.
-\n
-\nXehetasun gehiago hemen:
-\nhttps://medium.com/@RiotChat/36b4792ea0d6</string>
 
     <string name="error_user_already_logged_in">Badirudi beste hasiera-zerbitzari batera konektatzen saiatzen ari zarela. Saioa amaitu nahi duzu\?</string>
 
@@ -1683,7 +1622,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="settings_discovery_confirm_mail">Berrespen e-mail bat bidali dizugu %s helbidera, begiratu zure e-maila eta sakatu baieztapen esteka</string>
     <string name="settings_discovery_mail_pending">Egiteke</string>
 
-    <string name="settings_discovery_enter_identity_server">Sartu identitate-zerbitzari berria</string>
+    <string name="settings_discovery_enter_identity_server">Sartu identitate-zerbitzari URLa</string>
     <string name="settings_discovery_bad_identity_server">Ezin izan da identitate-zerbitzarira konektatu</string>
     <string name="settings_discovery_please_enter_server">Sartu identitate-zerbitzariaren URL-a</string>
     <string name="settings_discovery_no_terms_title">Identitate-zerbitzariak ez du erabilera baldintzarik</string>
@@ -1755,14 +1694,14 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 \n
 \nEz baduzu erabiltzaile honen eduki gehiago ikusi nahi, bere mezuak ezkutatzeko blokeatu dezakezu</string>
 
-    <string name="permissions_rationale_msg_keys_backup_export">Riot-ek zure E2E gakoak diskoan gordetzeko baimena behar du.
+    <string name="permissions_rationale_msg_keys_backup_export">Element-ek zure E2E gakoak diskoan gordetzeko baimena behar du.
 \n
 \nBaimendu sarbidea hurrengo laster-leihoan zure gakoak eskuz esportatu ahal izateko.</string>
 
     <string name="no_network_indicator">Ez dago sare konexiorik orain</string>
 
     <string name="settings_add_3pid_confirm_password_title">Berretsi zure pasahitza</string>
-    <string name="settings_add_3pid_flow_not_supported">Ezin duzu hau egin mugikorrerako Riot erabiliz</string>
+    <string name="settings_add_3pid_flow_not_supported">Ezin duzu hau egin mugikorrerako Element erabiliz</string>
     <string name="settings_add_3pid_authentication_needed">Autentifikazioa behar da</string>
 
 
@@ -1784,7 +1723,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="room_widget_permission_display_name">Zure pantaila-izena</string>
     <string name="room_widget_permission_avatar_url">Zure abatarraren URL-a</string>
     <string name="room_widget_permission_user_id">Zure erabiltzaile ID-a</string>
-    <string name="room_widget_permission_theme">Zure gaia</string>
+    <string name="room_widget_permission_theme">Zure azala</string>
     <string name="room_widget_permission_widget_id">Trepetaren ID-a</string>
     <string name="room_widget_permission_room_id">Gelaren ID-a</string>
 
@@ -1835,18 +1774,18 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="login_continue">Jarraitu</string>
     <string name="login_connect_to">Konektatu %1$s zerbitzarira</string>
-    <string name="login_connect_to_modular">Konektatu Modular-era</string>
+    <string name="login_connect_to_modular">Konektatu Element Matrix Services-era</string>
     <string name="login_connect_to_a_custom_server">Konektatu zerbitzari pertsonalizatu batera</string>
     <string name="login_signin_to">Hasi saioa %1$s zerbitzarian</string>
     <string name="login_signup">Erregistratu</string>
     <string name="login_signin">Hasi saioa</string>
     <string name="login_signin_sso">Jarraitu SSO-rekin</string>
 
-    <string name="login_server_url_form_modular_hint">Modular helbidea</string>
+    <string name="login_server_url_form_modular_hint">Element Matrix Services helbidea</string>
     <string name="login_server_url_form_other_hint">Helbidea</string>
     <string name="login_server_url_form_modular_text">Ordainpeko ostatatzea elkarteentzat</string>
-    <string name="login_server_url_form_modular_notice">Sartu erabili nahi duzun Modular Riot edo zerbitzariaren helbidea</string>
-    <string name="login_server_url_form_other_notice">Sartu konektatu nahi duzun zerbitzari edo Riot-aren helbidea</string>
+    <string name="login_server_url_form_modular_notice">Sartu erabili nahi duzun Modular Element edo zerbitzariaren helbidea</string>
+    <string name="login_server_url_form_other_notice">Sartu konektatu nahi duzun zerbitzari edo Element-aren helbidea</string>
 
     <string name="login_sso_error_message">Errore bat gertatu da orria kargatzean: %1$s (%2$d)</string>
     <string name="login_mode_not_supported">Aplikazioak ezin du hasiera-zerbitzari honetan saioa hasi. Hasiera-zerbitzariak honako saio mota onartzen du: %1$s.
@@ -1919,7 +1858,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 \nUtzi erregistratze prozesua\?</string>
 
     <string name="login_a11y_choose_matrix_org">Hautatu matrix.org</string>
-    <string name="login_a11y_choose_modular">Hautatu modular</string>
+    <string name="login_a11y_choose_modular">Hautatu Element Matrix Services</string>
     <string name="login_a11y_choose_other">Hautatu hasiera-zerbitzari pertsonalizatu bat</string>
     <string name="login_a11y_captcha_container">Bete captcha erronka</string>
     <string name="login_terms_title">Onartu baldintzak jarraitzeko</string>
@@ -1966,7 +1905,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 \nHasi saioa berriro zure kontuaren datuak eta mezuak atzitzeko.</string>
     <string name="soft_logout_clear_data_dialog_e2e_warning_content">Zure mezu zifratuetara sarbidea galduko duzu ez baduzu saioa hasten zifratze gakoak berreskuratzeko.</string>
     <string name="soft_logout_clear_data_dialog_submit">Garbitu datuak</string>
-    <string name="soft_logout_sso_not_same_user_error">Oraingo saioa %1$s erabiltzailearena da eta %2$s erabiltzailearen kredentzialak eman dituzu. RiotX-k ez du hau onartzen.
+    <string name="soft_logout_sso_not_same_user_error">Oraingo saioa %1$s erabiltzailearena da eta %2$s erabiltzailearen kredentzialak eman dituzu. Element-k ez du hau onartzen.
 \nAurretik garbitu datuak, gero hasi saioa berriro beste kontu batekin.</string>
 
     <string name="permalink_malformed">Zure matrix.to esteka gaizki osatua dago</string>
@@ -1989,7 +1928,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="autocomplete_limited_results">Soilik lehen emaitzak erakusten, idatzi letra gehiago…</string>
 
     <string name="settings_developer_mode_fail_fast_title">Hutsegin-azkar</string>
-    <string name="settings_developer_mode_fail_fast_summary">RiotX aplikazioa ustekabeko erroreen aurrean maizago kraskatu daiteke</string>
+    <string name="settings_developer_mode_fail_fast_summary">Element aplikazioa ustekabeko erroreen aurrean maizago kraskatu daiteke</string>
     <string name="command_description_verify">Eskatu emandako erabiltzaile IDa egiaztatzea</string>
     <string name="command_description_shrug">"Jarri ¯\\_(ツ)_/¯  testu-soileko mezuaren aurretik"</string>
 
@@ -2079,9 +2018,9 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="room_member_jump_to_read_receipt">Saltatu irakurragirira</string>
 
-    <string name="rendering_event_error_type_of_event_not_handled">RiotX aplikazioak oraindik ez ditu \'%1$s\' motako gertaerak kudeatzen</string>
-    <string name="rendering_event_error_type_of_message_not_handled">RiotX aplikazioak oraindik ez ditu \'%1$s\' motako mezuak kudeatzen</string>
-    <string name="rendering_event_error_exception">RiotX aplikazioak arazo bat izan du \'%1$s\' id-a duen edukia erakusteko</string>
+    <string name="rendering_event_error_type_of_event_not_handled">Element aplikazioak ez ditu \'%1$s\' motako gertaerak kudeatzen</string>
+    <string name="rendering_event_error_type_of_message_not_handled">Element aplikazioak ez ditu \'%1$s\' motako mezuak kudeatzen</string>
+    <string name="rendering_event_error_exception">Element aplikazioak arazo bat izan du \'%1$s\' id-a duen edukia erakusteko</string>
 
     <string name="unignore">Utzi ezikusteari</string>
 
@@ -2144,7 +2083,7 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
     <string name="crosssigning_other_user_not_trust">Beste erabiltzaile batzuk ez fidagarritzat jo lezakete</string>
     <string name="complete_security">Bete segurtasuna</string>
 
-    <string name="verification_open_other_to_verify">Ireki aurreko saio bat eta erabili hori saio hau egiaztatzeko, mezu zifratuetara sarbidea emanez. Ez baduzu bat erabiltzerik, erabili berreskuratze gakoa edo pasa-esaldia.</string>
+    <string name="verification_open_other_to_verify">Erabili aurreko saio bat saio hau egiaztatzeko, mezu zifratuetara sarbidea emanez.</string>
 
 
     <string name="verification_profile_verify">Egiaztatu</string>
@@ -2166,9 +2105,281 @@ Abisua: Fitxategi hau ezabatu daiteke aplikazioa desinstalatzen bada.</string>
 
     <string name="a11y_qr_code_for_verification">QR kodea</string>
 
-    <string name="qr_code_scanned_by_other_notice">Beste erabiltzaileak QR kodea ongi eskaneatu du\?</string>
+    <string name="qr_code_scanned_by_other_notice">Ia bukatu duzu! %s-ek ezkutu bera erakusten du\?</string>
     <string name="qr_code_scanned_by_other_yes">Bai</string>
     <string name="qr_code_scanned_by_other_no">Ez</string>
 
     <string name="no_connectivity_to_the_server_indicator">Zerbitzariarekin konexioa galdu da</string>
+    <string name="login_signup_username_hint">Erabiltzaile-izena</string>
+    <string name="settings_dev_tools">Garapen tresnak</string>
+    <string name="settings_account_data">Kontuaren datuak</string>
+    <plurals name="poll_info">
+        <item quantity="one">boto %d</item>
+        <item quantity="other">%d boto</item>
+    </plurals>
+    <plurals name="poll_info_final">
+        <item quantity="one">boto %d - Azken emaitza</item>
+        <item quantity="other">%d boto - Azken emaitza</item>
+    </plurals>
+    <string name="poll_item_selected_aria">Hautatutako aukera</string>
+    <string name="command_description_poll">Inkesta sinplea sortzen du</string>
+    <string name="verification_cannot_access_other_session">Erabili berreskuratze metodo bat</string>
+    <string name="verification_use_passphrase">Ezin baduzu badagoen saio bat erabili</string>
+
+    <string name="new_signin">Saio berria</string>
+
+    <string name="enter_secret_storage_invalid">Ezin izan da sekreturik aurkitu biltegian</string>
+    <string name="enter_secret_storage_passphrase">Sartu biltegi sekretuko pasa-esaldia</string>
+    <string name="enter_secret_storage_passphrase_warning">Abisua:</string>
+    <string name="enter_secret_storage_passphrase_warning_text">Biltegi sekretura gailu fidagarri batetik konektatu beharko zinateke beti</string>
+
+    <string name="message_action_item_redact">Kendu…</string>
+    <string name="share_confirm_room">Eranskin hau %1$s gelara bidali nahi duzu\?</string>
+    <plurals name="send_images_with_original_size">
+        <item quantity="one">Bidali irudia jatorrizko tamainan</item>
+        <item quantity="other">Bidali irudiak jatorrizko tamainan</item>
+    </plurals>
+
+    <string name="delete_event_dialog_title">Berretsi kentzea</string>
+    <string name="delete_event_dialog_content">Ziur gertaera hau kendu (ezabatu) nahi duzula\? Jakin gelaren izenaren edo mintzagaiaren aldaketa ezabatzen baduzu, aldaketa desegin daitekeela.</string>
+    <string name="delete_event_dialog_reason_checkbox">Eman arrazoi bat</string>
+    <string name="delete_event_dialog_reason_hint">Kentzeko arrazoia</string>
+
+    <string name="event_redacted_by_user_reason_with_reason">Erabiltzaileak kendu du gertaera, arrazoia: %1$s</string>
+    <string name="event_redacted_by_admin_reason_with_reason">Gelako moderatzaile batek kendu du gertaera, arrazoia: %1$s</string>
+
+    <string name="keys_backup_restore_success_title_already_up_to_date">Gakoak egunean daude jada!</string>
+
+    <string name="login_default_session_public_name">Element Android</string>
+
+    <string name="settings_key_requests">Gako eskaerak</string>
+
+    <string name="e2e_use_keybackup">Desblokeatu zifratutako mezuen historiala</string>
+
+    <string name="refresh">Freskatu</string>
+
+    <string name="new_session">Saio berria. Zu izan zara\?</string>
+    <string name="new_session_review">Sakatu eta berrikusi eta egiaztatu</string>
+    <string name="verify_new_session_notice">Erabili saio hau berria egiaztatzeko, honela mezu zifratuetara sarbidea emanez.</string>
+    <string name="verify_new_session_was_not_me">Ez naiz ni izan</string>
+    <string name="verify_new_session_compromized">Zure kontua konprometituta egon daiteke</string>
+
+    <string name="verify_cancel_self_verification_from_untrusted">Ezeztatzen baduzu, ezin izango dituzu zifratutako mezuak irakurri gailu honetan, eta beste erabiltzaileek ez dute fidagarritzat joko</string>
+    <string name="verify_cancel_self_verification_from_trusted">Ezeztatzen baduzu, ezin izango dituzu zifratutako mezuak irakurri gailu berrian, eta beste erabiltzaileek ez dute fidagarritzat joko</string>
+    <string name="verify_cancel_other">Ez duzu %1$s (%2$s) egiaztatuko orain ezeztatzen baduzu. Hasi berriro bere erabiltzaile profilean.</string>
+
+    <string name="verify_not_me_self_verification">Hauetakoren bat konprometituta egon daiteke:
+\n
+\n- Zure pasahitza
+\n- Zure hasiera-zerbitzaria
+\n- Gailu hau, edo beste gailua
+\n- Gailuren batek darabilen internet konexioa
+\n
+\nPasahitza eta berreskuratze gajoa ezarpenetan berehala aldatzea aholkatzen dugu.</string>
+
+    <string name="verify_cancelled_notice">Egiaztatu gailuak ezarpenetatik.</string>
+    <string name="verification_cancelled">Egiaztaketa ezeztatuta</string>
+
+    <string name="recovery_passphrase">Berreskuratze pasa-esaldia</string>
+    <string name="message_key">Mezu-gakoa</string>
+    <string name="account_password">Kontuaren pasahitza</string>
+
+    <string name="set_recovery_passphrase">Ezarri %s bat</string>
+    <string name="generate_message_key">Sortu mezu-gakoa</string>
+
+    <string name="confirm_recovery_passphrase">Berretsi %s</string>
+
+    <string name="enter_account_password">Sartu zure %s jarraitzeko.</string>
+
+    <string name="bootstrap_info_text">Babestu eta desblokeatu zifratutako mezuak eta jo fidagarritzat %s erabiliz.</string>
+    <string name="bootstrap_info_confirm_text">Sartu zure %s berriro hau berresteko.</string>
+    <string name="bootstrap_dont_reuse_pwd">Ez berrerabili zure kontuaren pasahitza.</string>
+
+
+    <string name="bootstrap_loading_text">Honek segundo batzuk behar litzake, itxaron.</string>
+    <string name="bootstrap_loading_title">Berrekuratzea ezartzen.</string>
+    <string name="your_recovery_key">Zure berreskuratze-gakoa</string>
+    <string name="bootstrap_finish_title">Bukatu duzu!</string>
+    <string name="keep_it_safe">Gorde toki seguruan</string>
+    <string name="finish">Amaitu</string>
+
+    <string name="bootstrap_save_key_description">Erabili %1$s hau babes gehigarri gisa, %2$s ahaztekotan.</string>
+
+    <string name="bootstrap_crosssigning_progress_initializing">Sortutako identitate-gakoak argitaratzen</string>
+    <string name="bootstrap_crosssigning_progress_pbkdf2">Gako segurua pasa-esalditik sortzen</string>
+    <string name="bootstrap_crosssigning_progress_default_key">Lehenetsitako SSSS gakoa definitzen</string>
+    <string name="bootstrap_crosssigning_progress_save_msk">Gako nagusia sinkronizatzen</string>
+    <string name="bootstrap_crosssigning_progress_save_usk">Erabiltzaile-gakoa sinkronizatzen</string>
+    <string name="bootstrap_crosssigning_progress_save_ssk">Norberak sinatzeko gakoa sinkronizatzen</string>
+    <string name="bootstrap_crosssigning_progress_key_backup">Gakoen babeskopia ezartzen</string>
+
+
+    <string name="bootstrap_cross_signing_success">"Zure %2$s eta %1$s ezarrita daude.
+\n
+\nGorde toki seguruan! Zifratutako mezuak eta informazio segurua desblokeatzeko beharko dituzu  zure saio aktibo guztiak galduz gero."</string>
+
+    <string name="bootstrap_crosssigning_print_it">Inprimatu eta gorde toki seguruan</string>
+    <string name="bootstrap_crosssigning_save_usb">Gorde USB memorian edo babes-kopien diskoan</string>
+    <string name="bootstrap_crosssigning_save_cloud">Kopiatu zure hodei pertsonalean</string>
+
+    <string name="auth_flow_not_supported">Ezin duzu hori mugikorretik egin</string>
+
+    <string name="bootstrap_skip_text">Berreskuratze pasa-esaldia ezartzeak zifratutako mezuak babestea zein desblokeatzea eta fidagarritasuna ezartzea ahalbidetzen dizu.
+\n
+\nEz baduzu mezuen pasahitz bat ezarri, sortu mezuen gakoa.</string>
+    <string name="bootstrap_skip_text_no_gen_key">Berreskuratze pasa-esaldia ezartzeak zifratutako mezuak babestea zein desblokeatzea eta fidagarritasuna ezartzea ahalbidetzen dizu.</string>
+
+
+    <string name="encryption_enabled">Zifratzea gaituta</string>
+    <string name="encryption_enabled_tile_description">Gela honetako mezuak muturretik muturrera zifratuta daude. Ikasi gehiago eta egiaztatu erabiltzaileak bere erabiltzaile-profilean.</string>
+    <string name="encryption_not_enabled">Zifratzea gaitu gabe</string>
+    <string name="encryption_unknown_algorithm_tile_description">Gela honetan erabilitako zifratzea ez da onartzen</string>
+
+    <string name="room_created_summary_item">%s erabiltzaileak gela sortu eta konfiguratu du.</string>
+
+    <string name="qr_code_scanned_self_verif_notice">Ia amaitu duzu! Zure beste gailuak ezkutu bera erakusten du\?</string>
+    <string name="qr_code_scanned_verif_waiting_notice">Ia bukatu duzu! Baieztapenaren zain…</string>
+    <string name="qr_code_scanned_verif_waiting">%s itxaroten…</string>
+
+    <string name="error_failed_to_import_keys">Ezin izan dira gakoak inportatu</string>
+
+    <string name="settings_notification_configuration">Jakinarazpenen ezarpena</string>
+    <string name="settings_messages_at_room">\@room duten mezuak</string>
+    <string name="settings_messages_in_e2e_one_to_one">Zifratutako mezuak bi pertsonen arteko txatetan</string>
+    <string name="settings_messages_in_e2e_group_chat">Zifratutako mezuak talde-txatetan</string>
+    <string name="settings_when_rooms_are_upgraded">Gelak eguneratzean</string>
+    <string name="settings_troubleshoot_title">Arazo-ehiza</string>
+    <string name="settings_notification_advanced_summary">Ezarri jakinarazpenen garrantzia gertaerako</string>
+
+    <string name="command_description_plain">Mezua test arrunt gisa bidaltzen du, markdown den aztertu gabe</string>
+
+    <string name="auth_invalid_login_param_space_in_password">Erabiltzaile-izen edo pasahitz okerra. Sartutako pasahitzak zuriuneak ditu hasiera edo amaieran, egiztatu.</string>
+
+    <string name="room_message_placeholder">Mezua…</string>
+
+    <string name="upgrade_security">Zifratze eguneratzea eskuragarri</string>
+    <string name="security_prompt_text">Egiaztatu zure burua eta besteak txatak seguru mantentzeko</string>
+
+    <string name="bootstrap_enter_recovery">Sartu zure %s jarraitzeko</string>
+    <string name="use_file">Erabili fitxategia</string>
+
+    <string name="enter_backup_passphrase">Sartu %s</string>
+    <string name="backup_recovery_passphrase">Berreskuratze pasa-esaldia</string>
+    <string name="bootstrap_invalid_recovery_key">Ez da baliozko berreskuratze-gakoa</string>
+    <string name="recovery_key_empty_error_message">Sartu berreskuratze-gakoa</string>
+
+    <string name="bootstrap_progress_checking_backup">Babes-kopiaren gakoa egiaztatzen</string>
+    <string name="bootstrap_progress_checking_backup_with_info">Babes-kopiaren gakoa egiaztatzen (%s)</string>
+    <string name="bootstrap_progress_compute_curve_key">Curve gakoa jasotzen</string>
+    <string name="bootstrap_progress_generating_ssss">SSSS gakoa pasa-esalditik sortzen</string>
+    <string name="bootstrap_progress_generating_ssss_with_info">SSSS gakoa pasa-esalditik sortzen (%s)</string>
+    <string name="bootstrap_progress_generating_ssss_recovery">SSSS gakoa berreskuratze pasa-esalditik sortzen</string>
+    <string name="bootstrap_progress_storing_in_sss">Gakoen babes-kopia sekretua SSSS-n gordetzen</string>
+    <string name="new_session_review_with_info">%1$s (%2$s)</string>
+
+    <string name="bootstrap_migration_enter_backup_password">Sartu zure gakoen babes-kopiaren pasa-esaldia jarraitzeko.</string>
+    <string name="bootstrap_migration_use_recovery_key">erabili zure gakoen babes-kopiaren berrekuratze gakoa</string>
+    <string name="bootstrap_migration_with_passphrase_helper_with_link">Ez badakizu zure gakoen babes-koparen pasa-esaldia, %s.</string>
+    <string name="bootstrap_migration_backup_recovery_key">Gakoen babes-kopiaren berrekuratze gakoa</string>
+
+    <string name="settings_security_prevent_screenshots_title">Eragotzi aplikazioaren pantaila-argazkiak</string>
+    <string name="settings_security_prevent_screenshots_summary">Ezarpen hau gaitzeak FLAG_SECURE gehitzen die jarduera guztiei. Berrabiarazi aplikazioa aldaketa aplikatzeko.</string>
+
+    <string name="media_file_added_to_gallery">Multimedia fitxategia galeriara gehituta</string>
+    <string name="error_adding_media_file_to_gallery">Ezin izan da multimedia fitxategia galeriara gehitu</string>
+    <string name="change_password_summary">Ezarri kontuaren pasahitz berria…</string>
+
+    <string name="notification_ticker_text_dm">%1$s: %2$s</string>
+    <string name="notification_ticker_text_group">%1$s: %2$s %3$s</string>
+
+    <string name="use_other_session_content_description">Erabili azken Element bertsioa zure beste gailuetan, Element Web, Element Desktop, Element iOS, Element Android plataformarako, edo zeharka sinatzeko gaitasuna duen beste Matrix bezero bat</string>
+    <string name="app_desktop_web">Element Web
+\nElement Desktop</string>
+    <string name="app_ios_android">Element iOS
+\nElement Android</string>
+    <string name="or_other_mx_capabale_client">edo zeharka sinatzeko gaitasuna duen beste Matrix bezero bat</string>
+    <string name="use_latest_app">Erabili azken Element bertsioa zure beste gailuetan:</string>
+    <string name="command_description_discard_session">Uneko irteerako talde saioa zifratutako gela batean baztertzera behartzen du</string>
+    <string name="command_description_discard_session_not_handled">Zifratutako gelatan onartzen da soilik</string>
+    <string name="enter_secret_storage_passphrase_or_key">Erabili zure %1$s edo %2$s jarraitzeko.</string>
+    <string name="use_recovery_key">Erabili berreskuratze gakoa</string>
+    <string name="enter_secret_storage_input_key">Hautatu zure berreskuratze-gakoa, edo sartu eskuz idatziz edo arbeletik itsatsiz</string>
+    <string name="keys_backup_recovery_key_error_decrypt">Ezin izan da babes-kopia deszifratu berreskuratze-gako honekin: Egiaztatu berreskuratze gako egokia sartu duzula.</string>
+    <string name="failed_to_access_secure_storage">Ezin izan da biltegi segurua atzitu</string>
+
+    <string name="unencrypted">Zifratu gabe</string>
+    <string name="encrypted_unverified">Egiaztatu gabeko gailu batek zifratua</string>
+    <string name="review_logins">Berrikusi non hasi duzun saioa</string>
+    <string name="verify_other_sessions">Egiaztatu zure saio guztiak kontua eta mezuak seguru daudela bermatzeko</string>
+    <string name="verify_this_session">Egiaztatu zure kontuan hasitako saio berria: %1$s</string>
+
+    <string name="cross_signing_verify_by_text">Egiaztatu eskuz testu bidez</string>
+    <string name="crosssigning_verify_session">Egiaztatu saioa</string>
+    <string name="cross_signing_verify_by_emoji">Egiaztatu interaktiboki Emoji bidez</string>
+    <string name="confirm_your_identity">Baieztatu zure identitatea saio hau zure beste saio batetik egiaztatuz, mezu zifratuetara sarbidea emanez.</string>
+    <string name="mark_as_verified">Markatu fidagarri gisa</string>
+
+    <string name="error_empty_field_choose_user_name">Hautatu erabiltzaile-izena.</string>
+    <string name="error_empty_field_choose_password">Hautatu pasahitza.</string>
+    <string name="external_link_confirmation_title">Egiaztatu esteka hau</string>
+    <string name="external_link_confirmation_message">%1$s estekak beste gune batera darama: %2$s.
+\n
+\nZiur jarraitu nahi duzula\?</string>
+
+    <string name="create_room_dm_failure">Ezin izan dugu zure mezu zuena sortu. Egiaztatu gonbidatu nahi dituzun erabiltzaileak eta saiatu berriro.</string>
+
+    <string name="add_members_to_room">Gehitu kideak</string>
+    <string name="invite_users_to_room_action_invite">GONBIDATU</string>
+    <string name="inviting_users_to_room">Erabiltzaileak gonbidatzen…</string>
+    <string name="invite_users_to_room_title">Gonbidatu erabiltzaileak</string>
+    <string name="invitation_sent_to_one_user">Gonbidapena bidali zaio %1$s erabiltzaileari</string>
+    <string name="invitations_sent_to_two_users">Gonbidapena bidali zaie %1$s eta %2$s erabiltzaileei</string>
+    <plurals name="invitations_sent_to_one_and_more_users">
+        <item quantity="one">Gonbidapena bidali zaie %1$s eta beste bati</item>
+        <item quantity="other">Gonbidapena bidali zaie %1$s eta beste %2$s erabiltzaileei</item>
+    </plurals>
+    <string name="invite_users_to_room_failure">Ezin izan ditugu erabiltzaile horiek gonbidatu. Egiaztatu gonbidatu nahi dituzun erabiltzaileak eta saiatu berriro.</string>
+
+    <string name="event_redacted">Mezu ezabatuta</string>
+    <string name="settings_show_redacted">Erakutsi kendutako mezuak</string>
+    <string name="settings_show_redacted_summary">Erakutsi kendutako mezuek utzitako hutsunea</string>
+    <string name="settings_discovery_confirm_mail_not_clicked">Berrespen e-mail bat bidali dizugu %s helbidera, begiratu zure e-maila eta sakatu baieztapen esteka</string>
+    <string name="settings_text_message_sent_wrong_code">Egiaztaketa kodea ez da zuzena.</string>
+
+    <string name="uploads_media_title">MULTIMEDIA</string>
+    <string name="uploads_media_no_result">Ez dago multimediarik gela honetan</string>
+    <string name="uploads_files_title">FITXATEGIAK</string>
+    <string name="uploads_files_subtitle">%1$s %2$s</string>
+    <string name="uploads_files_no_result">Ez dago fitxategirik gela honetan</string>
+
+    <string name="login_connect_using_matrix_id_notice">Bestela, kontua baduzu eta zure Matrix identifikatzailea ezagutzen baduzu, metodo hau erabili dezakezu:</string>
+    <string name="login_connect_using_matrix_id_submit">Hasi saioa nire Matrix identifikatzailearekin</string>
+    <string name="login_signin_matrix_id_title">Hasi saioa</string>
+    <string name="login_signin_matrix_id_notice">Sartu zure identifikatzailea eta pasahitza</string>
+    <string name="login_signin_matrix_id_hint">Erabili identifikatzailea</string>
+    <string name="login_signin_matrix_id_error_invalid_matrix_id">Hau ez da baliozko erabiltzaile identifikatzailea. Formatu hau espero zen: \'@erabiltzailea:zerbitzaria.eus\'</string>
+    <string name="autodiscover_well_known_error">Ezin izan da baliozko hasiera-zerbitzari bat aurkitu. Egiaztatu identifikatzailea</string>
+
+    <string name="no_connectivity_to_the_server_indicator_airplane">Hegaldi modua ezarrita dago</string>
+
+    <string name="choose_locale_current_locale_title">Uneko hizkuntza</string>
+    <string name="choose_locale_other_locales_title">Beste hizkuntza erabilgarriak</string>
+    <string name="choose_locale_loading_locales">Hizkuntza erabilgarriak kargatzen…</string>
+
+    <string name="open_terms_of">Ireki %s zerbitzariko baldintzak</string>
+    <string name="disconnect_identity_server_dialog_content">Deskonektatu %s identitate zerbitzaritik\?</string>
+    <string name="identity_server_error_outdated_identity_server">Identitate zerbitzaria zaharkituta dago. Element-k API V2 besterik ez du onartzen.</string>
+    <string name="identity_server_error_outdated_home_server">Ezin da eragiketa hau burutu. Hasiera-zerbitzaria zaharkituta dago.</string>
+    <string name="identity_server_error_no_identity_server_configured">Konfiguratu identitate-zerbitzari bat aurretik.</string>
+    <string name="identity_server_error_terms_not_signed">Onartu identitate-zerbitzariaren baldintzak aurretik zerbitzariaren ezarpenetan.</string>
+    <string name="identity_server_error_bulk_sha256_not_supported">Zure pribatutasuna babesteko, Element-k erabiltzaileeen e-mail eta telefonoak hasheatuta bidaltzen ditu.</string>
+    <string name="identity_server_error_binding_error">Asoziazioak huts egin du.</string>
+    <string name="identity_server_error_no_current_binding_error">Ez dago asoziaziorik identifikatzaile honekin.</string>
+
+    <string name="identity_server_set_default_notice">Zure hasiera-zerbitzariak (%1$s) identitate-zerbitzari gisa %2$s erabiltzea proposatzen du</string>
+    <string name="identity_server_set_default_submit">Erabili %1$s</string>
+    <string name="identity_server_set_alternative_notice">Bestela, beste identitate-zerbitzari baten URLa sartu dezakezu</string>
+    <string name="identity_server_set_alternative_notice_no_default">Sartu identitate-zerbitzari baten URLa</string>
+    <string name="identity_server_set_alternative_submit">Bidali</string>
+
 </resources>

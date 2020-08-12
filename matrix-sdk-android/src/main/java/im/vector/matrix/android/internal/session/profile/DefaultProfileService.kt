@@ -17,17 +17,33 @@
 
 package im.vector.matrix.android.internal.session.profile
 
+import android.net.Uri
+import androidx.lifecycle.LiveData
+import com.zhuinden.monarchy.Monarchy
 import im.vector.matrix.android.api.MatrixCallback
+import im.vector.matrix.android.api.session.identity.ThreePid
 import im.vector.matrix.android.api.session.profile.ProfileService
 import im.vector.matrix.android.api.util.Cancelable
 import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.api.util.Optional
+import im.vector.matrix.android.internal.database.model.UserThreePidEntity
+import im.vector.matrix.android.internal.di.SessionDatabase
+import im.vector.matrix.android.internal.session.content.FileUploader
 import im.vector.matrix.android.internal.task.TaskExecutor
 import im.vector.matrix.android.internal.task.configureWith
+import im.vector.matrix.android.internal.task.launchToCallback
+import im.vector.matrix.android.internal.util.MatrixCoroutineDispatchers
+import io.realm.kotlin.where
 import javax.inject.Inject
 
 internal class DefaultProfileService @Inject constructor(private val taskExecutor: TaskExecutor,
-                                                         private val getProfileInfoTask: GetProfileInfoTask) : ProfileService {
+                                                         @SessionDatabase private val monarchy: Monarchy,
+                                                         private val coroutineDispatchers: MatrixCoroutineDispatchers,
+                                                         private val refreshUserThreePidsTask: RefreshUserThreePidsTask,
+                                                         private val getProfileInfoTask: GetProfileInfoTask,
+                                                         private val setDisplayNameTask: SetDisplayNameTask,
+                                                         private val setAvatarUrlTask: SetAvatarUrlTask,
+                                                         private val fileUploader: FileUploader) : ProfileService {
 
     override fun getDisplayName(userId: String, matrixCallback: MatrixCallback<Optional<String>>): Cancelable {
         val params = GetProfileInfoTask.Params(userId)
@@ -45,6 +61,25 @@ internal class DefaultProfileService @Inject constructor(private val taskExecuto
                     }
                 }
                 .executeBy(taskExecutor)
+    }
+
+    override fun setDisplayName(userId: String, newDisplayName: String, matrixCallback: MatrixCallback<Unit>): Cancelable {
+        return setDisplayNameTask
+                .configureWith(SetDisplayNameTask.Params(userId = userId, newDisplayName = newDisplayName)) {
+                    callback = matrixCallback
+                }
+                .executeBy(taskExecutor)
+    }
+
+    override fun updateAvatar(userId: String, newAvatarUri: Uri, fileName: String, matrixCallback: MatrixCallback<Unit>): Cancelable {
+        return taskExecutor.executorScope.launchToCallback(coroutineDispatchers.main, matrixCallback) {
+            val response = fileUploader.uploadFromUri(newAvatarUri, fileName, "image/jpeg")
+            setAvatarUrlTask
+                    .configureWith(SetAvatarUrlTask.Params(userId = userId, newAvatarUrl = response.contentUri)) {
+                        callback = matrixCallback
+                    }
+                    .executeBy(taskExecutor)
+        }
     }
 
     override fun getAvatarUrl(userId: String, matrixCallback: MatrixCallback<Optional<String>>): Cancelable {
@@ -72,5 +107,34 @@ internal class DefaultProfileService @Inject constructor(private val taskExecuto
                     this.callback = matrixCallback
                 }
                 .executeBy(taskExecutor)
+    }
+
+    override fun getThreePids(): List<ThreePid> {
+        return monarchy.fetchAllMappedSync(
+                { it.where<UserThreePidEntity>() },
+                { it.asDomain() }
+        )
+    }
+
+    override fun getThreePidsLive(refreshData: Boolean): LiveData<List<ThreePid>> {
+        if (refreshData) {
+            // Force a refresh of the values
+            refreshUserThreePidsTask
+                    .configureWith()
+                    .executeBy(taskExecutor)
+        }
+
+        return monarchy.findAllMappedWithChanges(
+                { it.where<UserThreePidEntity>() },
+                { it.asDomain() }
+        )
+    }
+}
+
+private fun UserThreePidEntity.asDomain(): ThreePid {
+    return when (medium) {
+        ThirdPartyIdentifier.MEDIUM_EMAIL  -> ThreePid.Email(address)
+        ThirdPartyIdentifier.MEDIUM_MSISDN -> ThreePid.Msisdn(address)
+        else                               -> error("Invalid medium type")
     }
 }

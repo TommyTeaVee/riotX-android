@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2016 OpenMarket Ltd
  * Copyright 2018 New Vector Ltd
@@ -30,8 +31,11 @@ import im.vector.matrix.android.internal.crypto.OutgoingRoomKeyRequest
 import im.vector.matrix.android.internal.crypto.OutgoingSecretRequest
 import im.vector.matrix.android.internal.crypto.model.CryptoCrossSigningKey
 import im.vector.matrix.android.internal.crypto.model.CryptoDeviceInfo
-import im.vector.matrix.android.internal.crypto.model.OlmInboundGroupSessionWrapper
+import im.vector.matrix.android.internal.crypto.model.MXUsersDevicesMap
+import im.vector.matrix.android.internal.crypto.model.OlmInboundGroupSessionWrapper2
 import im.vector.matrix.android.internal.crypto.model.OlmSessionWrapper
+import im.vector.matrix.android.internal.crypto.model.event.RoomKeyWithHeldContent
+import im.vector.matrix.android.internal.crypto.model.rest.DeviceInfo
 import im.vector.matrix.android.internal.crypto.model.rest.RoomKeyRequestBody
 import im.vector.matrix.android.internal.crypto.store.db.model.KeysBackupDataEntity
 import org.matrix.olm.OlmAccount
@@ -49,14 +53,16 @@ internal interface IMXCryptoStore {
     /**
      * @return the olm account
      */
-    fun getAccount(): OlmAccount?
+    fun getOlmAccount(): OlmAccount
+
+    fun getOrCreateOlmAccount(): OlmAccount
 
     /**
      * Retrieve the known inbound group sessions.
      *
      * @return the list of all known group sessions, to export them.
      */
-    fun getInboundGroupSessions(): List<OlmInboundGroupSessionWrapper>
+    fun getInboundGroupSessions(): List<OlmInboundGroupSessionWrapper2>
 
     /**
      * @return true to unilaterally blacklist all unverified devices.
@@ -159,15 +165,7 @@ internal interface IMXCryptoStore {
      *
      * @param account the account to save
      */
-    fun storeAccount(account: OlmAccount)
-
-    /**
-     * Store a device for a user.
-     *
-     * @param userId the user's id.
-     * @param device the device to store.
-     */
-    fun storeUserDevice(userId: String?, deviceInfo: CryptoDeviceInfo?)
+    fun saveOlmAccount()
 
     /**
      * Retrieve a device for a user.
@@ -194,7 +192,8 @@ internal interface IMXCryptoStore {
      */
     fun storeUserDevices(userId: String, devices: Map<String, CryptoDeviceInfo>?)
 
-    fun storeUserCrossSigningKeys(userId: String, masterKey: CryptoCrossSigningKey?,
+    fun storeUserCrossSigningKeys(userId: String,
+                                  masterKey: CryptoCrossSigningKey?,
                                   selfSigningKey: CryptoCrossSigningKey?,
                                   userSigningKey: CryptoCrossSigningKey?)
 
@@ -215,6 +214,11 @@ internal interface IMXCryptoStore {
     // TODO temp
     fun getLiveDeviceList(): LiveData<List<CryptoDeviceInfo>>
 
+    fun getMyDevicesInfo() : List<DeviceInfo>
+
+    fun getLiveMyDevicesInfo() : LiveData<List<DeviceInfo>>
+
+    fun saveMyDevicesInfo(info: List<DeviceInfo>)
     /**
      * Store the crypto algorithm for a room.
      *
@@ -260,7 +264,7 @@ internal interface IMXCryptoStore {
      * @param deviceKey the public key of the other device.
      * @return The Base64 end-to-end session, or null if not found
      */
-    fun getDeviceSession(sessionId: String?, deviceKey: String?): OlmSessionWrapper?
+    fun getDeviceSession(sessionId: String, deviceKey: String): OlmSessionWrapper?
 
     /**
      * Retrieve the last used sessionId, regarding `lastReceivedMessageTs`, or null if no session exist
@@ -275,7 +279,7 @@ internal interface IMXCryptoStore {
      *
      * @param sessions the inbound group sessions to store.
      */
-    fun storeInboundGroupSessions(sessions: List<OlmInboundGroupSessionWrapper>)
+    fun storeInboundGroupSessions(sessions: List<OlmInboundGroupSessionWrapper2>)
 
     /**
      * Retrieve an inbound group session.
@@ -284,7 +288,7 @@ internal interface IMXCryptoStore {
      * @param senderKey the base64-encoded curve25519 key of the sender.
      * @return an inbound group session.
      */
-    fun getInboundGroupSession(sessionId: String, senderKey: String): OlmInboundGroupSessionWrapper?
+    fun getInboundGroupSession(sessionId: String, senderKey: String): OlmInboundGroupSessionWrapper2?
 
     /**
      * Remove an inbound group session
@@ -308,7 +312,7 @@ internal interface IMXCryptoStore {
      *
      * @param sessions the sessions
      */
-    fun markBackupDoneForInboundGroupSessions(olmInboundGroupSessionWrappers: List<OlmInboundGroupSessionWrapper>)
+    fun markBackupDoneForInboundGroupSessions(olmInboundGroupSessionWrappers: List<OlmInboundGroupSessionWrapper2>)
 
     /**
      * Retrieve inbound group sessions that are not yet backed up.
@@ -316,7 +320,7 @@ internal interface IMXCryptoStore {
      * @param limit the maximum number of sessions to return.
      * @return an array of non backed up inbound group sessions.
      */
-    fun inboundGroupSessionsToBackup(limit: Int): List<OlmInboundGroupSessionWrapper>
+    fun inboundGroupSessionsToBackup(limit: Int): List<OlmInboundGroupSessionWrapper2>
 
     /**
      * Number of stored inbound group sessions.
@@ -398,18 +402,30 @@ internal interface IMXCryptoStore {
     fun markMyMasterKeyAsLocallyTrusted(trusted: Boolean)
 
     fun storePrivateKeysInfo(msk: String?, usk: String?, ssk: String?)
+    fun storeMSKPrivateKey(msk: String?)
     fun storeSSKPrivateKey(ssk: String?)
     fun storeUSKPrivateKey(usk: String?)
 
     fun getCrossSigningPrivateKeys(): PrivateKeysInfo?
+    fun getLiveCrossSigningPrivateKeys(): LiveData<Optional<PrivateKeysInfo>>
+
+    fun saveBackupRecoveryKey(recoveryKey: String?, version: String?)
+    fun getKeyBackupRecoveryKeyInfo() : SavedKeyBackupKeyInfo?
 
     fun setUserKeysAsTrusted(userId: String, trusted: Boolean = true)
-    fun setDeviceTrust(userId: String, deviceId: String, crossSignedVerified: Boolean, locallyVerified: Boolean)
+    fun setDeviceTrust(userId: String, deviceId: String, crossSignedVerified: Boolean, locallyVerified: Boolean?)
 
     fun clearOtherUserTrust()
 
     fun updateUsersTrust(check: (String) -> Boolean)
 
+    fun addWithHeldMegolmSession(withHeldContent: RoomKeyWithHeldContent)
+    fun getWithHeldMegolmSession(roomId: String, sessionId: String) : RoomKeyWithHeldContent?
+
+    fun markedSessionAsShared(roomId: String?, sessionId: String, userId: String, deviceId: String, chainIndex: Int)
+    fun wasSessionSharedWithUser(roomId: String?, sessionId: String, userId: String, deviceId: String) : SharedSessionResult
+    data class SharedSessionResult(val found: Boolean, val chainIndex: Int?)
+    fun getSharedWithInfo(roomId: String?, sessionId: String) : MXUsersDevicesMap<Int>
     // Dev tools
 
     fun getOutgoingRoomKeyRequests(): List<OutgoingRoomKeyRequest>
@@ -417,4 +433,7 @@ internal interface IMXCryptoStore {
     fun getOutgoingSecretRequest(secretName: String): OutgoingSecretRequest?
     fun getIncomingRoomKeyRequests(): List<IncomingRoomKeyRequest>
     fun getGossipingEventsTrail(): List<Event>
+
+    fun setDeviceKeysUploaded(uploaded: Boolean)
+    fun getDeviceKeysUploaded(): Boolean
 }

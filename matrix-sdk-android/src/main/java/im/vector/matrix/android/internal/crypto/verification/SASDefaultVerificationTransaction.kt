@@ -15,7 +15,6 @@
  */
 package im.vector.matrix.android.internal.crypto.verification
 
-import android.os.Build
 import im.vector.matrix.android.api.extensions.orFalse
 import im.vector.matrix.android.api.session.crypto.crosssigning.CrossSigningService
 import im.vector.matrix.android.api.session.crypto.verification.CancelCode
@@ -24,9 +23,9 @@ import im.vector.matrix.android.api.session.crypto.verification.SasMode
 import im.vector.matrix.android.api.session.crypto.verification.SasVerificationTransaction
 import im.vector.matrix.android.api.session.crypto.verification.VerificationTxState
 import im.vector.matrix.android.api.session.events.model.EventType
+import im.vector.matrix.android.internal.crypto.IncomingGossipingRequestManager
 import im.vector.matrix.android.internal.crypto.OutgoingGossipingRequestManager
 import im.vector.matrix.android.internal.crypto.actions.SetDeviceVerificationAction
-import im.vector.matrix.android.internal.crypto.model.MXKey
 import im.vector.matrix.android.internal.crypto.store.IMXCryptoStore
 import im.vector.matrix.android.internal.extensions.toUnsignedInt
 import im.vector.matrix.android.internal.util.withoutPrefix
@@ -44,6 +43,7 @@ internal abstract class SASDefaultVerificationTransaction(
         private val cryptoStore: IMXCryptoStore,
         crossSigningService: CrossSigningService,
         outgoingGossipingRequestManager: OutgoingGossipingRequestManager,
+        incomingGossipingRequestManager: IncomingGossipingRequestManager,
         private val deviceFingerprint: String,
         transactionId: String,
         otherUserId: String,
@@ -53,6 +53,7 @@ internal abstract class SASDefaultVerificationTransaction(
         setDeviceVerificationAction,
         crossSigningService,
         outgoingGossipingRequestManager,
+        incomingGossipingRequestManager,
         userId,
         transactionId,
         otherUserId,
@@ -64,20 +65,19 @@ internal abstract class SASDefaultVerificationTransaction(
         const val SAS_MAC_SHA256_LONGKDF = "hmac-sha256"
         const val SAS_MAC_SHA256 = "hkdf-hmac-sha256"
 
+        // Deprecated maybe removed later, use V2
+        const val KEY_AGREEMENT_V1 = "curve25519"
+        const val KEY_AGREEMENT_V2 = "curve25519-hkdf-sha256"
         // ordered by preferred order
-        val KNOWN_AGREEMENT_PROTOCOLS = listOf(MXKey.KEY_CURVE_25519_TYPE)
+        val KNOWN_AGREEMENT_PROTOCOLS = listOf(KEY_AGREEMENT_V2, KEY_AGREEMENT_V1)
         // ordered by preferred order
         val KNOWN_HASHES = listOf("sha256")
         // ordered by preferred order
         val KNOWN_MACS = listOf(SAS_MAC_SHA256, SAS_MAC_SHA256_LONGKDF)
 
-        // older devices have limited support of emoji, so reply with decimal
-        val KNOWN_SHORT_CODES =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    listOf(SasMode.EMOJI, SasMode.DECIMAL)
-                } else {
-                    listOf(SasMode.DECIMAL)
-                }
+        // older devices have limited support of emoji but SDK offers images for the 64 verification emojis
+        // so always send that we support EMOJI
+        val KNOWN_SHORT_CODES = listOf(SasMode.EMOJI, SasMode.DECIMAL)
     }
 
     override var state: VerificationTxState = VerificationTxState.None
@@ -273,7 +273,7 @@ internal abstract class SASDefaultVerificationTransaction(
                 if (keyIDNoPrefix == otherCrossSigningMasterKeyPublic) {
                     // Check the signature
                     val mac = macUsingAgreedMethod(otherCrossSigningMasterKeyPublic, baseInfo + it)
-                    if (mac != theirMacSafe.mac.get(it)) {
+                    if (mac != theirMacSafe.mac[it]) {
                         // WRONG!
                         Timber.e("## SAS Verification: mac mismatch for MasterKey with id $keyIDNoPrefix")
                         cancel(CancelCode.MismatchedKeys)

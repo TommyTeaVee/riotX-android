@@ -35,7 +35,7 @@ import im.vector.matrix.android.common.TestMatrixCallback
 import im.vector.matrix.android.internal.crypto.SSSS_ALGORITHM_AES_HMAC_SHA2
 import im.vector.matrix.android.internal.crypto.crosssigning.toBase64NoPadding
 import im.vector.matrix.android.internal.crypto.secrets.DefaultSharedSecretStorageService
-import im.vector.matrix.android.internal.session.sync.model.accountdata.UserAccountDataEvent
+import im.vector.matrix.android.api.session.accountdata.UserAccountDataEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -71,7 +71,7 @@ class QuadSTests : InstrumentedTest {
         val TEST_KEY_ID = "my.test.Key"
 
         mTestHelper.doSync<SsssKeyCreationInfo> {
-            quadS.generateKey(TEST_KEY_ID, "Test Key", emptyKeySigner, it)
+            quadS.generateKey(TEST_KEY_ID, null, "Test Key", emptyKeySigner, it)
         }
 
         // Assert Account data is updated
@@ -144,7 +144,7 @@ class QuadSTests : InstrumentedTest {
 
         val secretAccountData = assertAccountData(aliceSession, "secret.of.life")
 
-        val encryptedContent = secretAccountData.content.get("encrypted") as? Map<*, *>
+        val encryptedContent = secretAccountData.content["encrypted"] as? Map<*, *>
         assertNotNull("Element should be encrypted", encryptedContent)
         assertNotNull("Secret should be encrypted with default key", encryptedContent?.get(keyId))
 
@@ -177,7 +177,7 @@ class QuadSTests : InstrumentedTest {
         val TEST_KEY_ID = "my.test.Key"
 
         mTestHelper.doSync<SsssKeyCreationInfo> {
-            quadS.generateKey(TEST_KEY_ID, "Test Key", emptyKeySigner, it)
+            quadS.generateKey(TEST_KEY_ID, null, "Test Key", emptyKeySigner, it)
         }
 
         // Test that we don't need to wait for an account data sync to access directly the keyid from DB
@@ -322,7 +322,7 @@ class QuadSTests : InstrumentedTest {
         val quadS = session.sharedSecretStorageService
 
         val creationInfo = mTestHelper.doSync<SsssKeyCreationInfo> {
-            quadS.generateKey(keyId, keyId, emptyKeySigner, it)
+            quadS.generateKey(keyId, null, keyId, emptyKeySigner, it)
         }
 
         assertAccountData(session, "${DefaultSharedSecretStorageService.KEY_ID_BASE}.$keyId")

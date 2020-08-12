@@ -2,10 +2,9 @@
 <resources>
     <!-- use to retrieve the supported languages list -->
     <!-- should the same value as the file name -->
-
     <string name="resources_language">en</string>
     <string name="resources_country_code">US</string>
-    <!-- NOTE TO TRANSLATORS: ONLY POSSIBLE VALUES: Latn OR Cyrl -->
+    <!-- NOTE TO TRANSLATORS: Value MUST have 4 letters and MUST be in this list: https://www.unicode.org/iso15924/iso15924-codes.html. Example:  "Arab", "Cyrl", "Latn", etc. -->
     <string name="resources_script">Latn</string>
 
     <!-- theme -->
@@ -35,7 +34,6 @@
     <string name="title_activity_verify_device">Verify session</string>
 
     <!-- Signing out screen -->
-
     <string name="keys_backup_is_not_finished_please_wait">Keys backup is not finished, please wait…</string>
     <string name="sign_out_bottom_sheet_warning_no_backup">You’ll lose your encrypted messages if you sign out now</string>
     <string name="sign_out_bottom_sheet_warning_backing_up">Key backup in progress. If you sign out now you’ll lose access to your encrypted messages.</string>
@@ -46,7 +44,6 @@
     <string name="are_you_sure">Are you sure?</string>
     <string name="backup">Back up</string>
     <string name="sign_out_bottom_sheet_will_lose_secure_messages">You’ll lose access to your encrypted messages unless you back up your keys before signing out.</string>
-
     <string name="dialog_title_third_party_licences">Third party licences</string>
 
     <!-- splash screen accessibility -->
@@ -79,6 +76,11 @@
     <string name="disconnect">Disconnect</string>
     <string name="report_content">Report content</string>
     <string name="active_call">Active call</string>
+    <string name="play_video">Play</string>
+    <string name="pause_video">Pause</string>
+    <string name="dismiss">Dismiss</string>
+
+
     <!-- First param will be replace by the value of ongoing_conference_call_voice, and second one by the value of ongoing_conference_call_video -->
     <string name="ongoing_conference_call">Ongoing conference call.\nJoin as %1$s or %2$s</string>
     <string name="ongoing_conference_call_voice">Voice</string>
@@ -117,6 +119,7 @@
     <string name="action_mark_room_read">Mark as read</string>
     <string name="action_open">Open</string>
     <string name="action_close">Close</string>
+    <string name="action_copy">Copy</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="disable">Disable</string>
 
@@ -124,9 +127,11 @@
     <string name="dialog_title_confirmation">Confirmation</string>
     <string name="dialog_title_warning">Warning</string>
     <string name="dialog_title_error">Error</string>
+    <string name="dialog_title_success">Success</string>
 
     <!-- Bottom navigation buttons -->
     <string name="bottom_action_home">Home</string>
+    <string name="bottom_action_notification">Notifications</string>
     <string name="bottom_action_favourites">Favourites</string>
     <string name="bottom_action_people">People</string>
     <string name="bottom_action_rooms">Rooms</string>
@@ -150,7 +155,7 @@
     <string name="user_directory_header">User directory</string>
     <string name="matrix_only_filter">Matrix contacts only</string>
     <string name="no_conversation_placeholder">No conversations</string>
-    <string name="no_contact_access_placeholder">You didn’t allow Riot to access your local contacts</string>
+    <string name="no_contact_access_placeholder">You didn’t allow Element to access your local contacts</string>
     <string name="no_result_placeholder">No results</string>
     <string name="people_no_identity_server">No identity server configured.</string>
 
@@ -210,6 +215,20 @@
     <string name="call_failed_no_ice_description">Please ask the administrator of your homeserver (%1$s) to configure a TURN server in order for calls to work reliably.\n\nAlternatively, you can try to use the public server at %2$s, but this will not be as reliable, and it will share your IP address with that server. You can also manage this in Settings."</string>
     <string name="call_failed_no_ice_use_alt">Try using %s</string>
     <string name="call_failed_dont_ask_again">Do not ask me again</string>
+
+    <string name="call_failed_no_connection">Element Call Failed</string>
+    <string name="call_failed_no_connection_description">Failed to establish real time connection.\nPlease ask the administrator of your homeserver to configure a TURN server in order for calls to work reliably.</string>
+
+    <string name="call_select_sound_device">Select Sound Device</string>
+    <string name="sound_device_phone">Phone</string>
+    <string name="sound_device_speaker">Speaker</string>
+    <string name="sound_device_headset">Headset</string>
+    <string name="sound_device_wireless_headset">Wireless Headset</string>
+    <string name="call_switch_camera">Switch Camera</string>
+    <string name="call_camera_front">Front</string>
+    <string name="call_camera_back">Back</string>
+    <string name="call_format_turn_hd_off">Turn HD off</string>
+    <string name="call_format_turn_hd_on">Turn HD on</string>
 
     <string name="option_send_files">Send files</string>
     <string name="option_send_sticker">Send sticker</string>
@@ -286,8 +305,9 @@
     <string name="login_error_unknown_host">This URL is not reachable, please check it</string>
     <string name="login_error_no_homeserver_found">This is not a valid Matrix server address</string>
     <string name="login_error_homeserver_not_found">Cannot reach a homeserver at this URL, please check it</string>
+    <string name="login_error_ssl_peer_unverified">"SSL Error: the peer's identity has not been verified."</string>
+    <string name="login_error_ssl_other">"SSL Error."</string>
     <string name="login_error_ssl_handshake">Your device is using an outdated TLS security protocol, vulnerable to attack, for your security you will not be able to connect</string>
-    <string name="login_mobile_device">Mobile</string>
 
     <string name="login_error_forbidden">Invalid username/password</string>
     <string name="login_error_unknown_token">The access token specified was not recognised</string>
@@ -297,16 +317,13 @@
     <string name="login_error_user_in_use">This user name is already used</string>
     <string name="login_error_login_email_not_yet">The email link which has not been clicked yet</string>
 
-    <!-- crypto warnings -->
-    <string name="e2e_need_log_in_again">You need to log back in to generate end-to-end encryption keys for this session and submit the public key to your homeserver.\nThis is a once off.\nSorry for the inconvenience.</string>
-
     <!-- request again e2e key -->
     <string name="e2e_re_request_encryption_key">Re-request encryption keys from your other sessions.</string>
 
     <string name="e2e_re_request_encryption_key_sent">Key request sent.</string>
 
     <string name="e2e_re_request_encryption_key_dialog_title">Request sent</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">Please launch Riot on another device that can decrypt the message so it can send the keys to this session.</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">Please launch Element on another device that can decrypt the message so it can send the keys to this session.</string>
 
     <!-- read receipts list Screen -->
     <string name="read_receipts_list">Read Receipts List</string>
@@ -345,9 +362,11 @@
 
     <!-- Call settings screen -->
     <string name="settings_call_category">Calls</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">Use default Riot ringtone for incoming calls</string>
+    <string name="settings_call_show_confirmation_dialog_title">Prevent accidental call</string>
+    <string name="settings_call_show_confirmation_dialog_summary">Ask for confirmation before starting a call</string>
+    <string name="settings_call_ringtone_use_app_ringtone">Use default Element ringtone for incoming calls</string>
     <string name="settings_call_ringtone_use_default_stun">Allow fallback call assist server</string>
-    <string name="settings_call_ringtone_use_default_stun_sum">Will use "%s" as assist when your home server does not offers one (your IP address will be shared during a call)</string>
+    <string name="settings_call_ringtone_use_default_stun_sum">Will use "%s" as assist when your home server does not offer one (your IP address will be shared during a call)</string>
     <string name="settings_call_ringtone_title">Incoming call ringtone</string>
     <string name="settings_call_ringtone_dialog_title">Select ringtone for calls:</string>
 
@@ -362,6 +381,8 @@
     <string name="incoming_voice_call">Incoming Voice Call</string>
     <string name="call_in_progress">Call In Progress…</string>
     <string name="video_call_in_progress">Video Call In Progress…</string>
+    <string name="active_call_with_duration">Active Call (%s)</string>
+    <string name="return_to_call">Return to call</string>
 
     <string name="call_error_user_not_responding">The remote side failed to pick up.</string>
     <string name="call_error_ice_failed">Media Connection Failed</string>
@@ -374,14 +395,14 @@
 
     <!-- permissions Android M -->
     <string name="permissions_rationale_popup_title">Information</string>
-    <string name="permissions_rationale_msg_storage">Riot needs permission to access your photo and video library to send and save attachments.\n\nPlease allow access on the next pop-up to be able to send files from your phone.</string>
-    <string name="permissions_rationale_msg_camera">Riot needs permission to access your camera to take pictures and video calls.</string>
+    <string name="permissions_rationale_msg_storage">Element needs permission to access your photo and video library to send and save attachments.\n\nPlease allow access on the next pop-up to be able to send files from your phone.</string>
+    <string name="permissions_rationale_msg_camera">Element needs permission to access your camera to take pictures and video calls.</string>
     <string name="permissions_rationale_msg_camera_explanation">\n\nPlease allow access on the next pop-up to be able to make the call.</string>
-    <string name="permissions_rationale_msg_record_audio">Riot needs permission to access your microphone to perform audio calls.</string>
+    <string name="permissions_rationale_msg_record_audio">Element needs permission to access your microphone to perform audio calls.</string>
     <string name="permissions_rationale_msg_record_audio_explanation">\n\nPlease allow access on the next pop-up to be able to make the call.</string>
-    <string name="permissions_rationale_msg_camera_and_audio">Riot needs permission to access your camera and your microphone to perform video calls.\n\nPlease allow access on the next pop-ups to be able to make the call.</string>
-    <string name="permissions_rationale_msg_contacts">Riot can check your address book to find other Matrix users based on their email and phone numbers. If you agree to share your address book for this purpose, please allow access on the next pop-up.</string>
-    <string name="permissions_msg_contacts_warning_other_androids">Riot can check your address book to find other Matrix users based on their email and phone numbers.\n\nDo you agree to share your address book for this purpose?</string>
+    <string name="permissions_rationale_msg_camera_and_audio">Element needs permission to access your camera and your microphone to perform video calls.\n\nPlease allow access on the next pop-ups to be able to make the call.</string>
+    <string name="permissions_rationale_msg_contacts">Element can check your address book to find other Matrix users based on their email and phone numbers. If you agree to share your address book for this purpose, please allow access on the next pop-up.</string>
+    <string name="permissions_msg_contacts_warning_other_androids">Element can check your address book to find other Matrix users based on their email and phone numbers.\n\nDo you agree to share your address book for this purpose?</string>
 
     <string name="permissions_action_not_performed_missing_permissions">Sorry. Action not performed, due to missing permissions</string>
 
@@ -461,10 +482,11 @@
 
     <string name="room_participants_header_admin_tools">ADMIN TOOLS</string>
     <string name="room_participants_header_call">CALL</string>
-    <string name="room_participants_header_direct_chats">DIRECT CHATS</string>
+    <string name="room_participants_header_direct_chats">Direct Messages</string>
     <string name="room_participants_header_devices">SESSIONS</string>
 
     <string name="room_participants_action_invite">Invite</string>
+    <string name="room_participants_action_cancel_invite">Cancel invite</string>
     <string name="room_participants_action_leave">Leave this room</string>
     <string name="room_participants_action_remove">Remove from this room</string>
     <string name="room_participants_action_ban">Ban</string>
@@ -473,19 +495,35 @@
     <string name="room_participants_action_set_default_power_level">Reset to normal user</string>
     <string name="room_participants_action_set_moderator">Make moderator</string>
     <string name="room_participants_action_set_admin">Make admin</string>
-    <string name="room_participants_action_ignore">Hide all messages from this user</string>
-    <string name="room_participants_action_unignore">Show all messages from this user</string>
-    <string name="room_participants_action_unignore_prompt">Show all messages from this user?\n\nNote that this action will restart the app and it may take some time.</string>
     <string name="room_participants_invite_search_another_user">User ID, Name or email</string>
     <string name="room_participants_action_mention">Mention</string>
     <string name="room_participants_action_devices_list">Show Session List</string>
     <string name="room_participants_power_level_prompt">You will not be able to undo this change as you are promoting the user to have the same power level as yourself.\nAre you sure?</string>
 
-    <plurals name="room_participants_kick_prompt_msg">
-        <item quantity="one">Are you sure that you want to kick this user from this chat?</item>
-        <item quantity="other">Are you sure that you want to kick these users from this chat?</item>
-    </plurals>
-    <string name="room_participants_ban_prompt_msg">Are you sure that you want to ban this user from this chat?</string>
+    <string name="room_participants_power_level_demote_warning_title">Demote yourself?</string>
+    <string name="room_participants_power_level_demote_warning_prompt">"You will not be able to undo this change as you are demoting yourself, if you are the last privileged user in the room it will be impossible to regain privileges."</string>
+    <string name="room_participants_power_level_demote">Demote</string>
+
+
+    <string name="room_participants_action_ignore_title">Ignore user</string>
+    <string name="room_participants_action_ignore_prompt_msg">Ignoring this user will remove their messages from rooms you share.\n\nYou can reverse this action at any time in the general settings.</string>
+    <string name="room_participants_action_ignore">Ignore</string>
+
+    <string name="room_participants_action_unignore_title">Unignore user</string>
+    <string name="room_participants_action_unignore_prompt_msg">Unignoring this user will show all messages from them again.</string>
+    <string name="room_participants_action_unignore">Unignore</string>
+
+    <string name="room_participants_action_cancel_invite_title">Cancel invite</string>
+    <string name="room_participants_action_cancel_invite_prompt_msg">Are you sure you want to cancel the invite for this user?</string>
+    <string name="room_participants_kick_title">Kick user</string>
+    <string name="room_participants_kick_reason">Reason to kick</string>
+    <string name="room_participants_kick_prompt_msg">kicking user will remove them from this room.\n\nTo prevent them from joining again, you should ban them instead.</string>
+    <string name="room_participants_ban_title">Ban user</string>
+    <string name="room_participants_ban_reason">Reason to ban</string>
+    <string name="room_participants_unban_title">Unban user</string>
+    <string name="room_participants_ban_prompt_msg">Banning user will kick them from this room and prevent them from joining again.</string>
+    <string name="room_participants_unban_prompt_msg">Unbanning user will allow them to join the room again.</string>
+
     <string name="reason_hint">Reason</string>
 
     <!--
@@ -632,12 +670,11 @@
     <string name="settings_app_info_link_title">Application info</string>
     <string name="settings_app_info_link_summary">Show the application info in the system settings.</string>
     <string name="settings_add_3pid_confirm_password_title">Confirm your password</string>
-    <string name="settings_add_3pid_flow_not_supported">You can\'t do this from Riot mobile</string>
+    <string name="settings_add_3pid_flow_not_supported">You can\'t do this from Element mobile</string>
     <string name="settings_add_3pid_authentication_needed">Authentication is required</string>
 
 
     <string name="settings_notification_advanced">Advanced Notification Settings</string>
-    <string name="settings_notification_advanced_summary">Set notification importance by event, Configure sound, led, vibration</string>
     <string name="settings_notification_by_event">Notification importance by event</string>
 
     <string name="settings_notification_privacy">Notification privacy</string>
@@ -661,7 +698,7 @@
 
     <string name="settings_troubleshoot_test_device_settings_title">Session Settings.</string>
     <string name="settings_troubleshoot_test_device_settings_success">Notifications are enabled for this session.</string>
-    <string name="settings_troubleshoot_test_device_settings_failed">Notifications are not enabled for this session.\nPlease check the Riot settings.</string>
+    <string name="settings_troubleshoot_test_device_settings_failed">Notifications are not enabled for this session.\nPlease check the Element settings.</string>
     <string name="settings_troubleshoot_test_device_settings_quickfix">Enable</string>
 
     <string name="settings_troubleshoot_test_bing_settings_title">Custom Settings.</string>
@@ -672,15 +709,15 @@
 
     <string name="settings_troubleshoot_test_play_services_title">Play Services Check</string>
     <string name="settings_troubleshoot_test_play_services_success">Google Play Services APK is available and up-to-date.</string>
-    <string name="settings_troubleshoot_test_play_services_failed">Riot uses Google Play Services to deliver push messages but it doesn’t seem to be configured correctly:\n%1$s</string>
+    <string name="settings_troubleshoot_test_play_services_failed">Element uses Google Play Services to deliver push messages but it doesn’t seem to be configured correctly:\n%1$s</string>
     <string name="settings_troubleshoot_test_play_services_quickfix">Fix Play Services</string>
 
     <string name="settings_troubleshoot_test_fcm_title">Firebase Token</string>
     <string name="settings_troubleshoot_test_fcm_success">FCM token successfully retrieved:\n%1$s</string>
     <string name="settings_troubleshoot_test_fcm_failed">Failed to retrieved FCM token:\n%1$s</string>
-    <string name="settings_troubleshoot_test_fcm_failed_too_many_registration">[%1$s]\nThis error is out of control of Riot and according to Google, this error indicates that the device has too many apps registered with FCM. The error only occurs in cases where there are extreme numbers of apps, so it should not affect the average user.</string>
-    <string name="settings_troubleshoot_test_fcm_failed_service_not_available">[%1$s]\nThis error is out of control of Riot. It can occur for several reasons. Maybe it will work if you retry later, you can also check that Google Play Service is not restricted in data usage in the system settings, or that your device clock is correct, or it can happen on custom ROM.</string>
-    <string name="settings_troubleshoot_test_fcm_failed_account_missing">[%1$s]\nThis error is out of control of Riot. There is no Google account on the phone. Please open the account manager and add a Google account.</string>
+    <string name="settings_troubleshoot_test_fcm_failed_too_many_registration">[%1$s]\nThis error is out of control of Element and according to Google, this error indicates that the device has too many apps registered with FCM. The error only occurs in cases where there are extreme numbers of apps, so it should not affect the average user.</string>
+    <string name="settings_troubleshoot_test_fcm_failed_service_not_available">[%1$s]\nThis error is out of control of Element. It can occur for several reasons. Maybe it will work if you retry later, you can also check that Google Play Service is not restricted in data usage in the system settings, or that your device clock is correct, or it can happen on custom ROM.</string>
+    <string name="settings_troubleshoot_test_fcm_failed_account_missing">[%1$s]\nThis error is out of control of Element. There is no Google account on the phone. Please open the account manager and add a Google account.</string>
     <string name="settings_troubleshoot_test_fcm_failed_account_missing_quick_fix">Add Account</string>
 
     <string name="settings_troubleshoot_test_token_registration_title">Token Registration</string>
@@ -698,16 +735,16 @@
 
     <string name="settings_troubleshoot_test_service_boot_title">Start on boot</string>
     <string name="settings_troubleshoot_test_service_boot_success">Service will start when the device is restarted.</string>
-    <string name="settings_troubleshoot_test_service_boot_failed">The service will not start when the device is restarted, you will not receive notifications until Riot has been opened once.</string>
+    <string name="settings_troubleshoot_test_service_boot_failed">The service will not start when the device is restarted, you will not receive notifications until Element has been opened once.</string>
     <string name="settings_troubleshoot_test_service_boot_quickfix">Enable Start on boot</string>
 
     <string name="settings_troubleshoot_test_bg_restricted_title">Check background restrictions</string>
-    <string name="settings_troubleshoot_test_bg_restricted_success">Background restrictions are disabled for Riot. This test should be run using mobile data (no WIFI).\n%1$s</string>
-    <string name="settings_troubleshoot_test_bg_restricted_failed">Background restrictions are enabled for Riot.\nWork that the app tries to do will be aggressively restricted while it is in the background, and this could affect notifications.\n%1$s</string>
+    <string name="settings_troubleshoot_test_bg_restricted_success">Background restrictions are disabled for Element. This test should be run using mobile data (no WIFI).\n%1$s</string>
+    <string name="settings_troubleshoot_test_bg_restricted_failed">Background restrictions are enabled for Element.\nWork that the app tries to do will be aggressively restricted while it is in the background, and this could affect notifications.\n%1$s</string>
     <string name="settings_troubleshoot_test_bg_restricted_quickfix">Disable restrictions</string>
 
     <string name="settings_troubleshoot_test_battery_title">Battery Optimization</string>
-    <string name="settings_troubleshoot_test_battery_success">Riot is not affected by Battery Optimization.</string>
+    <string name="settings_troubleshoot_test_battery_success">Element is not affected by Battery Optimization.</string>
     <string name="settings_troubleshoot_test_battery_failed">If a user leaves a device unplugged and stationary for a period of time, with the screen off, the device enters Doze mode. This prevents apps from accessing the network and defers their jobs, syncs, and standard alarms. </string>
     <string name="settings_troubleshoot_test_battery_quickfix">Ignore Optimization</string>
 
@@ -742,9 +779,9 @@
     <string name="settings_background_sync">Background synchronization</string>
     <string name="settings_background_fdroid_sync_mode">Background Sync Mode (Experimental)</string>
     <string name="settings_background_fdroid_sync_mode_battery">Optimized for battery</string>
-    <string name="settings_background_fdroid_sync_mode_battery_description">Riot will sync in background in way that preserves the device’s limited resources (battery).\nDepending on your device resource state, the sync may be deferred by the operating system.</string>
+    <string name="settings_background_fdroid_sync_mode_battery_description">Element will sync in background in way that preserves the device’s limited resources (battery).\nDepending on your device resource state, the sync may be deferred by the operating system.</string>
     <string name="settings_background_fdroid_sync_mode_real_time">Optimized for real time</string>
-    <string name="settings_background_fdroid_sync_mode_real_time_description">Riot will sync in background periodically at precise time (configurable).\nThis will impact radio and battery usage, there will be a permanent notification displayed stating that riot is listening for events.</string>
+    <string name="settings_background_fdroid_sync_mode_real_time_description">Element will sync in background periodically at precise time (configurable).\nThis will impact radio and battery usage, there will be a permanent notification displayed stating that Element is listening for events.</string>
     <string name="settings_background_fdroid_sync_mode_disabled">No background sync</string>
     <string name="settings_background_fdroid_sync_mode_disabled_description">You will not be notified of incoming messages when the app is in background.</string>
     <string name="settings_background_sync_update_error">Failed to update settings.</string>
@@ -805,24 +842,33 @@
     <string name="settings_send_message_with_enter">Send message with enter</string>
     <string name="settings_send_message_with_enter_summary">Enter button of the soft keyboard will send message instead of adding a line break</string>
 
+    <string name="settings_secure_backup_section_title">Secure Backup</string>
+    <string name="settings_secure_backup_manage">Manage</string>
+    <string name="settings_secure_backup_setup">Set up Secure Backup</string>
+    <string name="settings_secure_backup_reset">Reset Secure Backup</string>
+    <string name="settings_secure_backup_enter_to_setup">Set up on this device</string>
+    <string name="settings_secure_backup_section_info">Safeguard against losing access to encrypted messages &amp; data by backing up encryption keys on your server.</string>
+    <string name="reset_secure_backup_title">Generate a new Security Key or set a new Security Phrase for your existing backup.</string>
+    <string name="reset_secure_backup_warning">This will replace your current Key or Phrase.</string>
+
     <string name="settings_deactivate_account_section">Deactivate account</string>
     <string name="settings_deactivate_my_account">Deactivate my account</string>
     <string name="settings_discovery_category">Discovery</string>
     <string name="settings_discovery_manage">Manage your discovery settings.</string>
     <string name="startup_notification_privacy_title">Notification Privacy</string>
-    <string name="startup_notification_privacy_message">Riot can run in the background to manage your notifications securely and privately. This might affect battery usage.</string>
+    <string name="startup_notification_privacy_message">Element can run in the background to manage your notifications securely and privately. This might affect battery usage.</string>
     <string name="startup_notification_privacy_button_grant">Grant permission</string>
     <string name="startup_notification_privacy_button_other">Choose another option</string>
 
     <string name="startup_notification_fdroid_battery_optim_title">Background Connection</string>
-    <string name="startup_notification_fdroid_battery_optim_message">Riot needs to keep a low impact background connection in order to have reliable notifications.\nOn the next screen you will be prompted to allow Riot to always run in background, please accept.</string>
+    <string name="startup_notification_fdroid_battery_optim_message">Element needs to keep a low impact background connection in order to have reliable notifications.\nOn the next screen you will be prompted to allow Element to always run in background, please accept.</string>
     <string name="startup_notification_fdroid_battery_optim_button_grant">Grant permission</string>
 
     <!-- analytics -->
     <string name="settings_analytics">Analytics</string>
     <string name="settings_opt_in_of_analytics">Send analytics data</string>
-    <string name="settings_opt_in_of_analytics_summary">Riot collects anonymous analytics to allow us to improve the application.</string>
-    <string name="settings_opt_in_of_analytics_prompt">Please enable analytics to help us improve Riot.</string>
+    <string name="settings_opt_in_of_analytics_summary">Element collects anonymous analytics to allow us to improve the application.</string>
+    <string name="settings_opt_in_of_analytics_prompt">Please enable analytics to help us improve Element.</string>
     <string name="settings_opt_in_of_analytics_ok">Yes, I want to help!</string>
 
     <string name="settings_data_save_mode">Data save mode</string>
@@ -844,6 +890,9 @@
     <string name="settings_identity_server">Identity Server</string>
     <string name="settings_integration_allow">Allow integrations</string>
     <string name="settings_integration_manager">Integration Manager</string>
+
+    <string name="disabled_integration_dialog_title">Integrations are disabled</string>
+    <string name="disabled_integration_dialog_content">"Enable 'Allow integrations' in Settings to do this."</string>
 
     <string name="settings_user_interface">User interface</string>
     <string name="settings_interface_language">Language</string>
@@ -941,6 +990,10 @@
 
     <!-- Room settings: banned users -->
     <string name="room_settings_banned_users_title">Banned users</string>
+    <plurals name="room_settings_banned_users_count">
+        <item quantity="one">%d banned user</item>
+        <item quantity="other">%d banned users</item>
+    </plurals>
 
     <!-- advanced -->
     <string name="room_settings_category_advanced_title">Advanced</string>
@@ -1012,6 +1065,7 @@
     <string name="encryption_export_export">Export</string>
     <string name="encryption_export_notice">Please create a passphrase to encrypt the exported keys. You will need to enter the same passphrase to be able to import the keys.</string>
     <string name="encryption_export_saved_as">The E2E room keys have been saved to \'%s\'.\n\nWarning: this file may be deleted if the application is uninstalled.</string>
+    <string name="encryption_exported_successfully">Keys successfully exported</string>
 
     <string name="encryption_message_recovery">Encrypted Messages Recovery</string>
     <string name="encryption_settings_manage_message_recovery_summary">Manage Key Backup</string>
@@ -1024,7 +1078,7 @@
     <string name="encryption_never_send_to_unverified_devices_summary">Never send encrypted messages to unverified sessions from this session.</string>
     <string name="encryption_import_room_keys_success">%1$d/%2$d key(s) imported with success.</string>
 
-    <string name="encryption_information_not_verified">NOT Verified</string>
+    <string name="encryption_information_not_verified">Not Verified</string>
     <string name="encryption_information_verified">Verified</string>
     <string name="encryption_information_blocked">Blacklisted</string>
 
@@ -1038,11 +1092,9 @@
     <string name="encryption_information_unblock">Unblacklist</string>
 
     <string name="encryption_information_verify_device">Verify session</string>
-    <string name="encryption_information_verify_device_warning">To verify that this session can be trusted, please contact its owner using some other means (e.g. in person or a phone call) and ask them whether the key they see in their User Settings for this session matches the key below:</string>
-    <string name="encryption_information_verify_device_warning2">If it matches, press the verify button below. If it doesn’t, then someone else is intercepting this session and you should probably blacklist it. In the future this verification process will be more sophisticated.</string>
+    <string name="encryption_information_verify_device_warning">Confirm by comparing the following with the User Settings in your other session:</string>
+    <string name="encryption_information_verify_device_warning2">"If they don't match, the security of your communication may be compromised."</string>
     <string name="encryption_information_verify_key_match">I verify that the keys match</string>
-
-    <string name="e2e_enabling_on_app_update">Riot now supports end-to-end encryption but you need to log in again to enable it.\n\nYou can do it now or later from the application settings.</string>
 
     <!-- unknown sessions management -->
     <string name="unknown_devices_alert_title">Room contains unknown sessions</string>
@@ -1089,6 +1141,8 @@
     <string name="notification_new_invitation">New Invitation</string>
     <string name="notification_sender_me">Me</string>
     <string name="notification_inline_reply_failed">** Failed to send - please open room</string>
+    <string name="notification_ticker_text_dm">%1$s: %2$s</string>
+    <string name="notification_ticker_text_group">%1$s: %2$s %3$s</string>
 
     <!-- historical -->
     <string name="historical_placeholder">Search for historical</string>
@@ -1106,14 +1160,14 @@
     <!-- Widget-->
     <string name="widget_no_power_to_manage">You need permission to manage widgets in this room</string>
     <string name="widget_creation_failure">Widget creation has failed</string>
-    <string name="event_formatter_widget_added">%1$s added by %2$s</string>
-    <string name="event_formatter_widget_removed">%1$s removed by %2$s</string>
     <string name="settings_labs_create_conference_with_jitsi">Create conference calls with jitsi</string>
     <string name="widget_delete_message_confirmation">Are you sure you want to delete the widget from this room?</string>
     <plurals name="active_widgets">
         <item quantity="one">1 active widget</item>
         <item quantity="other">%d active widgets</item>
     </plurals>
+    <string name="active_widget_view_action">"VIEW"</string>
+    <string name="active_widgets_title">"Active widgets"</string>
 
 
     <string name="room_widget_activity_title">Widget</string>
@@ -1143,6 +1197,7 @@
     <string name="room_widget_webview_read_protected_media">Read DRM protected Media</string>
 
     <!-- Widget Integration Manager -->
+
     <string name="widget_integration_unable_to_create">Unable to create widget.</string>
     <string name="widget_integration_failed_to_send_request">Failed to send request.</string>
     <string name="widget_integration_positive_power_level">Power level must be positive integer.</string>
@@ -1312,28 +1367,6 @@
     <string name="x_plus">%d+</string>
     <string name="no_valid_google_play_services_apk">No valid Google Play Services APK found. Notifications may not work properly.</string>
 
-    <!-- String for Play Store -->
-    <string name="store_title">Riot.im - Communicate, your way</string>
-    <string name="store_whats_new">"We’re always making changes and improvements to Riot.im.
-The complete changelog can be found here: %1$s.
-To make sure you don’t miss a thing, just keep your updates turned on."</string>
-    <string name="store_short_description">A universal secure chat app entirely under your control.</string>
-    <string name="store_full_description">"A chat app, under your control and entirely flexible. Riot lets you communicate the way you want. Made for [matrix] - the standard for open, decentralised communication.
-
-Get a free matrix.org account, get your own server at https://modular.im, or use another Matrix server.
-
-Why choose Riot.im?
-
-• COMPLETE COMMUNICATION: Build rooms around your teams, your friends, your community - however you like! Chat, share files, add widgets and make voice and video calls - all free of charge.
-
-• POWERFUL INTEGRATIONS: Use Riot.im with the tools you know and love. With Riot.im you can even chat with users and groups on other chat apps.
-
-• PRIVATE AND SECURE: Keep your conversations secret. State of the art end-to-end encryption ensures that private communication stays private.
-
-• OPEN, NOT CLOSED: Open source, and built on Matrix. Own your own data by hosting your own server, or selecting one you trust.
-
-• EVERYWHERE YOU ARE: Stay in touch wherever you are with fully synchronised message history across all your devices and online at https://riot.im."</string>
-
     <!-- Passphrase -->
     <string name="passphrase_create_passphrase">Create passphrase</string>
     <string name="passphrase_confirm_passphrase">Confirm passphrase</string>
@@ -1344,7 +1377,7 @@ Why choose Riot.im?
 
     <!-- Key Backup -->
 
-    <string name="keys_backup_passphrase_not_empty_error_message">Please delete the passphrase if you want Riot to generate a recovery key.</string>
+    <string name="keys_backup_passphrase_not_empty_error_message">Please delete the passphrase if you want Element to generate a recovery key.</string>
     <string name="keys_backup_no_session_error">No Matrix session available</string>
 
     <string name="keys_backup_setup_step1_title">Never lose encrypted messages</string>
@@ -1369,6 +1402,7 @@ Why choose Riot.im?
     <string name="keys_backup_setup_step3_share_recovery_file">Share</string>
     <string name="keys_backup_setup_step3_save_button_title">Save as File</string>
     <string name="recovery_key_export_saved_as_warning">The recovery key has been saved to \'%s\'.\n\nWarning: this file may be deleted if the application is uninstalled.</string>
+    <string name="recovery_key_export_saved">The recovery key has been saved.</string>
 
     <string name="keys_backup_setup_override_backup_prompt_tile">A backup already exist on your HomeServer</string>
     <string name="keys_backup_setup_override_backup_prompt_description">It looks like you already have setup key backup from another session. Do you want to replace it with the one you’re creating?</string>
@@ -1454,9 +1488,13 @@ Why choose Riot.im?
     <string name="new_recovery_method_popup_title">New Key Backup</string>
     <string name="new_recovery_method_popup_description">A new secure message key backup has been detected.\n\nIf you didn’t set the new recovery method, an attacker may be trying to access your account. Change your account password and set a new recovery method immediately in Settings.</string>
     <string name="new_recovery_method_popup_was_me">It was me</string>
+
     <!-- Keys backup banner -->
     <string name="keys_backup_banner_setup_line1">Never lose encrypted messages</string>
     <string name="keys_backup_banner_setup_line2">Start using Key Backup</string>
+
+    <string name="secure_backup_banner_setup_line1">Secure Backup</string>
+    <string name="secure_backup_banner_setup_line2">Safeguard against losing access to encrypted messages &amp; data</string>
 
     <string name="keys_backup_banner_recover_line1">Never lose encrypted messages</string>
     <string name="keys_backup_banner_recover_line2">Use Key Backup</string>
@@ -1464,7 +1502,10 @@ Why choose Riot.im?
     <string name="keys_backup_banner_update_line1">New secure message keys</string>
     <string name="keys_backup_banner_update_line2">Manage in Key Backup</string>
 
-    <string name="keys_backup_banner_in_progress">Backing up keys…</string>
+    <string name="keys_backup_banner_in_progress">Backing up your keys. This may take several minutes…</string>
+
+
+    <string name="secure_backup_setup">Set Up Secure Backup</string>
 
     <!-- Keys backup info -->
     <string name="keys_backup_info_keys_all_backup_up">All keys backed up</string>
@@ -1479,7 +1520,7 @@ Why choose Riot.im?
 
     <string name="autodiscover_invalid_response">Invalid homeserver discovery response</string>
     <string name="autodiscover_well_known_autofill_dialog_title">"Autocomplete Server Options</string>
-    <string name="autodiscover_well_known_autofill_dialog_message">Riot detected a custom server configuration for your userId domain \"%1$s\":\n%2$s</string>
+    <string name="autodiscover_well_known_autofill_dialog_message">Element detected a custom server configuration for your userId domain \"%1$s\":\n%2$s</string>
     <string name="autodiscover_well_known_autofill_confirm">Use Config</string>
 
     <string name="invalid_or_expired_credentials">You have been logged out due to invalid or expired credentials.</string>
@@ -1532,11 +1573,8 @@ Why choose Riot.im?
     <string name="identity_server_not_defined">You are not using any Identity Server</string>
     <string name="identity_server_not_defined_for_password_reset">No identity server is configured, it is required to reset your password.</string>
 
-    <string name="security_warning_identity_server">"Previous versions of Riot had a security bug which could give your Identity Server (%1$s) access to your account. If you trust %2$s, you can ignore this; otherwise please logout and login again.\n\nRead more details here:\nhttps://medium.com/@RiotChat/36b4792ea0d6"</string>
-
     <string name="error_user_already_logged_in">It looks like you’re trying to connect to another homeserver. Do you want to sign out?</string>
 
-    <!-- String for RiotX -->
     <string name="edit">Edit</string>
     <string name="reply">Reply</string>
 
@@ -1561,6 +1599,9 @@ Why choose Riot.im?
     <string name="message_view_reaction">View Reactions</string>
     <string name="reactions">Reactions</string>
 
+    <string name="event_redacted">Message deleted</string>
+    <string name="settings_show_redacted">Show removed messages</string>
+    <string name="settings_show_redacted_summary">Show a placeholder for removed messages</string>
     <string name="event_redacted_by_user_reason">Event deleted by user</string>
     <string name="event_redacted_by_admin_reason">Event moderated by room admin</string>
     <string name="last_edited_info_message">Last edited by %1$s on %2$s</string>
@@ -1575,7 +1616,7 @@ Why choose Riot.im?
     <string name="group_all_communities">"All Communities"</string>
 
     <string name="room_preview_no_preview">"This room can't be previewed"</string>
-    <string name="room_preview_world_readable_room_not_supported_yet">"The preview of world-readable room is not supported yet in RiotX"</string>
+    <string name="room_preview_world_readable_room_not_supported_yet">"The preview of world-readable room is not supported yet in Element"</string>
 
     <string name="fab_menu_create_room">"Rooms"</string>
     <string name="fab_menu_create_chat">"Direct Messages"</string>
@@ -1591,13 +1632,6 @@ Why choose Riot.im?
 
     <string name="keys_backup_unable_to_get_trust_info">"An error occurred getting trust info"</string>
     <string name="keys_backup_unable_to_get_keys_backup_data">"An error occurred getting keys backup data"</string>
-
-    <string name="alpha_disclaimer_title">Welcome to the beta!</string>
-    <string name="alpha_disclaimer_content_line_1">"While RiotX is in early development, some features may be missing and you may experience bugs."</string>
-    <!-- The parameter will be replaced by the value of string alpha_disclaimer_content_line_2_gplay_colored_part -->
-    <string name="alpha_disclaimer_content_line_2_gplay">"The latest feature list is always in the %1$s, and if you find bugs please submit a report in the top left menu of Home, and we’ll fix them as quickly as we can."</string>
-    <string name="alpha_disclaimer_content_line_2_gplay_colored_part">"Play Store description"</string>
-    <string name="alpha_disclaimer_content_line_2_fdroid">"If you find bugs please submit a report in the top left menu of Home, and we’ll fix them as quickly as we can."</string>
 
     <string name="import_e2e_keys_from_file">"Import e2e keys from file \"%1$s\"."</string>
 
@@ -1637,32 +1671,6 @@ Why choose Riot.im?
 
     <string name="settings_labs_show_hidden_events_in_timeline">Show hidden events in timeline</string>
 
-    <!-- String for Play Store, for RiotX -->
-    <string name="store_riotx_title">RiotX - Next Generation Matrix Client</string>
-    <string name="store_riotx_short_description">A faster and lighter client for Matrix using the latest Android frameworks</string>
-    <string name="store_riotx_full_description">"RiotX is a new client for the Matrix protocol (Matrix.org): an open network for secure, decentralised communication. RiotX is a full rewrite of the Riot Android client, based on a full rewrite of the Matrix Android SDK.
-
-Disclaimer: This is a beta version. RiotX is currently in active development and contains limitations and (we hope not too many) bugs. All feedback is welcome!
-
-RiotX supports:
-• Login to an existing account
-• Create room and join public rooms
-• Accept and reject invitations
-• List users rooms
-• View room details
-• Send text messages
-• Send attachment
-• Read and write messages in encrypted rooms
-• Crypto: E2E keys backup, advance device verification, key share request and answer
-• Push notification
-• Light, Dark and Black themes
-
-Not all features in Riot are implemented in RiotX yet. Main missing (and coming soon!) features:
-• Room settings (list room members, etc.)
-• Calls
-• Widgets
-• …"</string>
-
     <string name="bottom_action_people_x">Direct Messages</string>
 
     <string name="send_file_step_idle">Waiting…</string>
@@ -1675,11 +1683,6 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="downloaded_file">File %1$s has been downloaded!</string>
 
     <string name="edited_suffix">"(edited)"</string>
-
-    <!-- param will be replaced by the value of riotx_no_registration_notice_colored_part -->
-    <string name="riotx_no_registration_notice">%1$s to create an account.</string>
-    <string name="riotx_no_registration_notice_colored_part">Use the old app</string>
-
 
     <string name="message_edits">Message Edits</string>
     <string name="no_message_edits_found">No edits found</string>
@@ -1694,6 +1697,8 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="room_directory_search_hint">Name or ID (#example:matrix.org)</string>
 
     <string name="labs_swipe_to_reply_in_timeline">Enable swipe to reply in timeline</string>
+    <string name="labs_merge_e2e_in_timeline">Merge failed to decrypt message in timeline</string>
+    <string name="labs_show_unread_notifications_as_tab">Add a dedicated tab for unread notifications on main screen.</string>
 
     <string name="link_copied_to_clipboard">Link copied to clipboard</string>
 
@@ -1728,14 +1733,16 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="settings_discovery_disconnect_identity_server_info">Disconnecting from your identity server will mean you won’t be discoverable by other users and you won’t be able to invite others by email or phone.</string>
     <string name="settings_discovery_msisdn_title">Discoverable phone numbers</string>
     <string name="settings_discovery_confirm_mail">We sent you a confirm email to %s, check your email and click on the confirmation link</string>
+    <string name="settings_discovery_confirm_mail_not_clicked">We sent you a confirm email to %s, please first check your email and click on the confirmation link</string>
     <string name="settings_discovery_mail_pending">Pending</string>
 
-    <string name="settings_discovery_enter_identity_server">Enter a new identity server</string>
+    <string name="settings_discovery_enter_identity_server">Enter an identity server URL</string>
     <string name="settings_discovery_bad_identity_server">Could not connect to identity server</string>
     <string name="settings_discovery_please_enter_server">Please enter the identity server url</string>
     <string name="settings_discovery_no_terms_title">Identity server has no terms of services</string>
     <string name="settings_discovery_no_terms">The identity server you have chosen does not have any terms of services. Only continue if you trust the owner of the service</string>
     <string name="settings_text_message_sent">A text message has been sent to %s. Please enter the verification code it contains.</string>
+    <string name="settings_text_message_sent_wrong_code">The verification code is not correct.</string>
 
     <string name="settings_discovery_disconnect_with_bound_pid">You are currently sharing email addresses or phone numbers on the identity server %1$s. You will need to reconnect to %2$s to stop sharing them.</string>
     <string name="settings_agree_to_terms">Agree to the identity server (%s) Terms of Service to allow yourself to be discoverable by email address or phone number.</string>
@@ -1781,6 +1788,13 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="attachment_type_sticker">"Sticker"</string>
     <string name="error_handling_incoming_share">Couldn\'t handle share data</string>
 
+    <string name="uploads_media_title">MEDIA</string>
+    <string name="uploads_media_no_result">There are no media in this room</string>
+    <string name="uploads_files_title">FILES</string>
+    <!-- First parameter is a username and second is a date Example: "Matthew at 12:00 on 01/01/01" -->
+    <string name="uploads_files_subtitle">%1$s at %2$s</string>
+    <string name="uploads_files_no_result">There are no files in this room</string>
+
     <string name="report_content_spam">"It's spam"</string>
     <string name="report_content_inappropriate">"It's inappropriate"</string>
     <string name="report_content_custom">"Custom report…"</string>
@@ -1796,7 +1810,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="content_reported_as_inappropriate_title">"Reported as inappropriate"</string>
     <string name="content_reported_as_inappropriate_content">"This content was reported as inappropriate.\n\nIf you don't want to see any more content from this user, you can block him to hide his messages"</string>
 
-    <string name="permissions_rationale_msg_keys_backup_export">Riot needs permission to save your E2E keys on disk.\n\nPlease allow access on the next pop-up to be able to export your keys manually.</string>
+    <string name="permissions_rationale_msg_keys_backup_export">Element needs permission to save your E2E keys on disk.\n\nPlease allow access on the next pop-up to be able to export your keys manually.</string>
 
     <string name="no_network_indicator">There is no network connection right now</string>
 
@@ -1807,8 +1821,11 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="room_list_quick_actions_notifications_mentions">"Mentions only"</string>
     <string name="room_list_quick_actions_notifications_mute">"Mute"</string>
     <string name="room_list_quick_actions_settings">"Settings"</string>
+    <string name="room_list_quick_actions_favorite_add">"Add to favorites"</string>
+    <string name="room_list_quick_actions_favorite_remove">"Remove from favorites"</string>
     <string name="room_list_quick_actions_leave">"Leave the room"</string>
     <string name="notice_member_no_changes">"%1$s made no changes"</string>
+    <string name="notice_member_no_changes_by_you">"You made no changes"</string>
     <string name="command_description_spoiler">Sends the given message as a spoiler</string>
     <string name="spoiler">Spoiler</string>
     <string name="reaction_search_type_hint">Type keywords to find a reaction.</string>
@@ -1819,10 +1836,12 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
 
 
     <string name="room_join_rules_public">%1$s made the room public to whoever knows the link.</string>
+    <string name="room_join_rules_public_by_you">You made the room public to whoever knows the link.</string>
     <string name="room_join_rules_invite">%1$s made the room invite only.</string>
+    <string name="room_join_rules_invite_by_you">You made the room invite only.</string>
     <string name="timeline_unread_messages">Unread messages</string>
 
-    <string name="login_splash_title">Liberate your communication</string>
+    <string name="login_splash_title">It\'s your conversation. Own it.</string>
     <string name="login_splash_text1">Chat with people directly or in groups</string>
     <string name="login_splash_text2">Keep conversations private with encryption</string>
     <string name="login_splash_text3">Extend &amp; customise your experience</string>
@@ -1839,7 +1858,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="login_continue">Continue</string>
     <!-- Replaced string is the homeserver url -->
     <string name="login_connect_to">Connect to %1$s</string>
-    <string name="login_connect_to_modular">Connect to Modular</string>
+    <string name="login_connect_to_modular">Connect to Element Matrix Services</string>
     <string name="login_connect_to_a_custom_server">Connect to a custom server</string>
     <!-- Replaced string is the homeserver url -->
     <string name="login_signin_to">Sign in to %1$s</string>
@@ -1847,11 +1866,12 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="login_signin">Sign In</string>
     <string name="login_signin_sso">Continue with SSO</string>
 
-    <string name="login_server_url_form_modular_hint">Modular Address</string>
+    <string name="login_server_url_form_modular_hint">Element Matrix Services Address</string>
     <string name="login_server_url_form_other_hint">Address</string>
     <string name="login_server_url_form_modular_text">Premium hosting for organisations</string>
-    <string name="login_server_url_form_modular_notice">Enter the address of the Modular Riot or Server you want to use</string>
-    <string name="login_server_url_form_other_notice">Enter the address of a server or a Riot you want to connect to</string>
+    <string name="login_server_url_form_modular_notice">Enter the address of the Modular Element or Server you want to use</string>
+    <string name="login_server_url_form_other_notice">Enter the address of a server or a Element you want to connect to</string>
+    <string name="login_server_url_form_common_notice">Enter the address of the server you want to use</string>
 
     <string name="login_sso_error_message">An error occurred when loading the page: %1$s (%2$d)</string>
     <string name="login_mode_not_supported">The application is not able to signin to this homeserver. The homeserver supports the following signin type(s): %1$s.\n\nDo you want to signin using a web client?</string>
@@ -1921,7 +1941,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="login_signup_cancel_confirmation_content">Your account is not created yet.\n\nStop the registration process?</string>
 
     <string name="login_a11y_choose_matrix_org">Select matrix.org</string>
-    <string name="login_a11y_choose_modular">Select modular</string>
+    <string name="login_a11y_choose_modular">Select Element Matrix Services</string>
     <string name="login_a11y_choose_other">Select a custom homeserver</string>
     <string name="login_a11y_captcha_container">Please perform the captcha challenge</string>
     <string name="login_terms_title">Accept terms to continue</string>
@@ -1936,6 +1956,15 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
         <item quantity="one">Too many requests have been sent. You can retry in %1$d second…</item>
         <item quantity="other">Too many requests have been sent. You can retry in %1$d seconds…</item>
     </plurals>
+
+    <string name="login_connect_using_matrix_id_notice">Alternatively, if you already have an account and you know your Matrix identifier and your password, you can use this method:</string>
+    <string name="login_connect_using_matrix_id_submit">Sign in with Matrix ID</string>
+    <string name="login_signin_matrix_id_title">Sign in with Matrix ID</string>
+    <string name="login_signin_matrix_id_notice">If you set up an account on a homeserver, use your Matrix ID (e.g. @user:domain.com) and password below.</string>
+    <string name="login_signin_matrix_id_hint">Matrix ID</string>
+    <string name="login_signin_matrix_id_password_notice">If you don’t know your password, go back to reset it.</string>
+    <string name="login_signin_matrix_id_error_invalid_matrix_id">This is not a valid user identifier. Expected format: \'@user:homeserver.org\'</string>
+    <string name="autodiscover_well_known_error">Unable to find a valid homeserver. Please check your identifier</string>
 
     <string name="seen_by">Seen by</string>
 
@@ -1958,7 +1987,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="soft_logout_clear_data_dialog_content">Clear all data currently stored on this device?\nSign in again to access your account data and messages.</string>
     <string name="soft_logout_clear_data_dialog_e2e_warning_content">You’ll lose access to secure messages unless you sign in to recover your encryption keys.</string>
     <string name="soft_logout_clear_data_dialog_submit">Clear data</string>
-    <string name="soft_logout_sso_not_same_user_error">The current session is for user %1$s and you provide credentials for user %2$s. This is not supported by RiotX.\nPlease first clear data, then sign in again on another account.</string>
+    <string name="soft_logout_sso_not_same_user_error">The current session is for user %1$s and you provide credentials for user %2$s. This is not supported by Element.\nPlease first clear data, then sign in again on another account.</string>
 
     <string name="permalink_malformed">Your matrix.to link was malformed</string>
     <string name="bug_report_error_too_short">The description is too short</string>
@@ -1980,7 +2009,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="autocomplete_limited_results">Showing only the first results, type more letters…</string>
 
     <string name="settings_developer_mode_fail_fast_title">Fail-fast</string>
-    <string name="settings_developer_mode_fail_fast_summary">RiotX may crash more often when an unexpected error occurs</string>
+    <string name="settings_developer_mode_fail_fast_summary">Element may crash more often when an unexpected error occurs</string>
 
     <string name="command_description_verify">Request to verify the given userID</string>
     <string name="command_description_shrug">Prepends ¯\\_(ツ)_/¯ to a plain-text message</string>
@@ -2005,6 +2034,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="sent_an_image">Image.</string>
     <string name="sent_an_audio_file">Audio</string>
     <string name="sent_a_file">File</string>
+    <string name="send_a_sticker">Sticker</string>
 
     <string name="verification_request_waiting">Waiting…</string>
     <string name="verification_request_other_cancelled">%s cancelled</string>
@@ -2013,8 +2043,6 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="verification_request_you_accepted">You accepted</string>
     <string name="verification_sent">Verification Sent</string>
     <string name="verification_request">Verification Request</string>
-
-
     <string name="verification_verify_device">Verify this session</string>
     <string name="verification_verify_device_manually">Manually verify</string>
 
@@ -2042,6 +2070,7 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="room_profile_section_security">Security</string>
     <string name="room_profile_section_security_learn_more">Learn more</string>
     <string name="room_profile_section_more">More</string>
+    <string name="room_profile_section_admin">Admin Actions</string>
     <string name="room_profile_section_more_settings">Room settings</string>
     <string name="room_profile_section_more_notifications">Notifications</string>
     <plurals name="room_profile_section_more_member_list">
@@ -2060,13 +2089,14 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
 
     <string name="room_member_power_level_admin_in">Admin in %1$s</string>
     <string name="room_member_power_level_moderator_in">Moderator in %1$s</string>
+    <string name="room_member_power_level_default_in">Default in %1$s</string>
     <string name="room_member_power_level_custom_in">Custom (%1$d) in %2$s</string>
 
     <string name="room_member_jump_to_read_receipt">Jump to read receipt</string>
 
-    <string name="rendering_event_error_type_of_event_not_handled">"RiotX does not handle events of type '%1$s'"</string>
-    <string name="rendering_event_error_type_of_message_not_handled">"RiotX does not handle message of type '%1$s'"</string>
-    <string name="rendering_event_error_exception">"RiotX encountered an issue when rendering content of event with id '%1$s'"</string>
+    <string name="rendering_event_error_type_of_event_not_handled">"Element does not handle events of type '%1$s'"</string>
+    <string name="rendering_event_error_type_of_message_not_handled">"Element does not handle message of type '%1$s'"</string>
+    <string name="rendering_event_error_exception">"Element encountered an issue when rendering content of event with id '%1$s'"</string>
 
     <string name="unignore">Unignore</string>
 
@@ -2099,18 +2129,17 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="verification_conclusion_ok_notice">Messages with this user are end-to-end encrypted and can\'t be read by third parties.</string>
     <string name="verification_conclusion_ok_self_notice">Your new session is now verified. It has access to your encrypted messages, and other users will see it as trusted.</string>
 
-
     <string name="encryption_information_cross_signing_state">Cross-Signing</string>
     <string name="encryption_information_dg_xsigning_complete">Cross-Signing is enabled\nPrivate Keys on device.</string>
     <string name="encryption_information_dg_xsigning_trusted">Cross-Signing is enabled\nKeys are trusted.\nPrivate keys are not known</string>
     <string name="encryption_information_dg_xsigning_not_trusted">Cross-Signing is enabled.\nKeys are not trusted</string>
     <string name="encryption_information_dg_xsigning_disabled">Cross-Signing is not enabled</string>
 
-
+    <string name="settings_hs_admin_e2e_disabled">Your server admin has disabled end-to-end encryption by default in private rooms &amp; Direct Messages.</string>
     <string name="settings_active_sessions_list">Active Sessions</string>
     <string name="settings_active_sessions_show_all">Show All Sessions</string>
     <string name="settings_active_sessions_manage">Manage Sessions</string>
-    <string name="settings_active_sessions_signout_device">Sign out this session</string>
+    <string name="settings_active_sessions_signout_device">Sign out of this session</string>
 
     <string name="settings_failed_to_get_crypto_device_info">No cryptographic information available</string>
 
@@ -2122,11 +2151,12 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
         <item quantity="other">%d active sessions</item>
     </plurals>
 
-    <string name="crosssigning_verify_this_session">Verify this session</string>
+    <string name="crosssigning_verify_this_session">Verify this login</string>
     <string name="crosssigning_other_user_not_trust">Other users may not trust it</string>
+    <!-- WARNING: 'Complete' is a verb here, the title means: "let's complete the security of your account", and should not be understood as "full security" -->
     <string name="complete_security">Complete Security</string>
 
-    <string name="verification_open_other_to_verify">Open an existing session &amp; use it to verify this one, granting it access to encrypted messages.</string>
+    <string name="verification_open_other_to_verify">Use an existing session to verify this one, granting it access to encrypted messages.</string>
 
 
     <string name="verification_profile_verify">Verify</string>
@@ -2148,11 +2178,12 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
 
     <string name="a11y_qr_code_for_verification">QR code</string>
 
-    <string name="qr_code_scanned_by_other_notice">Did the other user successfully scan the QR code?</string>
+    <string name="qr_code_scanned_by_other_notice">Almost there! Is %s showing the same shield?</string>
     <string name="qr_code_scanned_by_other_yes">Yes</string>
     <string name="qr_code_scanned_by_other_no">No</string>
 
     <string name="no_connectivity_to_the_server_indicator">Connectivity to the server has been lost</string>
+    <string name="no_connectivity_to_the_server_indicator_airplane">Airplane mode is on</string>
 
     <string name="settings_dev_tools">Dev Tools</string>
     <string name="settings_account_data">Account Data</string>
@@ -2166,8 +2197,8 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     </plurals>
     <string name="poll_item_selected_aria">Selected Option</string>
     <string name="command_description_poll">Creates a simple poll</string>
-    <string name="verification_cannot_access_other_session">Can‘t access an existing session?</string>
-    <string name="verification_use_passphrase">Use your recovery key or passphrase</string>
+    <string name="verification_cannot_access_other_session">Use a Recovery Passphrase or Key</string>
+    <string name="verification_use_passphrase">If you can’t access an existing session</string>
 
     <string name="new_signin">New Sign In</string>
 
@@ -2175,7 +2206,6 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
     <string name="enter_secret_storage_passphrase">Enter secret storage passphrase</string>
     <string name="enter_secret_storage_passphrase_warning">Warning:</string>
     <string name="enter_secret_storage_passphrase_warning_text">You should only access secret storage from a trusted device</string>
-    <string name="enter_secret_storage_passphrase_reason_verify">Access your secure message history and your cross-signing identity for verifying other sessions by entering your passphrase</string>
 
     <string name="message_action_item_redact">Remove…</string>
     <string name="share_confirm_room">Do you want to send this attachment to %1$s?</string>
@@ -2194,4 +2224,297 @@ Not all features in Riot are implemented in RiotX yet. Main missing (and coming 
 
     <string name="keys_backup_restore_success_title_already_up_to_date">Keys are already up to date!</string>
 
+    <string name="login_default_session_public_name">Element Android</string>
+
+    <string name="settings_key_requests">Key Requests</string>
+
+    <string name="e2e_use_keybackup">Unlock encrypted messages history</string>
+
+    <string name="refresh">Refresh</string>
+
+    <string name="new_session">New login. Was this you?</string>
+    <string name="new_session_review">Tap to review &amp; verify</string>
+    <string name="verify_new_session_notice">Use this session to verify your new one, granting it access to encrypted messages.</string>
+    <string name="verify_new_session_was_not_me">This wasn’t me</string>
+    <string name="verify_new_session_compromized">Your account may be compromised</string>
+
+    <string name="verify_cancel_self_verification_from_untrusted">If you cancel, you won’t be able to read encrypted messages on this device, and other users won’t trust it</string>
+    <string name="verify_cancel_self_verification_from_trusted">If you cancel, you won’t be able to read encrypted messages on your new device, and other users won’t trust it</string>
+    <string name="verify_cancel_other">You won’t verify %1$s (%2$s) if you cancel now. Start again in their user profile.</string>
+
+    <string name="verify_not_me_self_verification">
+        One of the following may be compromised:\n\n- Your password\n- Your homeserver\n- This device, or the other device\n- The internet connection either device is using\n\nWe recommend you change your password &amp; recovery key in Settings immediately.
+    </string>
+
+    <string name="verify_cancelled_notice">Verify your devices from Settings.</string>
+    <string name="verification_cancelled">Verification Cancelled</string>
+
+    <string name="recovery_passphrase">Recovery Passphrase</string>
+    <string name="message_key">Message Key</string>
+    <string name="account_password">Account Password</string>
+
+    <!-- %s will be replaced by recovery_passphrase -->
+    <string name="set_recovery_passphrase">Set a %s</string>
+    <string name="generate_message_key">Generate a Message Key</string>
+
+    <!-- %s will be replaced by recovery_passphrase -->
+    <string name="confirm_recovery_passphrase">Confirm %s</string>
+
+    <!-- %s will be replaced by account_password -->
+    <string name="enter_account_password">Enter your %s to continue.</string>
+
+    <!-- %s will be replaced by recovery_passphrase -->
+    <string name="bootstrap_info_text">Secure &amp; unlock encrypted messages and trust with a %s.</string>
+    <!-- %s will be replaced by recovery_passphrase -->
+    <string name="bootstrap_info_confirm_text">Enter your %s again to confirm it.</string>
+    <string name="bootstrap_dont_reuse_pwd">Don’t use your account password.</string>
+
+    <string name="bootstrap_info_text_2">Enter a security phrase only you know, used to secure secrets on your server.</string>
+
+    <string name="bootstrap_loading_text">This might take several seconds, please be patient.</string>
+    <string name="bootstrap_loading_title">Setting up recovery.</string>
+    <string name="your_recovery_key">Your recovery key</string>
+    <string name="bootstrap_finish_title">"You're done!"</string>
+    <string name="keep_it_safe">Keep it safe</string>
+    <string name="finish">Finish</string>
+
+    <!-- %1$s is replaced by message_key and %2$s by recovery_passphrase -->
+    <string name="bootstrap_save_key_description">Use this %1$s as a safety net in case you forget your %2$s.</string>
+
+    <string name="bootstrap_crosssigning_progress_initializing">Publishing created identity keys</string>
+    <string name="bootstrap_crosssigning_progress_pbkdf2">Generating secure key from passphrase</string>
+    <string name="bootstrap_crosssigning_progress_default_key">Defining SSSS default Key</string>
+    <string name="bootstrap_crosssigning_progress_save_msk">Synchronizing Master key</string>
+    <string name="bootstrap_crosssigning_progress_save_usk">Synchronizing User key</string>
+    <string name="bootstrap_crosssigning_progress_save_ssk">Synchronizing Self Signing key</string>
+    <string name="bootstrap_crosssigning_progress_key_backup">Setting Up Key Backup</string>
+
+
+    <!-- %1$s is replaced by message_key and %2$s by recovery_passphrase -->
+    <string name="bootstrap_cross_signing_success">Your %2$s &amp; %1$s are now set.\n\nKeep them safe! You’ll need them to unlock encrypted messages and secure information if you lose all of your active sessions.</string>
+
+    <!-- the %s will be replaced by a check mark on screen-->
+    <string name="bootstrap_crosssigning_print_it">Print it and store it somewhere safe</string>
+    <string name="bootstrap_crosssigning_save_usb">Save it on a USB key or backup drive</string>
+    <string name="bootstrap_crosssigning_save_cloud">Copy it to your personal cloud storage</string>
+
+    <string name="auth_flow_not_supported">You cannot do that from mobile</string>
+
+    <string name="bootstrap_skip_text">Setting a Recovery Passphrase lets you secure &amp; unlock encrypted messages and trust.\n\nIf you don’t want to set a Message Password, generate a Message Key instead.</string>
+    <string name="bootstrap_skip_text_no_gen_key">Setting a Recovery Passphrase lets you secure &amp; unlock encrypted messages and trust.</string>
+    <string name="bootstrap_cancel_text">If you cancel now, you may lose encrypted messages &amp; data if you lose access to your logins.\n\nYou can also set up Secure Backup &amp; manage your keys in Settings.</string>
+
+    <string name="encryption_enabled">Encryption enabled</string>
+    <string name="encryption_enabled_tile_description">Messages in this room are end-to-end encrypted. Learn more &amp; verify users in their profile.</string>
+    <string name="encryption_not_enabled">Encryption not enabled</string>
+    <string name="encryption_unknown_algorithm_tile_description">The encryption used by this room is not supported</string>
+
+    <string name="room_created_summary_item">%s created and configured the room.</string>
+    <string name="room_created_summary_item_by_you">You created and configured the room.</string>
+
+    <string name="qr_code_scanned_self_verif_notice">Almost there! Is the other device showing the same shield?</string>
+    <string name="qr_code_scanned_verif_waiting_notice">Almost there! Waiting for confirmation…</string>
+    <string name="qr_code_scanned_verif_waiting">Waiting for %s…</string>
+
+    <string name="error_failed_to_import_keys">Failed to import keys</string>
+
+    <string name="settings_notification_configuration">Notifications configuration</string>
+    <string name="settings_messages_at_room">Messages containing @room</string>
+    <string name="settings_messages_in_e2e_one_to_one">Encrypted messages in one-to-one chats</string>
+    <string name="settings_messages_in_e2e_group_chat">Encrypted messages in group chats</string>
+    <string name="settings_when_rooms_are_upgraded">When rooms are upgraded</string>
+    <string name="settings_troubleshoot_title">Troubleshoot</string>
+    <string name="settings_notification_advanced_summary">Set notification importance by event</string>
+
+    <string name="command_description_plain">Sends a message as plain text, without interpreting it as markdown</string>
+
+    <string name="auth_invalid_login_param_space_in_password">Incorrect username and/or password. The entered password starts or ends with spaces, please check it.</string>
+    <string name="auth_invalid_login_deactivated_account">This account has been deactivated.</string>
+
+    <string name="room_message_placeholder">Message…</string>
+
+    <string name="upgrade_security">Encryption upgrade available</string>
+    <string name="setup_cross_signing">Enable Cross Signing</string>
+    <string name="security_prompt_text">Verify yourself &amp; others to keep your chats safe</string>
+
+    <!-- %s will be replaced by recovery_key -->
+    <string name="bootstrap_enter_recovery">Enter your %s to continue</string>
+    <string name="use_file">Use File</string>
+
+    <!-- %s will be replaced by recovery_passphrase -->
+    <!--    <string name="upgrade_account_desc">Upgrade this session to allow it to verify other sessions, granting them access to encrypted messages and marking them as trusted for other users.</string>-->
+    <string name="enter_backup_passphrase">Enter %s</string>
+    <string name="backup_recovery_passphrase">Recovery Passphrase</string>
+    <string name="bootstrap_invalid_recovery_key">"It's not a valid recovery key"</string>
+    <string name="recovery_key_empty_error_message">Please enter a recovery key</string>
+
+    <string name="bootstrap_progress_checking_backup">Checking backup Key</string>
+    <string name="bootstrap_progress_checking_backup_with_info">Checking backup Key (%s)</string>
+    <string name="bootstrap_progress_compute_curve_key">Getting curve key</string>
+    <string name="bootstrap_progress_generating_ssss">Generating SSSS key from passphrase</string>
+    <string name="bootstrap_progress_generating_ssss_with_info">Generating SSSS key from passphrase (%s)</string>
+    <string name="bootstrap_progress_generating_ssss_recovery">Generating SSSS key from recovery key</string>
+    <string name="bootstrap_progress_storing_in_sss">Storing keybackup secret in SSSS</string>
+    <!-- To produce things like 'Element Android (IQDHUVJTTV)' -->
+    <string name="new_session_review_with_info">%1$s (%2$s)</string>
+
+    <string name="bootstrap_migration_enter_backup_password">Enter your Key Backup Passphrase to continue.</string>
+    <string name="bootstrap_migration_use_recovery_key">use your Key Backup recovery key</string>
+    <!-- %s will be replaced by the value of bootstrap_migration_use_recovery_key  -->
+    <string name="bootstrap_migration_with_passphrase_helper_with_link">Don’t know your Key Backup Passphrase, you can %s.</string>
+    <string name="bootstrap_migration_backup_recovery_key">Key Backup recovery key</string>
+
+    <string name="settings_security_prevent_screenshots_title">Prevent screenshots of the application</string>
+    <string name="settings_security_prevent_screenshots_summary">Enabling this setting adds the FLAG_SECURE to all Activities. Restart the application for the change to take effect.</string>
+
+    <string name="media_file_added_to_gallery">Media file added to the Gallery</string>
+    <string name="error_adding_media_file_to_gallery">Could not add media file to the Gallery</string>
+    <string name="error_saving_media_file">Could not save media file</string>
+    <string name="change_password_summary">Set a new account password…</string>
+
+    <string name="use_other_session_content_description">Use the latest Element on your other devices, Element Web, Element Desktop, Element iOS, Element for Android, or another cross-signing capable Matrix client</string>
+    <string name="app_desktop_web">Element Web\nElement Desktop</string>
+    <string name="app_ios_android">Element iOS\nElement Android</string>
+    <string name="or_other_mx_capabale_client">or another cross-signing capable Matrix client</string>
+    <string name="use_latest_app">Use the latest Element on your other devices:</string>
+    <string name="command_description_discard_session">Forces the current outbound group session in an encrypted room to be discarded</string>
+    <string name="command_description_discard_session_not_handled">Only supported in encrypted rooms</string>
+    <!-- first will be replaced by recovery_passphrase, second will be replaced by recovery_key-->
+    <string name="enter_secret_storage_passphrase_or_key">Use your %1$s or use your %2$s to continue.</string>
+    <string name="use_recovery_key">Use Recovery Key</string>
+    <string name="enter_secret_storage_input_key">Select your Recovery Key, or input it manually by typing it or pasting from your clipboard</string>
+    <string name="keys_backup_recovery_key_error_decrypt">Backup could not be decrypted with this Recovery Key: please verify that you entered the correct Recovery Key.</string>
+    <string name="failed_to_access_secure_storage">Failed to access secure storage</string>
+
+    <string name="unencrypted">Unencrypted</string>
+    <string name="encrypted_unverified">Encrypted by an unverified device</string>
+    <string name="review_logins">Review where you’re logged in</string>
+    <string name="verify_other_sessions">Verify all your sessions to ensure your account &amp; messages are safe</string>
+    <!-- Argument will be replaced by the other session name (e.g, Desktop, mobile) -->
+    <string name="verify_this_session">Verify the new login accessing your account: %1$s</string>
+
+    <string name="cross_signing_verify_by_text">Manually Verify by Text</string>
+    <string name="crosssigning_verify_session">Verify login</string>
+    <string name="cross_signing_verify_by_emoji">Interactively Verify by Emoji</string>
+    <string name="confirm_your_identity">Confirm your identity by verifying this login from one of your other sessions, granting it access to encrypted messages.</string>
+    <string name="mark_as_verified">Mark as Trusted</string>
+
+    <string name="error_empty_field_choose_user_name">Please choose a username.</string>
+    <string name="error_empty_field_choose_password">Please choose a password.</string>
+    <string name="external_link_confirmation_title">Double-check this link</string>
+    <string name="external_link_confirmation_message">The link %1$s is taking you to another site: %2$s.\n\nAre you sure you want to continue?</string>
+
+    <string name="create_room_dm_failure">"We couldn't create your DM. Please check the users you want to invite and try again."</string>
+
+    <string name="add_members_to_room">Add members</string>
+    <string name="invite_users_to_room_action_invite">INVITE</string>
+    <string name="inviting_users_to_room">Inviting users…</string>
+    <string name="invite_users_to_room_title">Invite Users</string>
+    <string name="invitation_sent_to_one_user">Invitation sent to %1$s</string>
+    <string name="invitations_sent_to_two_users">Invitations sent to %1$s and %2$s</string>
+    <plurals name="invitations_sent_to_one_and_more_users">
+        <item quantity="one">Invitations sent to %1$s and one more</item>
+        <item quantity="other">Invitations sent to %1$s and %2$d more</item>
+    </plurals>
+    <string name="invite_users_to_room_failure">We could not invite users. Please check the users you want to invite and try again.</string>
+
+    <string name="choose_locale_current_locale_title">Current language</string>
+    <string name="choose_locale_other_locales_title">Other available languages</string>
+    <string name="choose_locale_loading_locales">Loading available languages…</string>
+
+    <string name="open_terms_of">Open terms of %s</string>
+    <string name="disconnect_identity_server_dialog_content">Disconnect from the identity server %s?</string>
+    <string name="identity_server_error_outdated_identity_server">This identity server is outdated. Element support only API V2.</string>
+    <string name="identity_server_error_outdated_home_server">This operation is not possible. The homeserver is outdated.</string>
+    <string name="identity_server_error_no_identity_server_configured">Please first configure an identity server.</string>
+    <string name="identity_server_error_terms_not_signed">Please first accepts the terms of the identity server in the settings.</string>
+    <string name="identity_server_error_bulk_sha256_not_supported">For your privacy, Element only supports sending hashed user emails and phone number.</string>
+    <string name="identity_server_error_binding_error">The association has failed.</string>
+    <string name="identity_server_error_no_current_binding_error">The is no current association with this identifier.</string>
+
+    <string name="identity_server_set_default_notice">Your homeserver (%1$s) proposes to use %2$s for your identity server</string>
+    <string name="identity_server_set_default_submit">Use %1$s</string>
+    <string name="identity_server_set_alternative_notice">Alternatively, you can enter any other identity server URL</string>
+    <string name="identity_server_set_alternative_notice_no_default">Enter the URL of an identity server</string>
+    <string name="identity_server_set_alternative_submit">Submit</string>
+    <string name="power_level_edit_title">Set role</string>
+    <string name="power_level_title">Role</string>
+    <string name="a11y_open_chat">Open chat</string>
+    <string name="a11y_mute_microphone">Mute the microphone</string>
+    <string name="a11y_unmute_microphone">Unmute the microphone</string>
+    <string name="a11y_stop_camera">Stop the camera</string>
+    <string name="a11y_start_camera">Start the camera</string>
+
+    <string name="settings_setup_secure_backup">Set up Secure Backup</string>
+
+    <string name="bottom_sheet_setup_secure_backup_title">Secure backup</string>
+    <string name="bottom_sheet_setup_secure_backup_subtitle">Safeguard against losing access to encrypted messages &amp; data by backing up encryption keys on your server.</string>
+    <string name="bottom_sheet_setup_secure_backup_submit">Set up</string>
+    <string name="bottom_sheet_setup_secure_backup_security_key_title">Use a Security Key</string>
+    <string name="bottom_sheet_setup_secure_backup_security_key_subtitle">Generate a security key to store somewhere safe like a password manager or a safe.</string>
+    <string name="bottom_sheet_setup_secure_backup_security_phrase_title">Use a Security Phrase</string>
+    <string name="bottom_sheet_setup_secure_backup_security_phrase_subtitle">Enter a secret phrase only you know, and generate a key for backup.</string>
+
+    <string name="bottom_sheet_save_your_recovery_key_title">Save your Security Key</string>
+    <string name="bottom_sheet_save_your_recovery_key_content">Store your Security Key somewhere safe, like a password manager or a safe.</string>
+
+    <string name="set_a_security_phrase_title">Set a Security Phrase</string>
+    <string name="set_a_security_phrase_notice">Enter a security phrase only you know, used to secure secrets on your server.</string>
+    <string name="set_a_security_phrase_hint">Security Phrase</string>
+    <string name="set_a_security_phrase_again_notice">Enter your Security Phrase again to confirm it.</string>
+
+    <string name="save_your_security_key_title">Save your Security Key</string>
+    <string name="save_your_security_key_notice">Store your Security Key somewhere safe, like a password manager or a safe.</string>
+
+    <!-- Room Settings -->
+    <string name="room_settings_name_hint">Room Name</string>
+    <string name="room_settings_topic_hint">Topic</string>
+    <string name="room_settings_save_success">You changed room settings successfully</string>
+
+    <string name="notice_crypto_unable_to_decrypt_final">You cannot access this message</string>
+    <string name="notice_crypto_unable_to_decrypt_friendly">Waiting for this message, this may take a while</string>
+    <string name="crypto_utd">Cannot Decrypt</string>
+    <string name="notice_crypto_unable_to_decrypt_friendly_desc">Due to end-to-end encryption, you might need to wait for someone\'s message to arrive because the encryption keys were not properly sent to you.</string>
+    <string name="crypto_error_withheld_blacklisted">You cannot access this message because you have been blocked by the sender</string>
+    <string name="crypto_error_withheld_unverified">You cannot access this message because your session is not trusted by the sender</string>
+    <string name="crypto_error_withheld_generic">You cannot access this message because the sender purposely did not send the keys</string>
+    <string name="notice_crypto_unable_to_decrypt_merged">Waiting for encryption history</string>
+
+    <string name="element_disclaimer_title">Riot is now Element!</string>
+    <string name="element_disclaimer_content">We’re excited to announce we’ve changed name! Your app is up to date and you’re signed in to your account.</string>
+    <string name="element_disclaimer_negative_button">GOT IT</string>
+    <string name="element_disclaimer_positive_button">LEARN MORE</string>
+
+    <string name="element_login_splash_brand">element</string>
+
+
+    <string name="save_recovery_key_chooser_hint">Save recovery key in</string>
+
+    <string name="add_from_phone_book">Add from my phone book</string>
+    <string name="empty_phone_book">Your phone book is empty</string>
+    <string name="phone_book_title">Phone book</string>
+    <string name="search_in_my_contacts">Search in my contacts</string>
+    <string name="loading_contact_book">Retrieving your contacts…</string>
+    <string name="empty_contact_book">Your contact book is empty</string>
+    <string name="contacts_book_title">Contacts book</string>
+
+    <string name="three_pid_revoke_invite_dialog_title">Revoke invite</string>
+    <string name="three_pid_revoke_invite_dialog_content">Revoke invite to %1$s?</string>
+
+    <string name="member_banned_by">Banned by %1$s</string>
+    <string name="failed_to_unban">Failed to UnBan user</string>
+
+    <string name="alert_push_are_disabled_title">Push notifications are disabled</string>
+    <string name="alert_push_are_disabled_description">Review your settings to enable push notifications</string>
+    <string name="create_pin_title">Choose a PIN for security</string>
+    <string name="create_pin_confirm_title">Confirm PIN</string>
+    <string name="create_pin_confirm_failure">Failed to validate pin, please tap a new one.</string>
+    <string name="auth_pin_title">Enter your PIN</string>
+    <string name="auth_pin_forgot">Forgot PIN?</string>
+    <string name="auth_pin_reset_title">Reset pin</string>
+    <string name="auth_pin_new_pin_action">New pin</string>
+    <string name="auth_pin_reset_content">To reset your PIN, you\'ll need to re-login and create a new one.</string>
+    <string name="settings_security_pin_code_title">Enable PIN</string>
+    <string name="settings_security_pin_code_summary">If you want to reset your PIN, tap Forgot PIN to logout and reset.</string>
+    <string name="auth_pin_confirm_to_disable_title">Confirm PIN to disable PIN</string>
 </resources>

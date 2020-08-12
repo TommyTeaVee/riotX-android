@@ -20,19 +20,17 @@ import im.vector.matrix.android.api.session.homeserver.HomeServerCapabilities
 import im.vector.matrix.android.internal.database.model.HomeServerCapabilitiesEntity
 
 /**
- * HomeServerCapabilitiesEntity <-> HomeSeverCapabilities
+ * HomeServerCapabilitiesEntity -> HomeSeverCapabilities
  */
 internal object HomeServerCapabilitiesMapper {
 
     fun map(entity: HomeServerCapabilitiesEntity): HomeServerCapabilities {
         return HomeServerCapabilities(
-                maxUploadFileSize = entity.maxUploadFileSize
-        )
-    }
-
-    fun map(domain: HomeServerCapabilities): HomeServerCapabilitiesEntity {
-        return HomeServerCapabilitiesEntity(
-                maxUploadFileSize = domain.maxUploadFileSize
+                canChangePassword = entity.canChangePassword,
+                maxUploadFileSize = entity.maxUploadFileSize,
+                lastVersionIdentityServerSupported = entity.lastVersionIdentityServerSupported,
+                defaultIdentityServerUrl = entity.defaultIdentityServerUrl,
+                adminE2EByDefault = entity.adminE2EByDefault
         )
     }
 }

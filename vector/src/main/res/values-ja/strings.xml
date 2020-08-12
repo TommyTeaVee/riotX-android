@@ -324,7 +324,7 @@
     <string name="option_take_photo_video">写真または動画を撮影</string>
 
     <string name="auth_send_reset_email">初期化メール送信</string>
-    <string name="permissions_rationale_msg_camera">写真撮影やビデオ通話には, Riotアプリに端末のカメラの使用を許可する必要があります.</string>
+    <string name="permissions_rationale_msg_camera">写真撮影やビデオ通話には, Elementアプリに端末のカメラの使用を許可する必要があります.</string>
     <string name="cannot_start_call">通話を開始できませんでした。後ほど試してください。</string>
     <string name="missing_permissions_warning">権限が無いため、一部の機能を利用できない可能性があります…</string>
     <string name="missing_permissions_to_start_conf_call">この部屋で会議を開始するためには招待権限が必要です</string>
@@ -332,7 +332,7 @@
     <string name="action_sign_out">ログアウト</string>
     <string name="bottom_action_home">ホーム</string>
     <string name="no_conversation_placeholder">会話なし</string>
-    <string name="no_contact_access_placeholder">端末の電話帳をRiotアプリが読み取ることは許可されていません</string>
+    <string name="no_contact_access_placeholder">端末の電話帳をElementアプリが読み取ることは許可されていません</string>
     <string name="no_result_placeholder">結果なし</string>
 
     <string name="rooms_header">部屋</string>
@@ -384,9 +384,6 @@
     <string name="login_error_login_email_not_yet">まだクリックされていないeメールのリンク</string>
 
     <string name="compression_options">以下の容量で画像を送信</string>
-    <string name="e2e_need_log_in_again">この端末のエンドツーエンド暗号鍵を生成し、接続先サーバに公開鍵を送信するには、再度ログインする必要があります。
-一度回線を切断します。
-ご不便おかけしてすみません。</string>
 
     <string name="room_info_room_topic">部屋の説明</string>
 
@@ -499,7 +496,6 @@
     <string name="hs_url">接続先サーバ URL</string>
     <string name="identity_url">認証サーバ URL</string>
     <string name="auth_login">ログイン</string>
-    <string name="login_mobile_device">携帯端末</string>
 
     <string name="room_add_matrix_apps">Matrixアプリを追加</string>
     <string name="widget_integration_positive_power_level">権限の数値は正の整数で入力してください。</string>
@@ -507,25 +503,25 @@
     <string name="matrix_only_filter">Matrixの連絡先のみ</string>
     <string name="call_error_user_not_responding">通信先が通話の受取に失敗しました。</string>
     <string name="permissions_rationale_popup_title">情報</string>
-    <string name="permissions_rationale_msg_storage">Riotは添付ファイルを送信および保存するために写真とビデオライブラリにアクセスするための許可が必要です。
+    <string name="permissions_rationale_msg_storage">Elementは添付ファイルを送信および保存するために写真とビデオライブラリにアクセスするための許可が必要です。
 
 あなたの携帯端末からファイルを送信できるようにするには、次のポップアップでアクセスを許可してください。</string>
     <string name="permissions_rationale_msg_camera_explanation">
 
 通話をするには、次のポップアップでアクセスできるように設定してください。</string>
-    <string name="permissions_rationale_msg_record_audio">Riotアプリは、音声通話を実行するためにマイクへアクセスするための許可が必要です。</string>
+    <string name="permissions_rationale_msg_record_audio">Elementアプリは、音声通話を実行するためにマイクへアクセスするための許可が必要です。</string>
     <string name="permissions_rationale_msg_record_audio_explanation">
 
 通話をするには、次のポップアップでアクセスできるようにしてください。</string>
-    <string name="permissions_rationale_msg_camera_and_audio">ビデオ通話を行うには、カメラとマイクにアクセスするための権限がRiotアプリに必要です。
+    <string name="permissions_rationale_msg_camera_and_audio">ビデオ通話を行うには、カメラとマイクにアクセスするための権限がElementアプリに必要です。
 
 通話をするには、次のポップアップでのアクセスを許可してください。</string>
-    <string name="permissions_rationale_msg_contacts">Matrixユーザが電子メールアドレスや電話番号を元に他のユーザを検索するためには、Riotアプリがあなたの端末内電話帳へアクセスする許可が必要です。
+    <string name="permissions_rationale_msg_contacts">Matrixユーザが電子メールアドレスや電話番号を元に他のユーザを検索するためには、Elementアプリがあなたの端末内電話帳へアクセスする許可が必要です。
 
-Riotからあなた個人の電話帳への検索要求を許可する場合は、次のポップアップでアクセスを許可してください。</string>
-    <string name="permissions_msg_contacts_warning_other_androids">あなた個人の端末内の電話帳に登録されている電子メールアドレス、電話番号を元に、Riotの利用者を検索する場合は、アプリが端末内電話帳へアクセスする許可が必要です。
+Elementからあなた個人の電話帳への検索要求を許可する場合は、次のポップアップでアクセスを許可してください。</string>
+    <string name="permissions_msg_contacts_warning_other_androids">あなた個人の端末内の電話帳に登録されている電子メールアドレス、電話番号を元に、Elementの利用者を検索する場合は、アプリが端末内電話帳へアクセスする許可が必要です。
 
-Riotアプリがあなたの電話帳へアクセスすることを許可しますか？</string>
+Elementアプリがあなたの電話帳へアクセスすることを許可しますか？</string>
 
     <string name="permissions_action_not_performed_missing_permissions">申し訳ありません。権限がないために操作が実行されませんでした</string>
 
@@ -543,10 +539,8 @@ Riotアプリがあなたの電話帳へアクセスすることを許可しま�
     <string name="widget_integration_missing_room_id">リクエストに room_id がありません。</string>
     <string name="widget_integration_failed_to_send_request">リクエストの送信に失敗しました。</string>
     <string name="widget_integration_unable_to_create">ウィジェットを作成できません。</string>
-    <string name="event_formatter_widget_removed">%1$s は %2$s によって削除されました</string>
     <string name="widget_no_power_to_manage">この部屋のウィジェットを管理する権限が必要です</string>
     <string name="widget_creation_failure">ウィジェットの作成に失敗しました</string>
-    <string name="event_formatter_widget_added">%1$s は %2$s によって追加されました</string>
     <string name="widget_delete_message_confirmation">ウィジェットをこの部屋から削除してもよろしいですか？</string>
     <string name="directory_server_fail_to_retrieve_server">サーバーが利用できないか、オーバーロードしている可能性があります</string>
     <string name="unknown_devices_alert_message">この部屋は検証されていない不明なデバイスが含まれています。
@@ -556,9 +550,6 @@ Riotアプリがあなたの電話帳へアクセスすることを許可しま�
 不明なデバイス:</string>
 
     <string name="unknown_devices_alert_title">部屋に不明なデバイスが含まれています</string>
-    <string name="e2e_enabling_on_app_update">Riotはエンドツーエンドの暗号化をサポートするようになりましたが、有効にするには再度ログインする必要があります。
-
-アプリケーションの設定から今すぐまたは後で行うことができます。</string>
 
     <string name="encryption_information_verify_key_match">キーが一致していることを確認</string>
 
@@ -832,7 +823,7 @@ Riotアプリがあなたの電話帳へアクセスすることを許可しま�
     <string name="e2e_re_request_encryption_key_sent">鍵のリクエストが送信されました。</string>
 
     <string name="e2e_re_request_encryption_key_dialog_title">リクエスト送信済</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">鍵をこのデバイスに送信できるように、メッセージを復号化できる他のデバイスでRiotを起動してください。</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">鍵をこのデバイスに送信できるように、メッセージを復号化できる他のデバイスでElementを起動してください。</string>
 
     <plurals name="format_time_s">
         <item quantity="other">%d 秒</item>
@@ -850,9 +841,6 @@ Riotアプリがあなたの電話帳へアクセスすることを許可しま�
     <string name="room_participants_now">現在 %1$s</string>
     <string name="room_participants_ago">%2$s 前 %1$s</string>
 
-    <string name="room_participants_action_unignore_prompt">このユーザからのすべてのメッセージを表示しますか？
-
-この操作によってアプリを再起動するため、しばらく時間がかかることにご注意ください。</string>
     <string name="room_participants_invite_join_names">"%1$s、 "</string>
     <string name="room_participants_invite_join_names_and">%1$s と %2$s</string>
     <string name="room_participants_invite_join_names_combined">%1$s %2$s</string>
@@ -874,13 +862,13 @@ Riotアプリがあなたの電話帳へアクセスすることを許可しま�
     <string name="settings_deactivate_my_account">自分のアカウントを停止</string>
 
     <string name="startup_notification_privacy_title">通知のプライバシー</string>
-    <string name="startup_notification_privacy_message">Riotは通知を安全で内密に扱うため、バックグラウンドで動作できます。これによりバッテリー使用に影響が出ることがあります。</string>
+    <string name="startup_notification_privacy_message">Elementは通知を安全で内密に扱うため、バックグラウンドで動作できます。これによりバッテリー使用に影響が出ることがあります。</string>
     <string name="startup_notification_privacy_button_grant">許可を与える</string>
     <string name="startup_notification_privacy_button_other">他のオプションを選択</string>
 
     <string name="settings_opt_in_of_analytics">解析データを送信</string>
-    <string name="settings_opt_in_of_analytics_summary">Riotはアプリを改善するため、匿名の解析データを収集します。</string>
-    <string name="settings_opt_in_of_analytics_prompt">Riotを改善するのを助けるため、解析を許可してください。</string>
+    <string name="settings_opt_in_of_analytics_summary">Elementはアプリを改善するため、匿名の解析データを収集します。</string>
+    <string name="settings_opt_in_of_analytics_prompt">Elementを改善するのを助けるため、解析を許可してください。</string>
     <string name="settings_opt_in_of_analytics_ok">はい、助けたいです！</string>
 
     <string name="settings_without_flair">あなたは現在どのコミュニティーのメンバーでもありません。</string>
@@ -996,14 +984,11 @@ Matrixでのメッセージの可視性は電子メールと同様です。メ�
     <string name="auth_accept_policies">このホームサーバーの方針を閲覧し承認してください:</string>
 
     <string name="settings_call_category">通話設定画面</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">着信にRiotの既定の着信音を使う</string>
+    <string name="settings_call_ringtone_use_app_ringtone">着信にElementの既定の着信音を使う</string>
     <string name="settings_call_ringtone_title">着信音</string>
     <string name="settings_call_ringtone_dialog_title">着信音を選んでください:</string>
 
     <string name="room_participants_action_kick">追い出す</string>
-    <plurals name="room_participants_kick_prompt_msg">
-        <item quantity="other">このチャットから本当にこのユーザーを追い出しますか？</item>
-    </plurals>
     <string name="reason_hint">理由</string>
 
     <string name="notification_sync_init">サービスを初期化</string>
@@ -1071,4 +1056,10 @@ Matrixでのメッセージの可視性は電子メールと同様です。メ�
     <string name="keys_backup_info_title_algorithm">アルゴリズム</string>
     <string name="keys_backup_info_title_signature">署名</string>
 
+    <string name="settings_notification_troubleshoot">通知に関する問題の解決</string>
+    <string name="settings_troubleshoot_test_system_settings_title">システム設定</string>
+    <string name="settings_troubleshoot_test_account_settings_title">アカウント設定</string>
+    <string name="settings_troubleshoot_test_bing_settings_title">カスタム設定</string>
+    <string name="settings_troubleshoot_test_service_boot_title">起動時の実行</string>
+    <string name="settings_troubleshoot_test_bg_restricted_title">バックグラウンド制限の確認</string>
 </resources>

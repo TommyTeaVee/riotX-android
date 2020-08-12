@@ -7,8 +7,8 @@
     <string name="notice_room_invite_no_invitee">Поканата на %s</string>
     <string name="notice_room_invite">%1$s покани %2$s</string>
     <string name="notice_room_invite_you">%1$s Ви покани</string>
-    <string name="notice_room_join">%1$s се присъедини</string>
-    <string name="notice_room_leave">%1$s напусна</string>
+    <string name="notice_room_join">%1$s се присъедини в стаята</string>
+    <string name="notice_room_leave">%1$s напусна стаята</string>
     <string name="notice_room_reject">%1$s отхвърли поканата</string>
     <string name="notice_room_kick">%1$s изгони %2$s</string>
     <string name="notice_room_unban">%1$s отблокира %2$s</string>
@@ -62,13 +62,6 @@
     <string name="notice_crypto_error_unkwown_inbound_session_id">Устройството на подателя не изпрати ключовете за това съобщение.</string>
 
     <string name="summary_user_sent_sticker">%1$s изпрати стикер.</string>
-
-    <string name="message_reply_to_prefix">В отговор на</string>
-
-    <string name="reply_to_an_image">изпрати снимка.</string>
-    <string name="reply_to_a_video">изпрати видео.</string>
-    <string name="reply_to_an_audio_file">изпрати аудио файл.</string>
-    <string name="reply_to_a_file">изпрати файл.</string>
 
     <string name="room_displayname_invite_from">Покана от %s</string>
     <string name="room_displayname_room_invite">Покана за стая</string>
@@ -176,8 +169,8 @@
     <string name="notice_room_invite_no_invitee_with_reason">поканата на %1$s. Причина: %2$s</string>
     <string name="notice_room_invite_with_reason">%1$s покани %2$s. Причина: %3$s</string>
     <string name="notice_room_invite_you_with_reason">%1$s ви покани. Причина: %2$s</string>
-    <string name="notice_room_join_with_reason">%1$s се присъедини. Причина: %2$s</string>
-    <string name="notice_room_leave_with_reason">%1$s напусна. Причина: %2$s</string>
+    <string name="notice_room_join_with_reason">%1$s се присъедини в стаята. Причина: %2$s</string>
+    <string name="notice_room_leave_with_reason">%1$s напусна стаята. Причина: %2$s</string>
     <string name="notice_room_reject_with_reason">%1$s отхвърли поканата. Причина: %2$s</string>
     <string name="notice_room_kick_with_reason">%1$s изгони %2$s. Причина: %3$s</string>
     <string name="notice_room_unban_with_reason">%1$s блокира %2$s. Причина: %3$s</string>
@@ -202,4 +195,13 @@
     <string name="notice_room_canonical_alias_set">%1$s настрой %2$s като основен адрес за тази стая.</string>
     <string name="notice_room_canonical_alias_unset">%1$s премахна основния адрес за тази стая.</string>
 
+    <string name="notice_room_guest_access_can_join">%1$s разреши на гости да се присъединяват в стаята.</string>
+    <string name="notice_room_guest_access_forbidden">%1$s предотврати присъединяването на гости в стаята.</string>
+
+    <string name="notice_end_to_end_ok">%1$s включи шифроване от-край-до-край.</string>
+    <string name="notice_end_to_end_unknown_algorithm">%1$s включи шифроване от-край-до-край (неразпознат алгоритъм %2$s).</string>
+
+    <string name="key_verification_request_fallback_message">%s изпрати запитване за потвърждение на ключа ви, но клиентът ви не поддържа верифициране посредством чат. Ще трябва да използвате стария метод за верифициране на ключове.</string>
+
+    <string name="notice_room_created">%1$s създаде стаята</string>
 </resources>

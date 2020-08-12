@@ -36,6 +36,7 @@ import im.vector.matrix.android.internal.crypto.model.ImportRoomKeysResult
 import im.vector.matrix.android.internal.crypto.model.MXDeviceInfo
 import im.vector.matrix.android.internal.crypto.model.MXEncryptEventContentResult
 import im.vector.matrix.android.internal.crypto.model.MXUsersDevicesMap
+import im.vector.matrix.android.internal.crypto.model.event.RoomKeyWithHeldContent
 import im.vector.matrix.android.internal.crypto.model.rest.DeviceInfo
 import im.vector.matrix.android.internal.crypto.model.rest.DevicesListResponse
 import im.vector.matrix.android.internal.crypto.model.rest.RoomKeyRequestBody
@@ -98,7 +99,11 @@ interface CryptoService {
 
     fun removeRoomKeysRequestListener(listener: GossipingRequestListener)
 
-    fun getDevicesList(callback: MatrixCallback<DevicesListResponse>)
+    fun fetchDevicesList(callback: MatrixCallback<DevicesListResponse>)
+
+    fun getMyDevicesInfo() : List<DeviceInfo>
+
+    fun getLiveMyDevicesInfo() : LiveData<List<DeviceInfo>>
 
     fun getDeviceInfo(deviceId: String, callback: MatrixCallback<DeviceInfo>)
 
@@ -110,6 +115,8 @@ interface CryptoService {
                             eventType: String,
                             roomId: String,
                             callback: MatrixCallback<MXEncryptEventContentResult>)
+
+    fun discardOutboundSession(roomId: String)
 
     @Throws(MXCryptoError::class)
     fun decryptEvent(event: Event, timeline: String): MXEventDecryptionResult
@@ -134,7 +141,13 @@ interface CryptoService {
 
     fun removeSessionListener(listener: NewSessionListener)
 
-    fun getOutgoingRoomKeyRequest(): List<OutgoingRoomKeyRequest>
-    fun getIncomingRoomKeyRequest(): List<IncomingRoomKeyRequest>
+    fun getOutgoingRoomKeyRequests(): List<OutgoingRoomKeyRequest>
+
+    fun getIncomingRoomKeyRequests(): List<IncomingRoomKeyRequest>
+
     fun getGossipingEventsTrail(): List<Event>
+
+    // For testing shared session
+    fun getSharedWithInfo(roomId: String?, sessionId: String) : MXUsersDevicesMap<Int>
+    fun getWithHeldMegolmSession(roomId: String, sessionId: String) : RoomKeyWithHeldContent?
 }

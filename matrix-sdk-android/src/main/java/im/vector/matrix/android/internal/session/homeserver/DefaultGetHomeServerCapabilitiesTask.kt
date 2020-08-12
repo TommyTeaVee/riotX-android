@@ -17,13 +17,22 @@
 package im.vector.matrix.android.internal.session.homeserver
 
 import com.zhuinden.monarchy.Monarchy
+import im.vector.matrix.android.api.auth.data.HomeServerConnectionConfig
+import im.vector.matrix.android.api.auth.wellknown.WellknownResult
 import im.vector.matrix.android.api.session.homeserver.HomeServerCapabilities
+import im.vector.matrix.android.internal.auth.version.Versions
+import im.vector.matrix.android.internal.auth.version.isLoginAndRegistrationSupportedBySdk
 import im.vector.matrix.android.internal.database.model.HomeServerCapabilitiesEntity
 import im.vector.matrix.android.internal.database.query.getOrCreate
+import im.vector.matrix.android.internal.di.SessionDatabase
+import im.vector.matrix.android.internal.di.UserId
 import im.vector.matrix.android.internal.network.executeRequest
+import im.vector.matrix.android.internal.session.integrationmanager.IntegrationManagerConfigExtractor
 import im.vector.matrix.android.internal.task.Task
 import im.vector.matrix.android.internal.util.awaitTransaction
+import im.vector.matrix.android.internal.wellknown.GetWellknownTask
 import org.greenrobot.eventbus.EventBus
+import timber.log.Timber
 import java.util.Date
 import javax.inject.Inject
 
@@ -31,8 +40,13 @@ internal interface GetHomeServerCapabilitiesTask : Task<Unit, Unit>
 
 internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
         private val capabilitiesAPI: CapabilitiesAPI,
-        private val monarchy: Monarchy,
-        private val eventBus: EventBus
+        @SessionDatabase private val monarchy: Monarchy,
+        private val eventBus: EventBus,
+        private val getWellknownTask: GetWellknownTask,
+        private val configExtractor: IntegrationManagerConfigExtractor,
+        private val homeServerConnectionConfig: HomeServerConnectionConfig,
+        @UserId
+        private val userId: String
 ) : GetHomeServerCapabilitiesTask {
 
     override suspend fun execute(params: Unit) {
@@ -47,22 +61,63 @@ internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
             return
         }
 
-        val uploadCapabilities = executeRequest<GetUploadCapabilitiesResult>(eventBus) {
-            apiCall = capabilitiesAPI.getUploadCapabilities()
-        }
+        val capabilities = runCatching {
+            executeRequest<GetCapabilitiesResult>(eventBus) {
+                apiCall = capabilitiesAPI.getCapabilities()
+            }
+        }.getOrNull()
 
-        // TODO Add other call here (get version, etc.)
+        val uploadCapabilities = runCatching {
+            executeRequest<GetUploadCapabilitiesResult>(eventBus) {
+                apiCall = capabilitiesAPI.getUploadCapabilities()
+            }
+        }.getOrNull()
 
-        insertInDb(uploadCapabilities)
+        val versions = runCatching {
+            executeRequest<Versions>(null) {
+                apiCall = capabilitiesAPI.getVersions()
+            }
+        }.getOrNull()
+
+        val wellknownResult = runCatching {
+            getWellknownTask.execute(GetWellknownTask.Params(userId, homeServerConnectionConfig))
+        }.getOrNull()
+
+        insertInDb(capabilities, uploadCapabilities, versions, wellknownResult)
     }
 
-    private suspend fun insertInDb(getUploadCapabilitiesResult: GetUploadCapabilitiesResult) {
+    private suspend fun insertInDb(getCapabilitiesResult: GetCapabilitiesResult?,
+                                   getUploadCapabilitiesResult: GetUploadCapabilitiesResult?,
+                                   getVersionResult: Versions?,
+                                   getWellknownResult: WellknownResult?) {
         monarchy.awaitTransaction { realm ->
             val homeServerCapabilitiesEntity = HomeServerCapabilitiesEntity.getOrCreate(realm)
 
-            homeServerCapabilitiesEntity.maxUploadFileSize = getUploadCapabilitiesResult.maxUploadSize
-                    ?: HomeServerCapabilities.MAX_UPLOAD_FILE_SIZE_UNKNOWN
+            if (getCapabilitiesResult != null) {
+                homeServerCapabilitiesEntity.canChangePassword = getCapabilitiesResult.canChangePassword()
+            }
 
+            if (getUploadCapabilitiesResult != null) {
+                homeServerCapabilitiesEntity.maxUploadFileSize = getUploadCapabilitiesResult.maxUploadSize
+                        ?: HomeServerCapabilities.MAX_UPLOAD_FILE_SIZE_UNKNOWN
+            }
+
+            if (getVersionResult != null) {
+                homeServerCapabilitiesEntity.lastVersionIdentityServerSupported = getVersionResult.isLoginAndRegistrationSupportedBySdk()
+            }
+
+            if (getWellknownResult != null && getWellknownResult is WellknownResult.Prompt) {
+                homeServerCapabilitiesEntity.defaultIdentityServerUrl = getWellknownResult.identityServerUrl
+                homeServerCapabilitiesEntity.adminE2EByDefault = getWellknownResult.wellKnown.e2eAdminSetting?.e2eDefault ?: true
+                // We are also checking for integration manager configurations
+                val config = configExtractor.extract(getWellknownResult.wellKnown)
+                if (config != null) {
+                    Timber.v("Extracted integration config : $config")
+                    realm.insertOrUpdate(config)
+                }
+            } else {
+                homeServerCapabilitiesEntity.adminE2EByDefault = true
+            }
             homeServerCapabilitiesEntity.lastUpdatedTimestamp = Date().time
         }
     }

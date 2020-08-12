@@ -65,14 +65,16 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
 ) : SharedSecretStorageService {
 
     override fun generateKey(keyId: String,
+                             key: SsssKeySpec?,
                              keyName: String,
                              keySigner: KeySigner?,
                              callback: MatrixCallback<SsssKeyCreationInfo>) {
         cryptoCoroutineScope.launch(coroutineDispatchers.main) {
-            val key = try {
-                ByteArray(32).also {
-                    SecureRandom().nextBytes(it)
-                }
+            val bytes = try {
+                (key as? RawBytesKeySpec)?.privateKey
+                        ?: ByteArray(32).also {
+                            SecureRandom().nextBytes(it)
+                        }
             } catch (failure: Throwable) {
                 callback.onFailure(failure)
                 return@launch
@@ -102,7 +104,8 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
                             callback.onSuccess(SsssKeyCreationInfo(
                                     keyId = keyId,
                                     content = storageKeyContent,
-                                    recoveryKey = computeRecoveryKey(key)
+                                    recoveryKey = computeRecoveryKey(bytes),
+                                    keySpec = RawBytesKeySpec(bytes)
                             ))
                         }
                     }
@@ -142,7 +145,8 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
                             callback.onSuccess(SsssKeyCreationInfo(
                                     keyId = keyId,
                                     content = storageKeyContent,
-                                    recoveryKey = computeRecoveryKey(privatePart.privateKey)
+                                    recoveryKey = computeRecoveryKey(privatePart.privateKey),
+                                    keySpec = RawBytesKeySpec(privatePart.privateKey)
                             ))
                         }
                     }
@@ -272,7 +276,7 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
         val ivParameterSpec = IvParameterSpec(iv)
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
         // secret are not that big, just do Final
-        val cipherBytes = cipher.doFinal(clearDataBase64.fromBase64())
+        val cipherBytes = cipher.doFinal(clearDataBase64.toByteArray())
         require(cipherBytes.isNotEmpty())
 
         val macKeySpec = SecretKeySpec(macKey, "HmacSHA256")
@@ -303,6 +307,15 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
 
         val cipherRawBytes = cipherContent.ciphertext?.fromBase64() ?: throw SharedSecretStorageError.BadCipherText
 
+        // Check Signature
+        val macKeySpec = SecretKeySpec(macKey, "HmacSHA256")
+        val mac = Mac.getInstance("HmacSHA256").apply { init(macKeySpec) }
+        val digest = mac.doFinal(cipherRawBytes)
+
+        if (!cipherContent.mac?.fromBase64()?.contentEquals(digest).orFalse()) {
+            throw SharedSecretStorageError.BadMac
+        }
+
         val cipher = Cipher.getInstance("AES/CTR/NoPadding")
 
         val secretKeySpec = SecretKeySpec(aesKey, "AES")
@@ -313,17 +326,7 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
 
         require(decryptedSecret.isNotEmpty())
 
-        // Check Signature
-        val macKeySpec = SecretKeySpec(macKey, "HmacSHA256")
-        val mac = Mac.getInstance("HmacSHA256").apply { init(macKeySpec) }
-        val digest = mac.doFinal(cipherRawBytes)
-
-        if (!cipherContent.mac?.fromBase64()?.contentEquals(digest).orFalse()) {
-            throw SharedSecretStorageError.BadMac
-        } else {
-            // we are good
-            return decryptedSecret.toBase64NoPadding()
-        }
+        return String(decryptedSecret, Charsets.UTF_8)
     }
 
     override fun getAlgorithmsForSecret(name: String): List<KeyInfoResult> {
@@ -416,7 +419,7 @@ internal class DefaultSharedSecretStorageService @Inject constructor(
                 ?: return IntegrityResult.Error(SharedSecretStorageError.UnknownKey(keyId ?: ""))
 
         if (keyInfo.content.algorithm != SSSS_ALGORITHM_AES_HMAC_SHA2
-                || keyInfo.content.algorithm != SSSS_ALGORITHM_CURVE25519_AES_SHA2) {
+                && keyInfo.content.algorithm != SSSS_ALGORITHM_CURVE25519_AES_SHA2) {
             // Unsupported algorithm
             return IntegrityResult.Error(
                     SharedSecretStorageError.UnsupportedAlgorithm(keyInfo.content.algorithm ?: "")

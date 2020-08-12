@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2020 New Vector Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,19 @@
 package im.vector.matrix.android.internal.network
 
 import im.vector.matrix.android.api.failure.Failure
+import im.vector.matrix.android.api.failure.shouldBeRetried
+import im.vector.matrix.android.internal.network.ssl.CertUtil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import org.greenrobot.eventbus.EventBus
 import retrofit2.Call
+import retrofit2.awaitResponse
 import java.io.IOException
 
-internal suspend inline fun <DATA> executeRequest(eventBus: EventBus?,
-                                                  block: Request<DATA>.() -> Unit) = Request<DATA>(eventBus).apply(block).execute()
+internal suspend inline fun <DATA : Any> executeRequest(eventBus: EventBus?,
+                                                        block: Request<DATA>.() -> Unit) = Request<DATA>(eventBus).apply(block).execute()
 
-internal class Request<DATA>(private val eventBus: EventBus?) {
+internal class Request<DATA : Any>(private val eventBus: EventBus?) {
 
     var isRetryable = false
     var initialDelay: Long = 100L
@@ -46,7 +49,16 @@ internal class Request<DATA>(private val eventBus: EventBus?) {
                 throw response.toFailure(eventBus)
             }
         } catch (exception: Throwable) {
-            if (isRetryable && currentRetryCount++ < maxRetryCount && exception is IOException) {
+            // Check if this is a certificateException
+            CertUtil.getCertificateException(exception)
+                    // TODO Support certificate error once logged
+                    // ?.also { unrecognizedCertificateException ->
+                    //    // Send the error to the bus, for a global management
+                    //    eventBus?.post(GlobalError.CertificateError(unrecognizedCertificateException))
+                    // }
+                    ?.also { unrecognizedCertificateException -> throw unrecognizedCertificateException }
+
+            if (isRetryable && currentRetryCount++ < maxRetryCount && exception.shouldBeRetried()) {
                 delay(currentDelay)
                 currentDelay = (currentDelay * 2L).coerceAtMost(maxDelay)
                 return execute()

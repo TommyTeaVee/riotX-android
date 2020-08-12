@@ -15,30 +15,30 @@
  */
 package im.vector.matrix.android.internal.crypto.model
 
-import im.vector.matrix.android.internal.crypto.model.rest.RestDeviceInfo
+import im.vector.matrix.android.internal.crypto.model.rest.DeviceKeys
+import im.vector.matrix.android.internal.crypto.model.rest.DeviceKeysWithUnsigned
 import im.vector.matrix.android.internal.crypto.model.rest.RestKeyInfo
 
 internal object CryptoInfoMapper {
 
-    fun map(restDeviceInfo: RestDeviceInfo): CryptoDeviceInfo {
+    fun map(deviceKeysWithUnsigned: DeviceKeysWithUnsigned): CryptoDeviceInfo {
         return CryptoDeviceInfo(
-                deviceId = restDeviceInfo.deviceId,
-                userId = restDeviceInfo.userId,
-                algorithms = restDeviceInfo.algorithms,
-                keys = restDeviceInfo.keys,
-                signatures = restDeviceInfo.signatures,
-                unsigned = restDeviceInfo.unsigned,
+                deviceId = deviceKeysWithUnsigned.deviceId,
+                userId = deviceKeysWithUnsigned.userId,
+                algorithms = deviceKeysWithUnsigned.algorithms,
+                keys = deviceKeysWithUnsigned.keys,
+                signatures = deviceKeysWithUnsigned.signatures,
+                unsigned = deviceKeysWithUnsigned.unsigned,
                 trustLevel = null
         )
     }
 
-    fun map(cryptoDeviceInfo: CryptoDeviceInfo): RestDeviceInfo {
-        return RestDeviceInfo(
+    fun map(cryptoDeviceInfo: CryptoDeviceInfo): DeviceKeys {
+        return DeviceKeys(
                 deviceId = cryptoDeviceInfo.deviceId,
                 algorithms = cryptoDeviceInfo.algorithms,
                 keys = cryptoDeviceInfo.keys,
                 signatures = cryptoDeviceInfo.signatures,
-                unsigned = cryptoDeviceInfo.unsigned,
                 userId = cryptoDeviceInfo.userId
         )
     }
@@ -47,7 +47,7 @@ internal object CryptoInfoMapper {
         return CryptoCrossSigningKey(
                 userId = keyInfo.userId,
                 usages = keyInfo.usages,
-                keys = keyInfo.keys ?: emptyMap(),
+                keys = keyInfo.keys.orEmpty(),
                 signatures = keyInfo.signatures,
                 trustLevel = null
         )
@@ -60,21 +60,5 @@ internal object CryptoInfoMapper {
                 keys = keyInfo.keys,
                 signatures = keyInfo.signatures
         )
-    }
-
-    fun RestDeviceInfo.toCryptoModel(): CryptoDeviceInfo {
-        return map(this)
-    }
-
-    fun CryptoDeviceInfo.toRest(): RestDeviceInfo {
-        return map(this)
-    }
-
-//    fun RestKeyInfo.toCryptoModel(): CryptoCrossSigningKey {
-//        return map(this)
-//    }
-
-    fun CryptoCrossSigningKey.toRest(): RestKeyInfo {
-        return map(this)
     }
 }

@@ -63,7 +63,7 @@
     <string name="local_address_book_header">دفتر العناوين المحلي</string>
     <string name="matrix_only_filter">متراسلو «ماترِكس» فقط</string>
     <string name="no_conversation_placeholder">لا محادثات</string>
-    <string name="no_contact_access_placeholder">لم تسمح لِ‍ Riot بمطالعة متراسليك المحليين</string>
+    <string name="no_contact_access_placeholder">لم تسمح لِ‍ Element بمطالعة متراسليك المحليين</string>
     <string name="no_result_placeholder">لا نتائج</string>
 
     <string name="rooms_header">الغرف</string>
@@ -146,16 +146,12 @@
     <string name="login_error_unable_register">تعذّر التسجيل</string>
     <string name="login_error_unable_register_mail_ownership">تعذّر التسجيل: فشل في ملكية البريد</string>
     <string name="login_error_invalid_home_server">أدخِل مسارا صالحا</string>
-    <string name="login_mobile_device">المحمول</string>
 
     <string name="login_error_forbidden">اسم المستخدم/كلمة السر غير صالحة</string>
     <string name="login_error_not_json">لم يحتوي JSON صالح</string>
     <string name="login_error_limit_exceeded">أُرسلت الكثير من الطلبات</string>
     <string name="login_error_user_in_use">اسم المستخدم هذا مستخدم بالفعل</string>
     <string name="login_error_login_email_not_yet">لم يُنقر بعد على الرابط في البريد</string>
-
-    <string name="e2e_need_log_in_again">عليك الولوج ثانيةً لتوليد مفاتيح تعمية الطرفين لهذا الجهاز وإرسال المفتاح العمومي إلى خادوم المنزل.
-نرجو المعذرة.</string>
 
     <string name="attachment_cancel_download">أأُلغي التنزيل؟</string>
     <string name="attachment_cancel_upload">أأُلغي الرفع؟</string>
@@ -558,20 +554,20 @@
     <string name="call_error_ice_failed">فشل اتصال الوسائط</string>
     <string name="call_error_answered_elsewhere">رُدّ على المكالة في مكان آخر</string>
 
-    <string name="permissions_rationale_msg_storage">يحتاج Riot تصريحا منك للوصول إلى مكتبتي الصور والفديو لإرسال المرفقات وحفظها.
+    <string name="permissions_rationale_msg_storage">يحتاج Element تصريحا منك للوصول إلى مكتبتي الصور والفديو لإرسال المرفقات وحفظها.
 
 رجاءً اسمح بالوصول في المنبثقة التالية لتقدر على إرسال الملفات من هاتفك.</string>
-    <string name="permissions_rationale_msg_camera">يحتاج Riot تصريحا منك للوصول إلى الكمرة لأخذ الصور وللمكالمات الصورية.</string>
-    <string name="permissions_rationale_msg_record_audio">يحتاج Riot تصريحا منك للوصول إلى المِكرفون لإجراء المكالمات الصوتية.</string>
+    <string name="permissions_rationale_msg_camera">يحتاج Element تصريحا منك للوصول إلى الكمرة لأخذ الصور وللمكالمات الصورية.</string>
+    <string name="permissions_rationale_msg_record_audio">يحتاج Element تصريحا منك للوصول إلى المِكرفون لإجراء المكالمات الصوتية.</string>
     <string name="permissions_rationale_msg_record_audio_explanation">
 
 رجاءً اسمح بالنفاذ في المنبثقة الآتية لتتمكن من إجراء محادثة.</string>
-    <string name="permissions_rationale_msg_camera_and_audio">يحتاج Riot تصريحا منك للوصول إلى الكمرة والمِكرفون لإجراء المكالمات الصورية.
+    <string name="permissions_rationale_msg_camera_and_audio">يحتاج Element تصريحا منك للوصول إلى الكمرة والمِكرفون لإجراء المكالمات الصورية.
 
 رجاءً اسمح بالوصول في المنبثقة التالية لتقدر على إرسال إجراء المكالمات الصورية.</string>
-    <string name="permissions_rationale_msg_contacts">يحتاج Riot تصريحا منك للوصول إلى دفتر العناوين للعثور على مستخدمي ماترِكس الآخرين وذلك حسب البريد الإلكتروني ورقم الهاتف.
+    <string name="permissions_rationale_msg_contacts">يحتاج Element تصريحا منك للوصول إلى دفتر العناوين للعثور على مستخدمي ماترِكس الآخرين وذلك حسب البريد الإلكتروني ورقم الهاتف.
 
-رجاءً اسمح بالوصول في المنبثقة التالية لتستكشف مستخدميك في دفتر العناوين من Riot.</string>
+رجاءً اسمح بالوصول في المنبثقة التالية لتستكشف مستخدميك في دفتر العناوين من Element.</string>
     <string name="media_slider_saved">حُفظت</string>
     <string name="preview">عايِن</string>
     <string name="room_sync_in_progress">يُزامن…</string>
@@ -587,9 +583,9 @@
 
     <string name="compression_opt_list_original">الأصلي</string>
     <string name="call_error_user_not_responding">لم يُجب الطرف البعيد.</string>
-    <string name="permissions_msg_contacts_warning_other_androids">يحتاج Riot تصريحا منك للوصول إلى دفتر العناوين للعثور على مستخدمي ماترِكس الآخرين وذلك حسب البريد الإلكتروني ورقم الهاتف.
+    <string name="permissions_msg_contacts_warning_other_androids">يحتاج Element تصريحا منك للوصول إلى دفتر العناوين للعثور على مستخدمي ماترِكس الآخرين وذلك حسب البريد الإلكتروني ورقم الهاتف.
 
-أتسمح بأن يصل Riot إلى متراسليك؟</string>
+أتسمح بأن يصل Element إلى متراسليك؟</string>
 
     <string name="room_participants_header_direct_chats">الدردشات المباشرة</string>
     <string name="room_participants_invite_search_another_user">معرّف المستخدم أو اسمه أو بريده</string>
@@ -764,10 +760,6 @@
 
 الأجهزة المجهولة:</string>
 
-    <string name="e2e_enabling_on_app_update">بات يدعم Riot تعمية الطرفين، ولكن عليك الولوج مجددا لتفعيلها.
-
-يمكنك فعل ذلك الآن أو لاحقا وذلك من إعدادات التطبيق.</string>
-
     <string name="encryption_never_send_to_unverified_devices_summary">لا ترسل من هذا الجهاز الرسائل المعمّاة إلى الأجهزة غير المؤكّدة</string>
 
     <string name="encryption_never_send_to_unverified_devices_title">عمِّ إلى الأجهزة المؤكّدة فقط</string>
@@ -864,7 +856,7 @@
     <string name="e2e_re_request_encryption_key_sent">أُرسل طلب المفتاح.</string>
 
     <string name="e2e_re_request_encryption_key_dialog_title">أُرسل الطلب</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">رجاءً أطلِق Riot في جهاز آخر يقدر على فك تعمية الرسالة ليُرسل المفاتيح إلى هذا الجهاز.</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">رجاءً أطلِق Element في جهاز آخر يقدر على فك تعمية الرسالة ليُرسل المفاتيح إلى هذا الجهاز.</string>
 
     <string name="speak">انطِق</string>
     <string name="clear">امسح</string>
@@ -892,8 +884,8 @@
     <string name="startup_notification_privacy_button_other">اختر خيارا آخر</string>
 
     <string name="settings_opt_in_of_analytics">أرسِل بيانات التحاليل</string>
-    <string name="settings_opt_in_of_analytics_summary">يجمع Riot التحاليل بشكل مجهّل فيتيح لنا ذلك تحسين التطبيق.</string>
-    <string name="settings_opt_in_of_analytics_prompt">رجاءً فعّل التحاليل لمساعدتنا في تحسين Riot.</string>
+    <string name="settings_opt_in_of_analytics_summary">يجمع Element التحاليل بشكل مجهّل فيتيح لنا ذلك تحسين التطبيق.</string>
+    <string name="settings_opt_in_of_analytics_prompt">رجاءً فعّل التحاليل لمساعدتنا في تحسين Element.</string>
     <string name="settings_opt_in_of_analytics_ok">نعم أريد المساعدة!</string>
 
     <string name="lock_screen_hint">اكتب هنا…</string>
@@ -949,9 +941,6 @@
     <string name="room_participants_now">%1$s الآن</string>
     <string name="room_participants_ago">%1$s منذ %2$s</string>
 
-    <string name="room_participants_action_unignore_prompt">أأعرض كل الرسائل من هذا المستخدم؟
-
-سيُعيد هذا الإجراء تشغيل التطبيق وقد يأخذ بعض الوقت.</string>
     <string name="room_participants_invite_join_names">"⁨%1$s⁩ و "</string>
     <string name="room_participants_invite_join_names_and">⁨%1$s⁩ و ⁨%2$s⁩</string>
     <string name="room_participants_invite_join_names_combined">%1$s %2$s</string>
@@ -971,7 +960,7 @@
 
     <string name="settings_preview_media_before_sending">عايِن الوسيط قبل إرساله</string>
 
-    <string name="startup_notification_privacy_message">يمكن أن يعمل Riot في الخلفية ليُدير الإخطارات بأمان وخصوصية (قد يؤثّر هذا على استهلاك البطارية).</string>
+    <string name="startup_notification_privacy_message">يمكن أن يعمل Element في الخلفية ليُدير الإخطارات بأمان وخصوصية (قد يؤثّر هذا على استهلاك البطارية).</string>
     <string name="settings_without_flair">لست عضوًا في أي مجتمع حاليًا.</string>
 
     <plurals name="notification_unread_notified_messages">
@@ -990,8 +979,6 @@
         <item quantity="many">%d رسالة إخطار غير مقروءة</item>
         <item quantity="other">%d رسالة إخطار غير مقروءة</item>
     </plurals>
-    <string name="event_formatter_widget_added">أضاف ⁨%2$s⁩ المستخدم ⁨%1$s⁩</string>
-    <string name="event_formatter_widget_removed">أزال ⁨%2$s⁩ المستخدم ⁨%1$s⁩</string>
     <string name="settings_labs_keyboard_options_to_send_message">استخدم مفتاح الإدخال في لوحة المفاتيح لإرسال الرسالة</string>
     <string name="command_description_ban_user">يمنع المستخدم حسب المعرّف المعطى</string>
     <string name="command_description_unban_user">يُلغي المنع عن المستخدم حسب المعرّف المعطى</string>

@@ -20,6 +20,7 @@ import android.net.Uri
 import com.squareup.moshi.JsonClass
 import im.vector.matrix.android.api.auth.data.HomeServerConnectionConfig.Builder
 import im.vector.matrix.android.internal.network.ssl.Fingerprint
+import im.vector.matrix.android.internal.util.ensureTrailingSlash
 import okhttp3.CipherSuite
 import okhttp3.TlsVersion
 
@@ -33,10 +34,10 @@ data class HomeServerConnectionConfig(
         val homeServerUri: Uri,
         val identityServerUri: Uri? = null,
         val antiVirusServerUri: Uri? = null,
-        val allowedFingerprints: MutableList<Fingerprint> = ArrayList(),
+        val allowedFingerprints: List<Fingerprint> = emptyList(),
         val shouldPin: Boolean = false,
-        val tlsVersions: MutableList<TlsVersion>? = null,
-        val tlsCipherSuites: MutableList<CipherSuite>? = null,
+        val tlsVersions: List<TlsVersion>? = null,
+        val tlsCipherSuites: List<CipherSuite>? = null,
         val shouldAcceptTlsExtensions: Boolean = true,
         val allowHttpExtension: Boolean = false,
         val forceUsageTlsVersions: Boolean = false
@@ -68,18 +69,14 @@ data class HomeServerConnectionConfig(
          */
         fun withHomeServerUri(hsUri: Uri): Builder {
             if (hsUri.scheme != "http" && hsUri.scheme != "https") {
-                throw RuntimeException("Invalid home server URI: " + hsUri)
+                throw RuntimeException("Invalid home server URI: $hsUri")
             }
             // ensure trailing /
-            homeServerUri = if (!hsUri.toString().endsWith("/")) {
-                try {
-                    val url = hsUri.toString()
-                    Uri.parse("$url/")
-                } catch (e: Exception) {
-                    throw RuntimeException("Invalid home server URI: $hsUri")
-                }
-            } else {
-                hsUri
+            val hsString = hsUri.toString().ensureTrailingSlash()
+            homeServerUri = try {
+                Uri.parse(hsString)
+            } catch (e: Exception) {
+                throw RuntimeException("Invalid home server URI: $hsUri")
             }
             return this
         }
@@ -97,15 +94,11 @@ data class HomeServerConnectionConfig(
                 throw RuntimeException("Invalid identity server URI: $identityServerUri")
             }
             // ensure trailing /
-            if (!identityServerUri.toString().endsWith("/")) {
-                try {
-                    val url = identityServerUri.toString()
-                    this.identityServerUri = Uri.parse("$url/")
-                } catch (e: Exception) {
-                    throw RuntimeException("Invalid identity server URI: $identityServerUri")
-                }
-            } else {
-                this.identityServerUri = identityServerUri
+            val isString = identityServerUri.toString().ensureTrailingSlash()
+            this.identityServerUri = try {
+                Uri.parse(isString)
+            } catch (e: Exception) {
+                throw RuntimeException("Invalid identity server URI: $identityServerUri")
             }
             return this
         }

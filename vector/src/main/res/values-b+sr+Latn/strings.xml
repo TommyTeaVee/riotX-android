@@ -162,7 +162,6 @@
     <string name="auth_reset_password_message">Kako bi resetovali vašu lozinku, unesite adresu elektronske pošte povezanu sa vašim nalogom:</string>
     <string name="auth_reset_password_missing_email">Morate uneti adresu elektronske pošte povezane sa vašim nalogom.</string>
     <string name="auth_reset_password_missing_password">Morate uneti novu lozinku.</string>
-    <string name="login_mobile_device">Mobilni</string>
 
     <string name="login_error_limit_exceeded">Poslato je previše zahteva</string>
     <string name="login_error_user_in_use">Ovo korisničko ime je već korišćeno</string>
@@ -184,7 +183,7 @@
     <string name="room_info_room_topic">Tema sobe</string>
 
     <string name="settings_call_category">Pozivi</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">Koristi podrazumevani Riot zvuk zvona za dolazeće pozive</string>
+    <string name="settings_call_ringtone_use_app_ringtone">Koristi podrazumevani Element zvuk zvona za dolazeće pozive</string>
     <string name="settings_call_ringtone_title">Zvuk zvona dolazećeg poziva</string>
     <string name="settings_call_ringtone_dialog_title">Izaberite zvuk zvona za pozive:</string>
 
@@ -214,7 +213,7 @@
 
     <string name="settings_troubleshoot_test_service_boot_success">Servis će se početi sa radom prilikom ponovnog pokretanja uređaja.</string>
     <string name="settings_troubleshoot_test_battery_title">Optimizacija potrošnje baterije</string>
-    <string name="settings_troubleshoot_test_battery_success">Optimizacija potrošnje baterije ne utiče na Riot.</string>
+    <string name="settings_troubleshoot_test_battery_success">Optimizacija potrošnje baterije ne utiče na Element.</string>
     <string name="settings_troubleshoot_test_battery_quickfix">Ignoriši optimizacije</string>
 
     <string name="settings_notification_privacy_normal">Normalno</string>
@@ -271,7 +270,7 @@
     <string name="settings_discovery_category">Pronalaženje</string>
     <string name="settings_discovery_manage">Upravljajte vašim podešavanjima za pronalaženje.</string>
     <string name="startup_notification_privacy_title">Privatnost obaveštenja</string>
-    <string name="startup_notification_privacy_message">Riot može da radi u pozadini kako bi upravljao vašim obaveštenjima sigurno i privatno. Ovo može da utiče na potrošnju baterije.</string>
+    <string name="startup_notification_privacy_message">Element može da radi u pozadini kako bi upravljao vašim obaveštenjima sigurno i privatno. Ovo može da utiče na potrošnju baterije.</string>
     <string name="startup_notification_privacy_button_grant">Dozvoli</string>
     <string name="startup_notification_privacy_button_other">Izaberi drugu opciju</string>
 

@@ -28,6 +28,7 @@ internal open class RoomSummaryEntity(
         @PrimaryKey var roomId: String = "",
         var displayName: String? = "",
         var avatarUrl: String? = "",
+        var name: String? = "",
         var topic: String? = "",
         var latestPreviewableEvent: TimelineEventEntity? = null,
         var heroes: RealmList<String> = RealmList(),
@@ -48,9 +49,10 @@ internal open class RoomSummaryEntity(
         // this is required for querying
         var flatAliases: String = "",
         var isEncrypted: Boolean = false,
-        var typingUserIds: RealmList<String> = RealmList(),
+        var encryptionEventTs: Long? = 0,
         var roomEncryptionTrustLevelStr: String? = null,
-        var inviterId: String? = null
+        var inviterId: String? = null,
+        var hasFailedSending: Boolean = false
 ) : RealmObject() {
 
     private var membershipStr: String = Membership.NONE.name

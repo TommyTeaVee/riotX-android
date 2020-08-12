@@ -16,11 +16,18 @@
 
 package im.vector.matrix.android.internal.session.homeserver
 
+import im.vector.matrix.android.internal.auth.version.Versions
 import im.vector.matrix.android.internal.network.NetworkConstants
 import retrofit2.Call
 import retrofit2.http.GET
 
 internal interface CapabilitiesAPI {
+
+    /**
+     * Request the homeserver capabilities
+     */
+    @GET(NetworkConstants.URI_API_PREFIX_PATH_R0 + "capabilities")
+    fun getCapabilities(): Call<GetCapabilitiesResult>
 
     /**
      * Request the upload capabilities
@@ -32,5 +39,11 @@ internal interface CapabilitiesAPI {
      * Request the versions
      */
     @GET(NetworkConstants.URI_API_PREFIX_PATH_ + "versions")
-    fun getVersions(): Call<Unit>
+    fun getVersions(): Call<Versions>
+
+    /**
+     * Ping the homeserver. We do not care about the returned data, so there is no use to parse them
+     */
+    @GET(NetworkConstants.URI_API_PREFIX_PATH_ + "versions")
+    fun ping(): Call<Unit>
 }

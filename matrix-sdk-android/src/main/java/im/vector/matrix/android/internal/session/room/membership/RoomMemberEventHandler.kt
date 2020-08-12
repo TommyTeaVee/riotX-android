@@ -19,7 +19,6 @@ package im.vector.matrix.android.internal.session.room.membership
 import im.vector.matrix.android.api.session.events.model.Event
 import im.vector.matrix.android.api.session.events.model.EventType
 import im.vector.matrix.android.api.session.events.model.toModel
-import im.vector.matrix.android.api.session.room.model.Membership
 import im.vector.matrix.android.api.session.room.model.RoomMemberContent
 import im.vector.matrix.android.internal.session.user.UserEntityFactory
 import io.realm.Realm
@@ -31,11 +30,18 @@ internal class RoomMemberEventHandler @Inject constructor() {
         if (event.type != EventType.STATE_ROOM_MEMBER) {
             return false
         }
-        val roomMember = event.content.toModel<RoomMemberContent>() ?: return false
         val userId = event.stateKey ?: return false
+        val roomMember = event.content.toModel<RoomMemberContent>()
+        return handle(realm, roomId, userId, roomMember)
+    }
+
+    fun handle(realm: Realm, roomId: String, userId: String, roomMember: RoomMemberContent?): Boolean {
+        if (roomMember == null) {
+            return false
+        }
         val roomMemberEntity = RoomMemberEntityFactory.create(roomId, userId, roomMember)
         realm.insertOrUpdate(roomMemberEntity)
-        if (roomMember.membership in Membership.activeMemberships()) {
+        if (roomMember.membership.isActive()) {
             val userEntity = UserEntityFactory.create(userId, roomMember)
             realm.insertOrUpdate(userEntity)
         }

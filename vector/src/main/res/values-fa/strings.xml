@@ -3,24 +3,24 @@
     <string name="resources_language">fa</string>
     <string name="resources_country_code">IR</string>
 
-    <string name="light_theme">قالب روشن</string>
-    <string name="dark_theme">قالب تیره</string>
-    <string name="black_them">قالب سیاه</string>
+    <string name="light_theme">زمینهٔ روشن</string>
+    <string name="dark_theme">زمینهٔ تیره</string>
+    <string name="black_them">زمینهٔ سیاه</string>
 
-    <string name="notification_listening_for_events">گوش دادن به رویدادها</string>
+    <string name="notification_listening_for_events">در حال گوش دادن به رویدادها</string>
     <string name="title_activity_home">پیام‌ها</string>
     <string name="title_activity_room">اتاق</string>
     <string name="title_activity_settings">تنظیمات</string>
     <string name="title_activity_member_details">جزئیات اعضا</string>
     <string name="title_activity_bug_report">گزارش اشکال</string>
-    <string name="loading">بارگذاری…</string>
+    <string name="loading">در حال بارگذاری…</string>
 
     <string name="ok">باشه</string>
-    <string name="cancel">انصراف</string>
+    <string name="cancel">لغو</string>
     <string name="save">ذخیره</string>
     <string name="leave">ترک کردن</string>
     <string name="send">ارسال</string>
-    <string name="copy">رونوشت</string>
+    <string name="copy">روگرفت</string>
     <string name="resend">ارسال مجدد</string>
     <string name="quote">نقل قول</string>
     <string name="share">اشتراک گذاری</string>
@@ -32,20 +32,20 @@
     <string name="active_call">تماس فعال</string>
     <string name="ongoing_conference_call_voice">صوتی</string>
     <string name="ongoing_conference_call_video">تصویری</string>
-    <string name="device_information">اطلاعات دستگاه</string>
-    <string name="send_anyway">به هر حال ارسال کنید</string>
+    <string name="device_information">اطّلاعات نشست</string>
+    <string name="send_anyway">به هر حال ارسال کن</string>
     <string name="or">یا</string>
     <string name="invite">دعوت</string>
     <string name="offline">آفلاین</string>
 
-    <string name="action_exit">بستن برنامه</string>
+    <string name="action_exit">خروج</string>
     <string name="action_sign_out">خروج از حساب</string>
     <string name="action_voice_call">تماس صوتی</string>
     <string name="action_video_call">تماس تصویری</string>
-    <string name="action_global_search">جستجوی عمومی</string>
+    <string name="action_global_search">جستجوی جهانی</string>
     <string name="action_mark_all_as_read">همه را به عنوان خوانده شده علامت بزن</string>
     <string name="action_quick_reply">پاسخ سریع</string>
-    <string name="action_open">باز کن</string>
+    <string name="action_open">باز کردن</string>
     <string name="action_close">بستن</string>
     <string name="copied_to_clipboard">در کلیپ‌بورد کپی شد</string>
     <string name="disable">غیرفعال</string>
@@ -54,10 +54,10 @@
 
     <string name="bottom_action_home">خانه</string>
     <string name="bottom_action_rooms">اتاق‌ها</string>
-    <string name="low_priority_header">اولویت کم</string>
+    <string name="low_priority_header">اولویت پایین</string>
 
     <string name="direct_chats_header">گفتگوها</string>
-    <string name="no_conversation_placeholder">مکالمه‌ای نیست</string>
+    <string name="no_conversation_placeholder">گفتگوای نیست</string>
     <string name="rooms_header">اتاق‌ها</string>
     <plurals name="public_room_nb_users">
         <item quantity="one">%d کاربر</item>
@@ -77,9 +77,9 @@
     <string name="logout">خروج از حساب</string>
     <string name="search">جستجو</string>
 
-    <string name="start_new_chat">شروع گپ جدید</string>
-    <string name="start_voice_call">شروع تماس صوتی</string>
-    <string name="start_video_call">شروع تماس تصویری</string>
+    <string name="start_new_chat">آغاز گپ جدید</string>
+    <string name="start_voice_call">آغاز تماس صوتی</string>
+    <string name="start_video_call">آغاز تماس تصویری</string>
 
     <string name="option_take_photo_video">عکس یا فیلم بگیرید</string>
     <string name="option_take_photo">عکس بگیرید</string>
@@ -89,13 +89,13 @@
     <string name="auth_register">ساخت حساب</string>
     <string name="auth_submit">ارسال</string>
     <string name="auth_skip">رد شدن</string>
-    <string name="auth_send_reset_email">ارسال ایمیل بازیابی</string>
+    <string name="auth_send_reset_email">ارسال ایمیل بازنشانی</string>
     <string name="auth_user_id_placeholder">ایمیل یا نام کاربری</string>
     <string name="auth_password_placeholder">گذرواژه</string>
     <string name="auth_new_password_placeholder">گذرواژه جدید</string>
     <string name="auth_user_name_placeholder">نام کاربری</string>
-    <string name="auth_email_placeholder">آدرس ایمیل</string>
-    <string name="auth_opt_email_placeholder">آدرس ایمیل (اختیاری)</string>
+    <string name="auth_email_placeholder">نشانی ایمیل</string>
+    <string name="auth_opt_email_placeholder">نشانی ایمیل (اختیاری)</string>
     <string name="auth_phone_number_placeholder">شماره تلفن</string>
     <string name="auth_opt_phone_number_placeholder">شماره تلفن (اختیاری)</string>
     <string name="auth_repeat_password_placeholder">گذرواژه را تکرار کنید</string>
@@ -106,13 +106,12 @@
     <string name="auth_invalid_phone">شماره تلفن نامعتبر به نظر می‌رسد</string>
     <string name="auth_password_dont_match">گذرواژه‌ها مطابقت ندارد</string>
     <string name="auth_forgot_password">گذرواژه را فراموش کردید؟</string>
-    <string name="auth_use_server_options">از گزینه‌های کارگزار سفارشی استفاده کنید (پیشرفته)</string>
+    <string name="auth_use_server_options">استفاده از گزینه‌های سفارشی سرور (پیش‌رفته)</string>
     <string name="auth_email_validation_message">برای ادامه‌ی ثبت‌نام، لطفاً ایمیل خود را بررسی کنید</string>
     <string name="auth_reset_password_next_step_button">من آدرس ایمیلم را تایید کرده‌ام</string>
-    <string name="login_error_network_error">امکان ورود به سیستم وجود ندارد: خطای شبکه</string>
-    <string name="login_mobile_device">موبایل</string>
+    <string name="login_error_network_error">نمی‌توان وارد شد: خطای شبکه</string>
 
-    <string name="login_error_forbidden">نام کاربری/رمز عبور نامعتبر است</string>
+    <string name="login_error_forbidden">نام کاربری/گذرواژه نامعتبر است</string>
     <string name="login_error_user_in_use">این نام کاربری قبلا استفاده شده است</string>
     <string name="groups_list">فهرست گروه‌ها</string>
 
@@ -122,46 +121,46 @@
     <string name="compression_opt_list_medium">متوسط</string>
     <string name="compression_opt_list_small">کوچک</string>
 
-    <string name="attachment_cancel_download">دریافت لغو شود؟</string>
+    <string name="attachment_cancel_download">بارگیری لغو شود؟</string>
     <string name="attachment_cancel_upload">آپلود لغو شود؟</string>
     <string name="attachment_remaining_time_seconds">%d ثانیه</string>
     <string name="yesterday">دیروز</string>
     <string name="today">امروز</string>
 
     <string name="room_info_room_name">نام اتاق</string>
-    <string name="notification_sync_in_progress">همگام‌سازی…</string>
-    <string name="call_anyway">به هر حال تماس بگیرید</string>
-    <string name="missing_permissions_title_to_start_conf_call">نمی‌توان تماس را شروع کرد</string>
+    <string name="notification_sync_in_progress">در حال همگام‌سازی…</string>
+    <string name="call_anyway">به هر حال تماس بگیر</string>
+    <string name="missing_permissions_title_to_start_conf_call">نمی‌توان تماس را آغاز کرد</string>
     <string name="cannot_start_call">نمی‌توان تماس را شروع کرد، لطفاً بعداً تلاش نمایید</string>
     <string name="accept">پذیرفتن</string>
 
-    <string name="actions">عملیات</string>
+    <string name="actions">کنش‌ها</string>
     <string name="dialog_title_confirmation">تایید</string>
     <string name="dialog_title_error">خطا</string>
 
     <string name="bottom_action_favourites">پسندیده‌ها</string>
     <string name="bottom_action_people">افراد</string>
-    <string name="bottom_action_groups">جامعه‌ها</string>
+    <string name="bottom_action_groups">انجمن‌ها</string>
 
-    <string name="home_filter_placeholder_home">جستجوی اتاق‌ها</string>
-    <string name="home_filter_placeholder_favorites">جستجوی پسندها</string>
-    <string name="home_filter_placeholder_people">جستجوی افراد</string>
-    <string name="home_filter_placeholder_rooms">جستجوی اتاق‌ها</string>
-    <string name="home_filter_placeholder_groups">جستجوی جامعه‌ها</string>
+    <string name="home_filter_placeholder_home">پالایش نام‌های اتاق</string>
+    <string name="home_filter_placeholder_favorites">پالایش برگزیده‌ها</string>
+    <string name="home_filter_placeholder_people">پالایش افراد</string>
+    <string name="home_filter_placeholder_rooms">پالایش نام‌های اتاق</string>
+    <string name="home_filter_placeholder_groups">پالایش نام‌های انجمن</string>
 
     <string name="invitations_header">دعوت‌ها</string>
     <string name="system_alerts_header">هشدارهای سیستمی</string>
 
     <string name="local_address_book_header">مخاطبین من</string>
     <string name="user_directory_header">فهرست کاربران</string>
-    <string name="matrix_only_filter">فقط نمایش مخاطبین ماتریکس</string>
+    <string name="matrix_only_filter">فقط مخاطبین ماتریس</string>
     <string name="no_contact_access_placeholder">شما اجازه‌ی دسترسی به مخاطبین را به برنامه نداده‌اید</string>
     <string name="no_result_placeholder">نتیجه‌ای نیست</string>
 
     <string name="rooms_directory_header">فهرست اتاق‌ها</string>
     <string name="no_room_placeholder">اتاقی نیست</string>
-    <string name="no_public_room_placeholder">اتاق عمومی در دسترس نیست</string>
-    <string name="groups_header">جامعه‌ها</string>
+    <string name="no_public_room_placeholder">هیچ اتاق عمومی‌ای موجود نیست</string>
+    <string name="groups_header">انجمن‌ها</string>
     <string name="send_bug_report_include_logs">ارسال رخدادنگارها</string>
     <string name="send_bug_report_include_crash_logs">ارسال رخدادنگارهای خطا</string>
     <string name="send_bug_report_include_screenshot">ارسال تصویر صفحه</string>
@@ -178,18 +177,18 @@
     <string name="send_bug_report_progress">پیشرفت (%s%%)</string>
 
     <string name="send_files_in">ارسال در</string>
-    <string name="hs_url">آدرس کارگزار پیام‌رسانی</string>
-    <string name="identity_url">آدرس کارگزار احراز هویت</string>
+    <string name="hs_url">نشانی سرور خانه</string>
+    <string name="identity_url">نشانی سرور هویتی</string>
     <string name="option_send_voice">ارسال صدا</string>
 
-    <string name="start_new_chat_prompt_msg">آیا شروع یک گپ جدید با %s را تایید می‌کنید؟</string>
-    <string name="start_voice_call_prompt_msg">آیا برقراری تماس صوتی را تایید می‌کنید؟</string>
-    <string name="start_video_call_prompt_msg">آیا برقراری تماس تصویری را تایید می‌کنید؟</string>
+    <string name="start_new_chat_prompt_msg">آیا مطمئنید می‌خواهید با %s یک گپ جدید را آغاز کنید؟</string>
+    <string name="start_voice_call_prompt_msg">آیا مطمئنید می‌خواهید که یک تماس صوتی را آغاز کنید؟</string>
+    <string name="start_video_call_prompt_msg">آیا مطمئنید می‌خواهید که یک تماس صوتی را آغاز کنید؟</string>
 
-    <string name="option_send_files">ارسال فایل‌ها</string>
-    <string name="option_send_sticker">ارسال استیکر</string>
-    <string name="no_sticker_application_dialog_content">شما بسته‌ی استیکر فعالی ندارید.
-\nتمایل دارید بسته‌ی استیکر جدیدی اضافه کنید؟</string>
+    <string name="option_send_files">ارسال پرونده‌ها</string>
+    <string name="option_send_sticker">ارسال برچسب</string>
+    <string name="no_sticker_application_dialog_content">شما بسته‌ی برچسب فعالی ندارید. 
+\nتمایل دارید بسته‌ی برچسب جدیدی اضافه کنید؟</string>
 
     <string name="go_on_with">ادامه با…</string>
     <string name="error_no_external_application_found">متاسفانه برنامه‌ای روی گوشی شما برای انجام این کار پیدا نشد.</string>
@@ -197,12 +196,12 @@
     <string name="auth_return_to_login">بازگشت به صفحه ورود</string>
     <string name="auth_missing_password">گذرواژه وارد نشده است</string>
     <string name="auth_missing_phone">شماره تلفن وارد نشده است</string>
-    <string name="auth_missing_email">آدرس ایمیل وارد نشده است</string>
+    <string name="auth_missing_email">نشانی ایمیل وارد نشده است</string>
     <string name="auth_invalid_token">توکن نامعتبر است</string>
     <string name="auth_missing_email_or_phone">آدرس ایمیل یا شماره تلفن وارد نشده است</string>
-    <string name="auth_email_already_defined">این آدرس ایمیل قبلاً ثبت شده است.</string>
-    <string name="auth_home_server">کارگزار پیام‌رسانی:</string>
-    <string name="auth_identity_server">کارگزار احراز هویت:</string>
+    <string name="auth_email_already_defined">این نشانی ایمیل قبلاً ثبت شده است.</string>
+    <string name="auth_home_server">سرور خانه:</string>
+    <string name="auth_identity_server">سرور هویتی:</string>
     <string name="login_error_unable_login">امکان ورود وجود ندارد</string>
     <string name="attachment_remaining_time_minutes">%1$dm %2$ds</string>
 
@@ -213,7 +212,7 @@
     <string name="media_slider_saved">ذخیره شد</string>
     <string name="yes">بله</string>
     <string name="no">نه</string>
-    <string name="media_slider_saved_message">بارگزاری شود؟</string>
+    <string name="media_slider_saved_message">در دانلودها ذخیره شود؟</string>
     <string name="_continue">ادامه</string>
 
     <string name="remove">حذف</string>
@@ -221,11 +220,11 @@
     <string name="preview">پیش‌نمایش</string>
     <string name="reject">رد کردن</string>
 
-    <string name="list_members">اعضای لیست</string>
+    <string name="list_members">فهرست اعضا</string>
     <string name="call_connected">تماس برقرار شد</string>
-    <string name="call_connecting">برقراری تماس…</string>
+    <string name="call_connecting">در حال برقراری تماس…</string>
     <string name="call_ended">تماس پایان یافت</string>
-    <string name="call_ring">شماره‌گیری…</string>
+    <string name="call_ring">در حال شماره‌گیری…</string>
     <string name="incoming_call">تماس ورودی</string>
     <string name="incoming_video_call">تماس ویدئویی ورودی</string>
     <string name="incoming_voice_call">تماس صوتی ورودی</string>
@@ -233,12 +232,12 @@
     <string name="video_call_in_progress">تماس ویدئویی در جریان است…</string>
 
     <string name="call_error_user_not_responding">طرف مقابل پاسخ نداد.</string>
-    <string name="call_error_ice_failed">برقراری ارتباط چندرسانه‌ای ممکن نشد</string>
+    <string name="call_error_ice_failed">برقراری ارتباط رسانه‌ای ممکن نشد</string>
     <string name="call_error_camera_init_failed">راه‌اندازی دوربین ممکن نبود</string>
     <string name="call_error_answered_elsewhere">پاسخ تماس از کاربری نامعتبر دریافت شد</string>
 
     <plurals name="room_title_members">
-        <item quantity="one">%d عضو</item>
+        <item quantity="one">۱ عضو</item>
         <item quantity="other">%d عضو</item>
     </plurals>
     <string name="room_title_one_member">۱ عضو</string>
@@ -273,21 +272,21 @@
 
     <string name="room_participants_header_admin_tools">ابزارهای مدیر</string>
     <string name="room_participants_header_call">تماس</string>
-    <string name="room_participants_header_direct_chats">پیام‌های شخصی</string>
-    <string name="room_participants_header_devices">دستگاه‌ها</string>
+    <string name="room_participants_header_direct_chats">گپ‌های مستقیم</string>
+    <string name="room_participants_header_devices">نشست‌ها</string>
 
     <string name="room_participants_action_invite">دعوت</string>
     <string name="room_participants_action_leave">ترک این اتاق</string>
     <string name="room_participants_action_remove">حذف از این اتاق</string>
     <string name="stay">ماندن</string>
     <string name="redact">حذف</string>
-    <string name="download">دریافت</string>
+    <string name="download">بارگیری</string>
     <string name="ongoing_conference_call">کنفرانس در حال برگزاری است.
 \nبه صورت %1$s یا %2$s به آن بپیوندید</string>
     <string name="missing_permissions_warning">به خاطر نداشتن مجوز دسترسی، برخی امکانات ممکن است در دسترس نباشند…</string>
     <string name="missing_permissions_error">به خاطر نداشتن مجوز دسترسی، این اقدام ممکن نیست.</string>
     <string name="missing_permissions_to_start_conf_call">برای آغاز کنفرانس نیاز به دسترسی دعوت اعضا دارید</string>
-    <string name="room_no_conference_call_in_encrypted_rooms">تماس گروهی در گفتگوهای رمز شده ممکن نیست</string>
+    <string name="room_no_conference_call_in_encrypted_rooms">تماس گروهی در اتاق‌های رمزنگاری شده پشتیبانی نمی‌شود</string>
     <string name="skip">رد شدن</string>
     <string name="done">انجام شد</string>
     <string name="abort">انصراف</string>
@@ -296,50 +295,456 @@
     <string name="action_sign_out_confirmation_simple">آیا می‌خواهید از حساب کاربری خود خارج شوید؟</string>
     <string name="action_mark_room_read">علامت‌گذاری به عنوان خوانده شده</string>
     <string name="auth_login_sso">ورود با سامانه‌های احراز هویت مرکزی</string>
-    <string name="status_theme">قالب Status.im</string>
+    <string name="status_theme">زمینهٔ Status.im</string>
 
-    <string name="notification_sync_init">راه‌اندازی سرویس</string>
-    <string name="notification_noisy_notifications">اعلان‌های باصدا</string>
-    <string name="notification_silent_notifications">اعلان‌های بی‌صدا</string>
+    <string name="notification_sync_init">در حال راه‌اندازی سرویس</string>
+    <string name="notification_noisy_notifications">آگاهی‌های پرصدا</string>
+    <string name="notification_silent_notifications">آگاهی‌های صامت</string>
 
     <string name="title_activity_historical">تاریخچه</string>
-    <string name="title_activity_group_details">جزئیات جامعه</string>
-    <string name="title_activity_choose_sticker">ارسال استیکر</string>
+    <string name="title_activity_group_details">جزییات انجمن</string>
+    <string name="title_activity_choose_sticker">ارسال برچسب</string>
     <string name="title_activity_keys_backup_setup">پشتیبان‌گیری کلید</string>
     <string name="title_activity_keys_backup_restore">بازیابی پشتیبان کلید</string>
-    <string name="keys_backup_is_not_finished_please_wait">پشتیبان‌گیری از کلید هنوز به پایان نرسیده است، لطفاً صبر کنید…</string>
-    <string name="sign_out_bottom_sheet_warning_no_backup">در صورتی که الآن از حساب خود خارج شوید، پیام‌های رمز خود را از دست خواهید داد</string>
-    <string name="sign_out_bottom_sheet_warning_backing_up">پشتیبان‌گیری کلید در جریان است. در صورتی که الآن از حساب خود خارج شوید، پیام‌های رمز خود را از دست خواهید داد.</string>
-    <string name="sign_out_bottom_sheet_warning_backup_not_active">برای جلوگیری از گم شدن پیام‌های رمز، پشتیبان امن کلید باید روی تمام دستگاه‌های شما فعال باشد.</string>
-    <string name="sign_out_bottom_sheet_dont_want_secure_messages">پیام‌های رمز خود را نمی‌خواهم</string>
-    <string name="sign_out_bottom_sheet_backing_up_keys">پشتیبان‌گیری از کلیدها…</string>
+    <string name="keys_backup_is_not_finished_please_wait">پشتیبان‌گیری از کلید هنوز به پایان نرسیده است، لطفاً شکیبا باشید…</string>
+    <string name="sign_out_bottom_sheet_warning_no_backup">در صورتی که اکنون از حساب خود خارج شوید، پیام‌های رمزنگاری شده خود را از دست خواهید داد</string>
+    <string name="sign_out_bottom_sheet_warning_backing_up">پشتیبان‌گیری کلید در جریان است. در صورتی که اکنون از حساب خود خارج شوید، پیام‌های رمزنگاری شده خود را از دست خواهید داد.</string>
+    <string name="sign_out_bottom_sheet_warning_backup_not_active">برای از دست ندادن دسترسی به پیام‌های رمزنگاری شده، باید پشتیبان کلید امن روی تمام نشست‌هایتان فعّال باشد.</string>
+    <string name="sign_out_bottom_sheet_dont_want_secure_messages">پیام‌های رمزنگاری شده خود را نمی‌خواهم</string>
+    <string name="sign_out_bottom_sheet_backing_up_keys">در حال پشتیبان‌گیری از کلیدها…</string>
     <string name="keys_backup_activate">استفاده از پشتیبان کلید</string>
     <string name="are_you_sure">آیا مطمئن هستید؟</string>
     <string name="backup">پشتیبان‌گیری</string>
-    <string name="sign_out_bottom_sheet_will_lose_secure_messages">در صورت عدم پشتیبان‌گیری از کلیدهای خود پیش از خروج، دسترسی شما به پیام‌های رمزتان از بین می‌رود.</string>
+    <string name="sign_out_bottom_sheet_will_lose_secure_messages">در صورت عدم پشتیبان‌گیری از کلیدهای خود پیش از خروج، دسترسی شما به پیام‌های رمزنگاری شده از بین می‌رود.</string>
 
     <string name="dialog_title_third_party_licences">گواهی‌نامه‌های شخص ثالث</string>
 
     <string name="speak">صحبت</string>
     <string name="clear">پاک کردن</string>
-    <string name="forward">باز ارسال</string>
+    <string name="forward">هدایت</string>
     <string name="permalink">پیوند دائمی</string>
-    <string name="view_decrypted_source">مشاهده منبع رمز نشده</string>
-    <string name="action_historical">تاریخچه</string>
+    <string name="view_decrypted_source">مشاهده منبع رمزگشایی شده</string>
+    <string name="action_historical">تاریخی</string>
     <string name="auth_invalid_user_name">نام کاربری تنها می‌تواند شامل حروف انگلیسی، اعداد، نقطه، خط زیر و خط تیره باشد</string>
     <string name="auth_threepid_warning_message">ثبت‌نام با ورود همزمان ایمیل و شماره تلفن در حال حاضر پشتیبانی نمی‌شود. تنها شماره تلفن شما برای حساب‌تان ثبت خواهد شد.
 \n
 \nمی‌توانید در ادامه ایمیل خود را در تنظیمات برنامه به پروفایل خود اضافه کنید.</string>
-    <string name="auth_recaptcha_message">کارگزار می‌خواهد اطمینان یابد که شما ربات نیستید</string>
+    <string name="auth_recaptcha_message">این سرور خانه می‌خواهد مطمئن شود که شما ربات نیستید</string>
     <string name="auth_username_in_use">نام کاربری قبلاً استفاده شده است</string>
-    <string name="e2e_re_request_encryption_key"><u>دریافت کلیدهای رمزنگاری</u> از سایر دستگاه‌های شما.</string>
+    <string name="e2e_re_request_encryption_key"><u>بازدرخواست کلیدهای رمزنگاری</u> از دیگر نشست‌هایتان.</string>
 
     <string name="e2e_re_request_encryption_key_sent">درخواست کلید ارسال شد.</string>
 
-    <string name="e2e_re_request_encryption_key_dialog_title">ارسال درخواست</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">لطفاً برنامه را روی یکی از دستگاه‌های دیگرتان که به این پیام دسترسی داشته است، اجرا کنید تا کلیدها منتقل شوند.</string>
+    <string name="e2e_re_request_encryption_key_dialog_title">درخواست ارسال شد</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">لطفاً ریوت را روی دستگاه دیگر که می‌تواند پیام را رمزگشایی کند، اجرا کنید تا بتواند کلیدها را به این نشست بفرستد.</string>
 
-    <string name="read_receipts_list">مشاهده گیرندگان</string>
+    <string name="read_receipts_list">فهرست رسیدهای خواندن</string>
 
     <string name="keys_backup_setup_skip_title">آیا مطمئن هستید؟</string>
+    <string name="disconnect">قطع اتصال</string>
+    <string name="review">بررسی</string>
+    <string name="decline">نپذیرفتن</string>
+
+    <string name="call_failed_dont_ask_again">دوباره از من نپرس</string>
+
+    <string name="auth_add_email_message_2">برای بازیابی یک ایمیل وارد کنید، و بعدا در صورت دلخواه می توانید از آن برای شناسایی دوستان خود استفاده کنید.</string>
+    <string name="auth_add_phone_message_2">ثبت شماره تلفن (بعدا در صورت دلخواه می توانید از آن برای شناسایی دوستان خود استفاده کنید).</string>
+    <string name="auth_reset_password_message">نشانی رایانامهٔ پیوسته به حسابتان را برای بازنشانی گذواژه‌تان وارد کنید:</string>
+    <string name="resources_script">Latn</string>
+
+    <string name="room_participants_invite_search_another_user">شناسهٔ کاربری، نام یا رایانامه</string>
+    <string name="room_message_placeholder_reply_to_encrypted">فرستادن پاسخی رمزشده…</string>
+    <string name="room_message_placeholder_reply_to_not_encrypted">فرستادن یک پاسخ (رمزنشده)…</string>
+    <string name="search_members_hint">پالایش اعضای اتاق</string>
+    <string name="tab_title_search_rooms">اتاق‌ها</string>
+    <string name="room_recents_conversations">اتاق‌ها</string>
+    <plurals name="directory_search_rooms">
+        <item quantity="one">۱ اتاق</item>
+        <item quantity="other">%d اتاق</item>
+    </plurals>
+    <plurals name="directory_search_rooms_for">
+        <item quantity="one">%1$s اتاق برای %2$s پیدا شد</item>
+        <item quantity="other">%1$s اتاق برای %2$s پیدا شد</item>
+    </plurals>
+    <string name="room_settings_direct_chat">گپ مستقیم</string>
+    <string name="room_sliding_menu_version">نگارش</string>
+    <string name="room_sliding_menu_version_x">نگارش %s</string>
+    <string name="room_sliding_menu_term_and_conditions">شرایط و ضوابط</string>
+    <string name="room_sliding_menu_third_party_notices">تذکّرهای سوم‌شخص</string>
+    <string name="room_sliding_menu_copyright">حق نشر</string>
+    <string name="room_sliding_menu_privacy_policy">سیاست محرمانگی</string>
+
+    <string name="settings_profile_picture">عکس نمایه</string>
+    <string name="settings_display_name">نام نمایشی</string>
+    <string name="settings_email_address">رایانامه</string>
+    <string name="settings_add_email_address">افزودن نشانی رایانامه</string>
+    <string name="settings_phone_number">تلفن</string>
+    <string name="settings_add_phone_number">افزودن شماره تلفن</string>
+    <string name="settings_app_info_link_title">اطّلاعات برنامه</string>
+    <string name="settings_app_info_link_summary">نمایش اطّلاعات برنامه در تنظیمات سامانه.</string>
+    <string name="settings_add_3pid_confirm_password_title">تأیید گذرواژه‌تان</string>
+    <string name="settings_add_3pid_flow_not_supported">نمی‌توانید این کار را از ریوت همراه انجام دهید</string>
+    <string name="settings_add_3pid_authentication_needed">نیاز به تأیید هویت است</string>
+
+
+    <string name="settings_notification_advanced">تنظمیات پیش‌رفتهٔ آگاهی</string>
+    <string name="settings_notification_troubleshoot">آگاهی‌های رفع‌اشکال</string>
+    <string name="settings_troubleshoot_test_system_settings_success">آگاهی‌ها در تنظیمات سامانه به کار افتاده‌اند.</string>
+    <string name="settings_troubleshoot_test_system_settings_failed">آگاهی‌ّا در تنظیمات سامانه از کار افتاده‌اند.
+\nلطفاً تنظیمات سامانه را بررسی کنید.</string>
+    <string name="settings_troubleshoot_test_account_settings_success">آگاهی‌ها برای حسابتان به کار افتاده‌اند.</string>
+    <string name="settings_troubleshoot_test_account_settings_failed">آگاهی‌ها برای حسابتان از کار افتاده‌اند.
+\nلطفاً تتظیمات حساب را بررسی کنید.</string>
+    <string name="settings_troubleshoot_test_device_settings_success">آگاهی‌ها برای این نشست به کار افتاده‌اند.</string>
+    <string name="settings_troubleshoot_test_device_settings_failed">آگاهی‌ها برای این نشست از کار افتاده‌اند.
+\nلطفاً تنظینات ریوت را بررسی کنید.</string>
+    <string name="settings_troubleshoot_test_bing_settings_failed">برخی آگاهی‌ها در تنظیمات سفارشیتان از کار افتاده‌اند.</string>
+    <string name="settings_troubleshoot_test_foreground_service_started_title">خدمت آگاهی</string>
+    <string name="settings_troubleshoot_test_foreground_service_startedt_success">خدمت آگاهی در حال اجراست.</string>
+    <string name="settings_troubleshoot_test_foreground_service_started_failed">خدمت آگاهی در حال اجرا نیست.
+\nتلاش کنید برنامه را دوباره شروع کنید.</string>
+    <string name="settings_troubleshoot_test_service_restart_title">شروع دوبارهٔ خودکار خدمت آگاهی</string>
+    <string name="settings_enable_all_notif">به کار انداختن أگاهی‌ها برای این حساب</string>
+    <string name="settings_enable_this_device">به کار انداختن أگاهی‌ها برای این نشست</string>
+    <string name="settings_noisy_notifications_preferences">پیکربندی أگاهی‌های پرصدا</string>
+    <string name="settings_call_notifications_preferences">پیکربندی أگاهی‌های تماس</string>
+    <string name="settings_silent_notifications_preferences">پیکربندی أگاهی‌های صامت</string>
+    <string name="settings_set_sync_delay">تأخیر بین همگام‌سازی‌ها</string>
+    <string name="settings_second">ثانیه</string>
+    <string name="settings_seconds">ثانیه</string>
+
+    <string name="settings_version">نگارش</string>
+    <string name="settings_olm_version">نگارش olm</string>
+    <string name="settings_app_term_conditions">شرایط و ضوابط</string>
+    <string name="settings_third_party_notices">تذکّرهای سوم‌شخص</string>
+    <string name="settings_copyright">حق نشر</string>
+    <string name="settings_privacy_policy">سیاست محرمانگی</string>
+    <string name="settings_keep_media">نگه‌داری رسانه</string>
+    <string name="settings_clear_cache">پاک‌سازی انباره</string>
+    <string name="settings_clear_media_cache">پاک‌سازی انبارهٔ رسانه</string>
+
+    <string name="settings_user_settings">تنظیمات کاربر</string>
+    <string name="settings_notifications">أگاهی‌ها</string>
+    <string name="settings_ignored_users">کاربران چشم‌پوشیده</string>
+    <string name="settings_other">دیگر</string>
+    <string name="settings_advanced">پیش‌رفته</string>
+    <string name="settings_integrations">یک‌پارچگی‌ها</string>
+    <string name="settings_cryptography">رمزنویسی</string>
+    <string name="settings_cryptography_manage_keys">مدیریت کلیدهای رمزنویسی</string>
+    <string name="settings_notifications_targets">هدف‌های آگاهی</string>
+    <string name="settings_contact">مخاطبان محلّی</string>
+    <string name="settings_contacts_app_permission">اجازهٔ مخاطبان</string>
+    <string name="settings_contacts_phonebook_country">کشور دفترچه تلفن</string>
+    <string name="settings_home_display">نمای حانه</string>
+    <string name="settings_pin_missed_notifications">سنجاق کردن اتاق‌هایی با آگاهی‌های بی‌پاسخ</string>
+    <string name="settings_pin_unread_messages">سنجاق کردن اتاق‌هایی با پیام‌های نخوانده</string>
+    <string name="settings_devices_list">نشست‌ها</string>
+    <string name="settings_inline_url_preview">پیش‌نمایش نشانی نامعتبر</string>
+    <string name="settings_send_typing_notifs">فرستادن آگاهی‌های نوشتن</string>
+    <string name="settings_send_markdown">قالب‌بندی مارک‌دون</string>
+    <string name="settings_show_read_receipts">نمایش رسیدهای خواندن</string>
+    <string name="settings_show_read_receipts_summary">برای یک فهرست باجزیییات، روی رسیدهای خواندن کلیک کنید.</string>
+    <string name="devices_delete_dialog_title">تأیید هویت</string>
+    <string name="devices_delete_pswd">گذرواژه:</string>
+    <string name="devices_delete_submit_button_label">ثبت</string>
+
+    <string name="settings_logged_in">واردشده به عنوان</string>
+    <string name="settings_home_server">کارساز خانگی</string>
+    <string name="settings_identity_server">کارساز هویت</string>
+    <string name="settings_integration_allow">اجازهٔ یک‌پارچگی‌ها</string>
+    <string name="settings_integration_manager">مدیر یکپارچگی</string>
+
+    <string name="settings_user_interface">رابط کاربری</string>
+    <string name="settings_interface_language">زبان</string>
+    <string name="settings_select_language">گزینش زبان</string>
+
+    <string name="settings_without_flair">هم‌اکنون عضو هیچ اجتماعی نیستید.</string>
+
+    <string name="room_settings_room_notifications_title">آگاهی‌ها</string>
+    <string name="room_settings_banned_users_title">کاربران مسدود</string>
+
+    <string name="room_settings_category_advanced_title">پیش‌رفته</string>
+    <string name="room_settings_room_internal_id">شناسهٔ داخلی این اتاق</string>
+    <string name="room_settings_addresses_pref_title">نشانی‌ها</string>
+    <string name="room_settings_labs_pref_title">آزمایشگاه‌ها</string>
+    <string name="room_settings_labs_end_to_end">رمزنگاری سرتاسری</string>
+    <string name="room_settings_labs_end_to_end_is_active">رمزنگاری سرتاسری فعّال است</string>
+    <string name="room_settings_labs_end_to_end_warnings">برای به کار انداختن رمزنگاری سرتاسری باید حارج شوید.</string>
+    <string name="room_settings_never_send_to_unverified_devices_title">رمزنگاری فقط به نشست‌های تأیید شده</string>
+    <string name="room_settings_add_new_group">شناسهٔ اجتماع جدید (مثلاً ‪+foo:matrix.org‬)</string>
+    <string name="room_settings_invalid_group_format_dialog_title">شناسهٔ اجتماع نامعتبر</string>
+    <string name="room_settings_invalid_group_format_dialog_body">%s یک شناسهٔ اجتماع معتبر نیست</string>
+
+
+    <string name="settings_theme">زمینه</string>
+
+    <string name="encryption_never_send_to_unverified_devices_title">رمزنگاری فقط به نشست‌های تأیید شده</string>
+    <string name="unknown_devices_alert_title">اتاق شامل نشست‌های ناشناخته</string>
+    <string name="directory_server_type_homeserver">برای فهرست شدن اتاق‌های عمومی از یک کاساز، نامش را بنویسید</string>
+    <string name="directory_server_all_rooms_on_server">تمامی اتاق‌های روی کارساز %s</string>
+    <string name="directory_server_native_rooms">تمامی اتاق‌های بومی %s</string>
+
+    <plurals name="notification_unread_notified_messages_in_room_rooms">
+        <item quantity="one">۱ اتاق</item>
+        <item quantity="other">%d اتاق</item>
+    </plurals>
+
+    <plurals name="notification_compat_summary_title">
+        <item quantity="one">%d آگاهی</item>
+        <item quantity="other">%d آگاهی</item>
+    </plurals>
+
+    <string name="room_widget_permission_theme">زمینه‌تان</string>
+    <string name="room_add_matrix_apps">افزودن کاره‌های ماتریس</string>
+    <string name="encrypted_message">پیام رمزنگاری شده</string>
+
+    <string name="create_community">ایجاد اجتماع</string>
+    <string name="community_name">نام اجتماع</string>
+    <string name="community_id">شناسهٔ اجتماع</string>
+    <string name="group_details_rooms">اتاق‌ها</string>
+    <string name="rooms">اتاق‌ها</string>
+    <string name="filter_group_members">پالایش اعضای گروه</string>
+    <string name="filter_group_rooms">پالایش اتاق‌های گروهی</string>
+
+    <plurals name="group_rooms">
+        <item quantity="one">۱ اتاق</item>
+        <item quantity="other">%d اتاق</item>
+    </plurals>
+    <string name="group_no_long_description">مدیر اجتماع توضیحی بلند برای این اجتماع فراهم نکرده است.</string>
+
+    <string name="settings_lazy_loading_title">بار کردن تنبلانهٔ اعضای اتاق</string>
+    <string name="keys_backup_setup_step1_advanced">(پیش‌رفته)</string>
+    <string name="keys_backup_setup_step2_skip_button_title">(پیش‌رفته) برپایی با کلید بازیابی</string>
+    <string name="keys_backup_restore_is_getting_backup_version">گرفتن نگارش پشتیبان…</string>
+    <string name="keys_backup_get_version_error">شکست در گرفتن آخرین نگارش کلیدهای بازیابی (%s).</string>
+    <string name="keys_backup_info_title_version">نگارش</string>
+    <string name="edit">ویرایش</string>
+    <string name="reply">پاسخ</string>
+
+    <string name="global_retry">تلاش دوباره</string>
+    <string name="room_list_empty">برای آغاز استفاده از کاره، به اتاقی بپیوندید.</string>
+    <string name="send_you_invite">برایتان دعوتی فرستاد</string>
+    <string name="invited_by">دعوت‌شده به دست %s</string>
+
+    <string name="room_list_catchup_empty_title">همه‌چی سر جاشه!</string>
+    <string name="room_list_catchup_empty_body">هیچ پیام نخواندهٔ دیگری ندارید</string>
+    <string name="room_list_catchup_welcome_title">به خانه خوش آمدید!</string>
+    <string name="room_list_catchup_welcome_body">این‌جا به پیام‌های نخوانده برسید</string>
+    <string name="room_list_people_empty_title">گفت‌وگوها</string>
+    <string name="room_list_people_empty_body">گفت‌گوهای پیام مستقیمتان این‌جا نشان داده خواهند شد</string>
+    <string name="room_list_rooms_empty_title">اتاق‌ها</string>
+    <string name="room_list_rooms_empty_body">اتاق‌هایتان این‌جا نشان داده خواهند شد</string>
+
+    <string name="title_activity_emoji_reaction_picker">بازخودها</string>
+    <string name="reactions_agree">موافقت</string>
+    <string name="reactions_like">پسند</string>
+    <string name="message_add_reaction">افزودن بازخورد</string>
+    <string name="message_view_reaction">دیدن بازخوردها</string>
+    <string name="reactions">بازخوردها</string>
+
+    <string name="event_redacted_by_user_reason">رویداد به دست کاربر حذف شد</string>
+    <string name="event_redacted_by_admin_reason">رویداد به دست مدیر اتاق مدیریت شد</string>
+    <string name="last_edited_info_message">آخرین ویرایش به دست %1$s در %2$s</string>
+
+
+    <string name="malformed_message">رویداد بدشکل. نمی‌توان نمایش داد</string>
+    <string name="create_new_room">ایجاد اتاق جدید</string>
+    <string name="error_no_network">بدون شبکه. لطفاً اتّصال اینترنتیتان را بررسی کنید.</string>
+    <string name="action_change">تغییر</string>
+    <string name="change_room_directory_network">تغییر شبکه</string>
+    <string name="please_wait">لطفاً شکیبایی کنید…</string>
+    <string name="group_all_communities">تمام اجتماع‌ها</string>
+
+    <string name="room_preview_no_preview">این اتاق نمی‌تواند پیش‌نمایش یابد</string>
+    <string name="room_preview_world_readable_room_not_supported_yet">پیش‌نمایش اتاق‌های قابل خواندن به صورت عمومی هنوز در ریوت‌اکس پشتیبانی نمی‌شود</string>
+
+    <string name="fab_menu_create_room">اتاق‌ها</string>
+    <string name="fab_menu_create_chat">پیام‌های مستقیم</string>
+
+    <string name="create_room_title">اتاق جدید</string>
+    <string name="create_room_action_create">ایجاد</string>
+    <string name="create_room_name_hint">نام اتاق</string>
+    <string name="create_room_public_title">عمومی</string>
+    <string name="create_room_public_description">هرکسی می‌تواند به این اتاق بپیوندد</string>
+    <string name="create_room_directory_title">نمایهٔ اتاق‌ها</string>
+    <string name="create_room_directory_description">انتشار این اتاق در نمایهٔ اتاق‌ها</string>
+
+    <string name="settings_sdk_version">نگارش SDK ماتریس</string>
+    <string name="settings_general_title">عمومی</string>
+    <string name="settings_preferences">ترجیحات</string>
+    <string name="settings_security_and_privacy">امنیت و محرمانگی</string>
+    <string name="preference_voice_and_video">صدا و تصویر</string>
+    <string name="preference_root_help_about">راهنما و درباره</string>
+
+
+    <string name="send_suggestion">ارایهٔ پیشنهاد</string>
+    <string name="send_suggestion_content">لطفاً پیشنهادتان را در زیر بنویسید.</string>
+    <string name="send_suggestion_report_placeholder">پیشنهادتان را این‌جا شرح دهید</string>
+    <string name="send_suggestion_sent">ممنون. پیشنهاد با موفّقیت فرستاده شد</string>
+    <string name="send_suggestion_failed">فرستادن پیشنهاد شکست خورد (%s)</string>
+
+    <string name="settings_labs_show_hidden_events_in_timeline">نمایش رویدادهای نهفته در خط زمانی</string>
+
+    <string name="bottom_action_people_x">پیام‌های مستقیم</string>
+
+    <string name="send_file_step_idle">منتظر…</string>
+    <string name="send_file_step_encrypting_thumbnail">رمزنگاری بندانگشتی‌ها…</string>
+    <string name="send_file_step_sending_thumbnail">فرستادن بندانگشتی‌ها (%1$s / %2$s)</string>
+    <string name="send_file_step_encrypting_file">رمزنگاری پرونده…</string>
+    <string name="send_file_step_sending_file">فرستادن پرونده (%1$s / %2$s)</string>
+
+    <string name="downloading_file">بارگری پرونده %1$s…</string>
+    <string name="downloaded_file">پرونده %1$s بارگیری شد!</string>
+
+    <string name="edited_suffix">(ویراسته)</string>
+
+    <string name="room_filtering_filter_hint">پالایش گفت‌وگوها…</string>
+    <string name="room_filtering_footer_create_new_room">ایجاد اتاقی جدید</string>
+    <string name="room_filtering_footer_create_new_direct_message">فرستادن یک پیام مستقیم جدید</string>
+    <string name="room_directory_search_hint">نام یا شناسه (‪#example:matrix.org‬)</string>
+
+    <string name="labs_swipe_to_reply_in_timeline">به کار انداختن کشیدن برای پاسخ در خط زمانی</string>
+
+    <string name="add_by_matrix_id">افزودن با شناسهٔ ماتریس</string>
+    <string name="direct_room_no_known_users">نتیجه‌ای پیدا نشد. برای جست‌وجو روی کارساز، از افزون با شناسهٔ ماتریس استفاده کنید.</string>
+    <string name="direct_room_filter_hint">پالایش با نام کاربری یا شناسه…</string>
+
+    <string name="a11y_create_direct_message">ایجاد یک گفت‌وگوی مستقیم جدید</string>
+    <string name="a11y_create_room">ایجاد اتاقی جدید</string>
+    <string name="report_content_spam">هرزنامه است</string>
+    <string name="report_content_inappropriate">نامناسب است</string>
+    <string name="report_content_custom">گزارش سفارشی…</string>
+    <string name="report_content_custom_title">گزارش این محتوا</string>
+    <string name="report_content_custom_hint">دلیل گزارش این محتوا</string>
+    <string name="report_content_custom_submit">گزارش</string>
+    <string name="block_user">انسداد کاربر</string>
+
+    <string name="content_reported_title">محتوا گزارش شد</string>
+    <string name="content_reported_as_spam_title">به عنوان هرزنامه گزارش شد</string>
+    <string name="content_reported_as_inappropriate_title">به عنوان نامناسب گزارش شد</string>
+    <string name="message_ignore_user">انسداد کاربر</string>
+
+    <string name="login_server_other_text">تنظیمات پیش‌رفته و سفارشی</string>
+
+    <string name="settings_show_devices_list">دیدن تمام نشست‌هایم</string>
+    <string name="settings_advanced_settings">تنظیمات پیش‌رفته</string>
+    <string name="settings_developer_mode">حالت توسعه‌دهنده</string>
+    <string name="settings_rageshake">تکان دادن</string>
+    <string name="rageshake_detected">تکان تشخیص داده شد!</string>
+    <string name="devices_other_devices">دیگر نشست‌ها</string>
+
+    <string name="room_profile_section_more_notifications">آگاهی‌ها</string>
+    <string name="room_list_sharing_header_recent_rooms">اتاق‌های اخیر</string>
+    <string name="room_list_sharing_header_other_rooms">دیگر اتاق‌ها</string>
+
+    <string name="settings_category_timeline">خط زمانی</string>
+
+    <string name="settings_category_composer">ویرایشگر پیام</string>
+
+    <string name="settings_active_sessions_list">نشست‌های فعّال</string>
+    <string name="settings_active_sessions_show_all">نمایش تمامی نشست‌ها</string>
+    <string name="settings_active_sessions_manage">مدیریت نشست‌ها</string>
+    <plurals name="settings_active_sessions_count">
+        <item quantity="one">%d نشست فعّال</item>
+        <item quantity="other">%d نشست فعّال</item>
+    </plurals>
+
+    <string name="room_member_profile_failed_to_get_devices">شکست در گرفتن نشست‌ها</string>
+    <string name="room_member_profile_sessions_section_title">نشست‌ها</string>
+    <string name="settings_dev_tools">ابزارهای توسعه</string>
+    <string name="title_activity_verify_device">نشست را تایید کن</string>
+
+    <string name="none">هیچ</string>
+    <string name="revoke">ابطال</string>
+    <string name="people_no_identity_server">هیچ سرور هویتی پیکربندی نشده.</string>
+
+    <string name="call_failed_no_ice_title">تماس بدلیل سرور بد پیکربندی شده شکست خورد</string>
+    <string name="call_failed_no_ice_use_alt">از %s استفاده کنید</string>
+    <string name="auth_add_email_phone_message_2">یک ایمیل برای بازیابی ثبت کنید. بعدا در صورت دلخواه می توانید از آن برای شناسایی دوستان خود استفاده کنید.</string>
+    <string name="auth_add_email_and_phone_message_2">یک ایمیل برای بازیابی ثبت کنید. بعدا در صورت دلخواه می توانید از آن برای شناسایی دوستان خود استفاده کنید.</string>
+    <string name="auth_reset_password_missing_email">نشانی ایمیل پیوست شده به حساب شما باید وارد شده باشد</string>
+    <string name="auth_reset_password_missing_password">گذرواژه جدیدی باید وارد شود.</string>
+    <string name="auth_reset_password_email_validation_message">یک ایمیل به %s فرستاده شد. هنگامی که پیوند همراه را دنبال کردید، در زیر کلیک کنید.</string>
+    <string name="auth_reset_password_error_unauthorized">تایید نشانی ایمیل ناموفق بود: مطمئن شوید که روی پیوند در ایمیل کلیک کرده‌اید.</string>
+    <string name="auth_reset_password_success_message">گذرواژه بازنشانی شد.
+\n
+\nشما از همه نشست‌ها خارج شدید و دیگر آگاهی ها را دریافت نخواهید کرد. برای فعال‌سازی دوباره آگاهی‌ها، در هر دستگاه دوباره وارد شوید.</string>
+    <string name="auth_accept_policies">لطفا سیاست‌های این سرور خانه را بررسی کنید و بپذیرید</string>
+
+    <string name="login_error_must_start_http">نشانی باید با http[s]:// آغاز شود</string>
+    <string name="login_error_registration_network_error">نمی‌توان ثبت‌نام کرد: خطای شبکه</string>
+    <string name="login_error_unable_register">نمی‎توان ثبت‌نام کرد</string>
+    <string name="login_error_unable_register_mail_ownership">نمی‌توان ثبت‌نام کرد : مالکیت ایمیل تایید نشد</string>
+    <string name="login_error_invalid_home_server">لطفا یک نشانی معتبر وارد کنید</string>
+    <string name="login_error_unknown_host">نشانی قابل دسترس نیست، لطفا آن را بررسی کنید</string>
+    <string name="login_error_no_homeserver_found">این یک نشانی سرور ماتریس معتبر نیست</string>
+    <string name="login_error_homeserver_not_found">نمی‌توان به این نشانی سرور خانه دست یافت، لطفا آن را بررسی کنید</string>
+    <string name="login_error_ssl_handshake">دستگاه شما یک پروتوکل امنیتی TLS خارج از رده را استفاده می‌کند، به حمله آسیپ پذیر بوده، برای امنیت شما شما نمی‌توانید متصل شوید</string>
+    <string name="login_error_unknown_token">توکن دسترسی مشخص شده، شناخته نشد</string>
+    <string name="login_error_bad_json">JSON ناهنجار</string>
+    <string name="login_error_not_json">شامل یک JSON معتبر نبود</string>
+    <string name="login_error_limit_exceeded">درخواست‌های بیش از حد ارسال شده</string>
+    <string name="login_error_login_email_not_yet">هنوز روی پیوند ایمیل کلیک نشده</string>
+
+    <string name="settings_call_ringtone_use_app_ringtone">برای تماس‌های ورودی از آهنگ زنگ پیش‌فرض ریوت استفاده کن</string>
+    <string name="settings_call_ringtone_title">آهنگ زنگ تماس ورودی</string>
+    <string name="settings_call_ringtone_dialog_title">انتخاب آهنگ زنگ برای تماس‌ها:</string>
+
+    <string name="media_picker_both_capture_title">یک عکس یا ویدیو بگیر</string>
+    <string name="media_picker_cannot_record_video">نمی‌توان ویدیو ظبط کرد</string>
+
+    <string name="permissions_rationale_popup_title">اطلاعات</string>
+    <string name="permissions_rationale_msg_camera">ریوت برای گرفتن عکس و برای تماس‌های ویدیویی باید به دوربین شما به دسترسی یابد.</string>
+    <string name="open_chat_header">بازکردن سرتیتر</string>
+    <string name="room_sync_in_progress">در حال هم‌گام‌سازی…</string>
+    <string name="room_jump_to_first_unread">پریدن به نخستین پیام خوانده نشده.</string>
+
+    <string name="room_preview_invitation_format">شما برای پیوستن به این اتاق توسط %s دعوت شدید</string>
+    <string name="room_preview_try_join_an_unknown_room_default">یک اتاق</string>
+    <string name="room_creation_title">گپ جدید</string>
+    <string name="room_creation_add_member">افزودن عضو</string>
+    <plurals name="room_header_active_members_count">
+        <item quantity="one">۱ عضو فعال</item>
+        <item quantity="other">%d عضو فعال</item>
+    </plurals>
+    <string name="room_participants_action_ban">انسداد</string>
+    <string name="room_participants_action_unban">رفع انسداد</string>
+    <string name="room_participants_action_kick">اخراج</string>
+    <string name="room_participants_action_set_default_power_level">بازنشانی به کاربر عادی</string>
+    <string name="room_participants_action_set_moderator">ناظر کردن</string>
+    <string name="room_participants_action_set_admin">مدیر کردن</string>
+    <string name="room_participants_action_ignore">پنهان کردن همه پیام‌ها از این کاربر</string>
+    <string name="room_participants_action_unignore">نمایش همه پیام‌ها از این کاربر</string>
+    <string name="room_participants_action_mention">اشاره</string>
+    <string name="room_participants_action_devices_list">نمایش فهرست نشست</string>
+    <string name="room_participants_ban_prompt_msg">آیا مطئنید می‌خواهید این کاربر را از این گفتگو مسدود کنید؟</string>
+    <string name="reason_hint">دلیل</string>
+
+    <string name="room_details_settings">تنظیمات</string>
+    <string name="tab_title_search_messages">پیام‌ها</string>
+    <string name="room_settings_all_messages">همه پیام‌ها</string>
+    <string name="room_sliding_menu_messages">پیام‌ها</string>
+    <string name="room_sliding_menu_settings">تنظیمات</string>
+    <string name="settings_password">گذرواژه</string>
+    <string name="settings_change_password">تغییر گذرواژه</string>
+    <string name="settings_old_password">گذرواژه کنونی</string>
+    <string name="settings_new_password">گذرواژه جدید</string>
+    <string name="settings_confirm_password">تایید گذرواژه جدید</string>
+    <string name="settings_change_password_submit">به‌روزرسانی گذرواژه</string>
+    <string name="settings_fail_to_update_password">به‌روزرسانی گذرواژه ناموفق بود</string>
+    <string name="settings_fail_to_update_password_invalid_current_password">گذرواژه نامعتبر است</string>
+    <string name="settings_password_updated">گذرواژه شما به‌روز شده است</string>
+    <string name="deactivate_account_prompt_password">برای ادامه، لطفا گذرواژه خود را وارد کنید:</string>
+    <string name="error_empty_field_your_password">لطفا گذرواژه خود را وارد کنید.</string>
+    <string name="a11y_show_password">نمایش گذرواژه</string>
+    <string name="a11y_hide_password">پنهان کردن گذرواژه</string>
+    <string name="room_list_quick_actions_settings">تنظیمات</string>
+    <string name="login_reset_password_password_hint">گذرواژه جدید</string>
+
+    <string name="login_reset_password_success_notice">گذرواژه شما بازنشانی شد.</string>
+    <string name="login_signup_password_hint">گذرواژه</string>
+    <string name="soft_logout_signin_password_hint">گذرواژه</string>
+    <string name="settings">تنظیمات</string>
+    <string name="account_password">گذرواژه حساب</string>
+
 </resources>

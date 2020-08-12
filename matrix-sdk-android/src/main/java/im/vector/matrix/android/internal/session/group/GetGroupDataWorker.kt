@@ -23,14 +23,18 @@ import com.squareup.moshi.JsonClass
 import im.vector.matrix.android.internal.worker.SessionWorkerParams
 import im.vector.matrix.android.internal.worker.WorkerParamsFactory
 import im.vector.matrix.android.internal.worker.getSessionComponent
+import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * Possible previous worker: None
+ * Possible next worker    : None
+ */
 internal class GetGroupDataWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     @JsonClass(generateAdapter = true)
     internal data class Params(
             override val sessionId: String,
-            val groupIds: List<String>,
             override val lastFailureMessage: String? = null
     ) : SessionWorkerParams
 
@@ -39,17 +43,15 @@ internal class GetGroupDataWorker(context: Context, params: WorkerParameters) : 
     override suspend fun doWork(): Result {
         val params = WorkerParamsFactory.fromData<Params>(inputData)
                 ?: return Result.failure()
+                        .also { Timber.e("Unable to parse work parameters") }
 
         val sessionComponent = getSessionComponent(params.sessionId) ?: return Result.success()
         sessionComponent.inject(this)
-        val results = params.groupIds.map { groupId ->
-            runCatching { fetchGroupData(groupId) }
-        }
-        val isSuccessful = results.none { it.isFailure }
-        return if (isSuccessful) Result.success() else Result.retry()
-    }
-
-    private suspend fun fetchGroupData(groupId: String) {
-        getGroupDataTask.execute(GetGroupDataTask.Params(groupId))
+        return runCatching {
+            getGroupDataTask.execute(GetGroupDataTask.Params.FetchAllActive)
+        }.fold(
+                { Result.success() },
+                { Result.retry() }
+        )
     }
 }

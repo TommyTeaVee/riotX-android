@@ -21,9 +21,11 @@ import com.squareup.moshi.JsonClass
 import im.vector.matrix.android.api.session.crypto.MXCryptoError
 import im.vector.matrix.android.api.session.room.model.message.MessageContent
 import im.vector.matrix.android.api.session.room.model.message.MessageType
+import im.vector.matrix.android.api.session.room.model.relation.RelationDefaultContent
 import im.vector.matrix.android.api.session.room.send.SendState
 import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.internal.crypto.algorithms.olm.OlmDecryptionResult
+import im.vector.matrix.android.internal.crypto.model.event.EncryptedEventContent
 import im.vector.matrix.android.internal.di.MoshiProvider
 import org.json.JSONObject
 import timber.log.Timber
@@ -83,6 +85,9 @@ data class Event(
     var mCryptoError: MXCryptoError.ErrorType? = null
 
     @Transient
+    var mCryptoErrorReason: String? = null
+
+    @Transient
     var sendState: SendState = SendState.UNKNOWN
 
     /**
@@ -98,7 +103,7 @@ data class Event(
      * @return true if event is state event.
      */
     fun isStateEvent(): Boolean {
-        return EventType.isStateEvent(getClearType())
+        return stateKey != null
     }
 
     // ==============================================================================================================
@@ -162,6 +167,8 @@ data class Event(
      */
     fun isRedactedBySameUser() = senderId == unsignedData?.redactedEvent?.senderId
 
+    fun resolvedPrevContent(): Content? = prevContent ?: unsignedData?.prevContent
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -180,6 +187,7 @@ data class Event(
         if (redacts != other.redacts) return false
         if (mxDecryptionResult != other.mxDecryptionResult) return false
         if (mCryptoError != other.mCryptoError) return false
+        if (mCryptoErrorReason != other.mCryptoErrorReason) return false
         if (sendState != other.sendState) return false
 
         return true
@@ -198,6 +206,7 @@ data class Event(
         result = 31 * result + (redacts?.hashCode() ?: 0)
         result = 31 * result + (mxDecryptionResult?.hashCode() ?: 0)
         result = 31 * result + (mCryptoError?.hashCode() ?: 0)
+        result = 31 * result + (mCryptoErrorReason?.hashCode() ?: 0)
         result = 31 * result + sendState.hashCode()
         return result
     }
@@ -219,4 +228,32 @@ fun Event.isImageMessage(): Boolean {
         MessageType.MSGTYPE_IMAGE -> true
         else                      -> false
     }
+}
+
+fun Event.isVideoMessage(): Boolean {
+    return getClearType() == EventType.MESSAGE
+            && when (getClearContent()?.toModel<MessageContent>()?.msgType) {
+        MessageType.MSGTYPE_VIDEO -> true
+        else                      -> false
+    }
+}
+
+fun Event.isFileMessage(): Boolean {
+    return getClearType() == EventType.MESSAGE
+            && when (getClearContent()?.toModel<MessageContent>()?.msgType) {
+        MessageType.MSGTYPE_FILE -> true
+        else                     -> false
+    }
+}
+
+fun Event.getRelationContent(): RelationDefaultContent? {
+    return if (isEncrypted()) {
+        content.toModel<EncryptedEventContent>()?.relatesTo
+    } else {
+        content.toModel<MessageContent>()?.relatesTo
+    }
+}
+
+fun Event.isReply(): Boolean {
+    return getRelationContent()?.inReplyTo?.eventId != null
 }

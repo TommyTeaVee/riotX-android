@@ -18,9 +18,26 @@ package im.vector.matrix.android.api.session.homeserver
 
 data class HomeServerCapabilities(
         /**
+         * True if it is possible to change the password of the account.
+         */
+        val canChangePassword: Boolean = true,
+        /**
          * Max size of file which can be uploaded to the homeserver in bytes. [MAX_UPLOAD_FILE_SIZE_UNKNOWN] if unknown or not retrieved yet
          */
-        val maxUploadFileSize: Long = MAX_UPLOAD_FILE_SIZE_UNKNOWN
+        val maxUploadFileSize: Long = MAX_UPLOAD_FILE_SIZE_UNKNOWN,
+        /**
+         * Last version identity server and binding supported
+         */
+        val lastVersionIdentityServerSupported: Boolean = false,
+        /**
+         * Default identity server url, provided in Wellknown
+         */
+        val defaultIdentityServerUrl: String? = null,
+        /**
+         * Option to allow homeserver admins to set the default E2EE behaviour back to disabled for DMs / private rooms
+         * (as it was before) for various environments where this is desired.
+         */
+        val adminE2EByDefault: Boolean = true
 ) {
     companion object {
         const val MAX_UPLOAD_FILE_SIZE_UNKNOWN = -1L

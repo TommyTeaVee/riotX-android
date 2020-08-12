@@ -60,7 +60,7 @@ private short
 final short
 
 ### Line length is limited to 160 chars. Please split long lines
-.{161}
+[^─]{161}
 
 ### "DO NOT COMMIT" has been committed
 DO NOT COMMIT
@@ -120,7 +120,8 @@ ButterKnife\.findById\(
 \w\.flatMap\(
 
 ### Bad formatting of Realm query chain. Insert new line
-\)\.equalTo
+# DISABLED
+# \)\.equalTo
 
 # Use StandardCharsets.UTF_8.name()
 # DISABLED (min API to low)
@@ -161,3 +162,13 @@ Formatter\.formatShortFileSize===1
 ### Use kotlin stdlib to test or compare strings
 # DISABLED
 # android\.text\.TextUtils
+
+### This is not a rule, but a warning: the number of "enum class" has changed. For Json classes, it is mandatory that they have `@JsonClass(generateAdapter = false)`. If it is ok, change the value in file forbidden_strings_in_code.txt
+enum class===76
+
+### Do not import temporary legacy classes
+import im.vector.matrix.android.internal.legacy.riot===3
+import org.matrix.androidsdk.crypto.data===2
+
+### Use `Context#getSystemService` extension function provided by `core-ktx`
+getSystemService\(Context

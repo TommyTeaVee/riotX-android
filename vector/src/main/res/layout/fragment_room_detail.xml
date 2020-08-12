@@ -43,7 +43,7 @@
                 tools:ignore="MissingConstraints"
                 tools:src="@drawable/ic_shield_trusted" />
 
-            <im.vector.riotx.core.platform.EllipsizingTextView
+            <TextView
                 android:id="@+id/roomToolbarTitleView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="@sample/matrix.json/data/roomName" />
 
-            <im.vector.riotx.core.platform.EllipsizingTextView
+            <TextView
                 android:id="@+id/roomToolbarSubtitleView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -77,7 +77,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/roomToolbarTitleView"
                 tools:text="@sample/matrix.json/data/roomTopic" />
 
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.appcompat.widget.Toolbar>
@@ -89,13 +88,21 @@
         app:barrierDirection="top"
         app:constraint_referenced_ids="composerLayout,notificationAreaView" />
 
-    <im.vector.riotx.features.sync.widget.SyncStateView
+    <im.vector.app.features.sync.widget.SyncStateView
         android:id="@+id/syncStateView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/roomToolbar" />
+
+    <im.vector.app.core.ui.views.ActiveCallView
+        android:id="@+id/activeCallView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/syncStateView"
+        tools:visibility="visible" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -105,30 +112,46 @@
         app:layout_constraintBottom_toTopOf="@+id/recyclerViewBarrier"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/syncStateView"
+        app:layout_constraintTop_toBottomOf="@id/activeCallView"
         tools:listitem="@layout/item_timeline_event_base" />
 
-    <im.vector.riotx.core.ui.views.JumpToReadMarkerView
-        android:id="@+id/jumpToReadMarkerView"
+    <FrameLayout
+        android:id="@+id/bannersContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/syncStateView"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toBottomOf="@id/activeCallView">
 
-    <im.vector.riotx.core.ui.views.NotificationAreaView
+        <im.vector.app.features.home.room.detail.widget.RoomWidgetsBannerView
+            android:id="@+id/roomWidgetsBannerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <im.vector.app.core.ui.views.JumpToReadMarkerView
+            android:id="@+id/jumpToReadMarkerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+    <im.vector.app.core.ui.views.NotificationAreaView
         android:id="@+id/notificationAreaView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <im.vector.riotx.features.home.room.detail.composer.TextComposerView
+    <im.vector.app.features.home.room.detail.composer.TextComposerView
         android:id="@+id/composerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -138,7 +161,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <im.vector.riotx.features.invite.VectorInviteView
+    <im.vector.app.features.invite.VectorInviteView
         android:id="@+id/inviteView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -150,7 +173,34 @@
         app:layout_constraintTop_toBottomOf="@+id/roomToolbar"
         tools:visibility="visible" />
 
-    <im.vector.riotx.core.platform.BadgeFloatingActionButton
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/badgeBarrier"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="composerLayout,notificationAreaView" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/activeCallPiPWrap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/activeCallView">
+
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/activeCallPiP"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </androidx.cardview.widget.CardView>
+
+    <im.vector.app.core.platform.BadgeFloatingActionButton
         android:id="@+id/jumpToBottomView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -162,10 +212,9 @@
         app:badgeTextColor="@color/white"
         app:badgeTextPadding="2dp"
         app:badgeTextSize="10sp"
-        app:layout_constraintBottom_toTopOf="@id/composerLayout"
+        app:layout_constraintBottom_toTopOf="@id/badgeBarrier"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="16dp"
         app:tint="@color/black" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

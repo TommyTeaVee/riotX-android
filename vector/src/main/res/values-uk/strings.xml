@@ -96,7 +96,7 @@
     <string name="user_directory_header">Каталог користувачів</string>
     <string name="matrix_only_filter">Лише Matrix-контакти</string>
     <string name="no_conversation_placeholder">Немає діалогів</string>
-    <string name="no_contact_access_placeholder">Ви не надали Riot доступу до контактів</string>
+    <string name="no_contact_access_placeholder">Ви не надали Element доступу до контактів</string>
     <string name="no_result_placeholder">Немає результатів</string>
 
     <!-- Rooms fragment -->
@@ -196,7 +196,6 @@
     <string name="login_error_unable_register">Збій реєстрації</string>
     <string name="login_error_unable_register_mail_ownership">Збій реєстрації: не вдалося перевірити email</string>
     <string name="login_error_invalid_home_server">Введіть дійсний URL</string>
-    <string name="login_mobile_device">Мобільний</string>
 
     <string name="login_error_forbidden">Неправильне ім\'я користувача або пароль</string>
     <string name="login_error_unknown_token">Вказаний токен доступу не розпізнано</string>
@@ -207,7 +206,6 @@
     <string name="login_error_login_email_not_yet">Ви не перейшли за посиланням в електронному листі</string>
 
     <!-- crypto warnings -->
-    <string name="e2e_need_log_in_again">Вам треба знов ся залогувати для створення E2E-ключів для цього пристрою та надсилання їх на сервер.\nЦе одноразова дія.\nВибачте за незручності.</string>
 
     <!-- read receipts list Screen -->
     <string name="read_receipts_list">Перегляд списку вступників</string>
@@ -262,10 +260,10 @@
     <string name="permissions_rationale_msg_record_audio">Для здійснення аудіодзвінків потрібен доступ до мікрофону.</string>
     <string name="permissions_rationale_msg_record_audio_explanation">\n\nБудь ласка, надайте його у наступному виринаючому вікні, щоб мати змогу здійснити дзвінок.</string>
     <string name="permissions_rationale_msg_camera_and_audio">Для здійснення відеодзвінків потрібен доступ до камери та мікрофону.\n\nБудь ласка, надайте його у наступних виринаючих вікнах, щоб мати змогу їх здійснити.</string>
-    <string name="permissions_rationale_msg_contacts">Riot потребує доступу до ваших контактів, щоб знайти інших користувачів Matrix за їх email та номерами телефонів.\n\nБудь ласка, надайте його у наступному виринаючому діалозі, щоб знати, які з контактів теж використовують Riot.</string>
-    <string name="permissions_msg_contacts_warning_other_androids">Riot потребує доступу до ваших контактів, щоб знайти інших користувачів Matrix по email чи за номерами телефонів.
+    <string name="permissions_rationale_msg_contacts">Element потребує доступу до ваших контактів, щоб знайти інших користувачів Matrix за їх email та номерами телефонів.\n\nБудь ласка, надайте його у наступному виринаючому діалозі, щоб знати, які з контактів теж використовують Element.</string>
+    <string name="permissions_msg_contacts_warning_other_androids">Element потребує доступу до ваших контактів, щоб знайти інших користувачів Matrix по email чи за номерами телефонів.
 
-Надати Riot доступ до ваших контактів?</string>
+Надати Element доступ до ваших контактів?</string>
 
     <string name="permissions_action_not_performed_missing_permissions">Вибачте.. Дію не виконано через нестачу дозволів</string>
 
@@ -678,8 +676,6 @@
 У майбутньому цей процес верифікації стане більш складним.</string>
     <string name="encryption_information_verify_key_match">Я підтверджую, що ключі співпадають</string>
 
-    <string name="e2e_enabling_on_app_update">Тепер Riot підтримує наскрізне шифрування, але вам треба залогуватися знову, щоб його увімкнути.\n\nМожете зробити це зараз або пізніше у налаштуваннях застосунку.</string>
-
     <!-- unknown devices management -->
     <string name="unknown_devices_alert_title">Кімната містить невідомі пристрої</string>
     <string name="unknown_devices_alert_message">Кімната містить неперевірені невідомі пристрої.\nThis means there is no guarantee that the devices belong to the users they claim to.\nWe recommend you go through the verification process for each device before continuing, but you can resend the message without verifying if you prefer.\n\nUnknown devices:</string>
@@ -708,8 +704,6 @@
     <!-- Widget-->
     <string name="widget_no_power_to_manage">Для керування віджетами у цій кімнаті потрібен дозвіл</string>
     <string name="widget_creation_failure">Помилка створення віджету</string>
-    <string name="event_formatter_widget_added">%1$s додано %2$s</string>
-    <string name="event_formatter_widget_removed">%1$s видалено %2$s</string>
     <string name="settings_labs_create_conference_with_jitsi">Здійснювати конференц дзвінки через Jitsi</string>
     <string name="widget_delete_message_confirmation">Справді бажаєте видалити віджет?</string>
 
@@ -852,7 +846,7 @@
     <string name="settings_flair">Настрій</string>
 
     <string name="room_settings_room_notifications_title">Сповіщення</string>
-    <string name="e2e_re_request_encryption_key_dialog_content">Для відправлення ключа на цей пристрій, запустіть Riot на іншому пристрої, що може дешифрувати повідомлення.</string>
+    <string name="e2e_re_request_encryption_key_dialog_content">Для відправлення ключа на цей пристрій, запустіть Element на іншому пристрої, що може дешифрувати повідомлення.</string>
 
     <string name="error_no_external_application_found">Вибачте, жодного стороннього застосунку не знайдено для завершення цієї дії.</string>
 
@@ -895,9 +889,6 @@
     <string name="room_participants_now">Зараз %1$s</string>
     <string name="room_participants_ago">%1$s %2$s тому</string>
 
-    <string name="room_participants_action_unignore_prompt">Показати усі повідомлення від цього користувача?
-
-Зауважте, що це перезавантажить додаток та може зайняти деякий час.</string>
     <string name="room_participants_invite_join_names">"%1$s, "</string>
     <string name="room_participants_invite_join_names_and">%1$s та %2$s</string>
     <string name="room_participants_invite_join_names_combined">%1$s %2$s</string>
@@ -929,9 +920,9 @@
     <string name="settings_inline_url_preview">Попередній перегляд посилань</string>
     <string name="settings_preview_media_before_sending">Попередній перегляд медіа перед відправкою</string>
 
-    <string name="startup_notification_privacy_message">Riot.im може працювати у фоновому режимі для керування безпекою та конфіденційністю ваших сповіщень. Це може вплинути на час роботи батареї.</string>
-    <string name="settings_opt_in_of_analytics_summary">Riot збирає анонімну аналітику, щоб ми могли вдосконалювати цей додаток.</string>
-    <string name="settings_opt_in_of_analytics_prompt">Будь ласка, увімкніть аналітику, щоб допомагати нам вдосконалювати Riot.</string>
+    <string name="startup_notification_privacy_message">Element може працювати у фоновому режимі для керування безпекою та конфіденційністю ваших сповіщень. Це може вплинути на час роботи батареї.</string>
+    <string name="settings_opt_in_of_analytics_summary">Element збирає анонімну аналітику, щоб ми могли вдосконалювати цей додаток.</string>
+    <string name="settings_opt_in_of_analytics_prompt">Будь ласка, увімкніть аналітику, щоб допомагати нам вдосконалювати Element.</string>
     <string name="settings_without_flair">Ви наразі не є учасником жодної спільноти.</string>
 
     <string name="room_settings_no_flair">Ця кімната не показує настрій для спільнот</string>
@@ -1090,12 +1081,6 @@
 
     <string name="call_anyway">Все одно подзвонити</string>
     <string name="room_participants_action_kick">Копнути</string>
-    <plurals name="room_participants_kick_prompt_msg">
-        <item quantity="one">Ви певні, що хочете викинути цього (%d) користувача з чату?</item>
-        <item quantity="few">Ви певні, що хочете викинути цих користувачів з чату?</item>
-        <item quantity="many">Ви певні, що хочете викинути цих користувачів з чату?</item>
-        <item quantity="other" />
-    </plurals>
     <string name="reason_hint">Причина</string>
 
     <string name="settings_inline_url_preview_summary">Попередній перегляд посилань у чаті, у разі якщо Ваш сервер підтримує таку можливість.</string>
@@ -1118,7 +1103,7 @@
     <string name="markdown_has_been_disabled">Markdown вимкнено.</string>
 
     <string name="settings_call_category">Виклики</string>
-    <string name="settings_call_ringtone_use_riot_ringtone">Використовувати стандартний рингтон Riot для вхідних викликів</string>
+    <string name="settings_call_ringtone_use_app_ringtone">Використовувати стандартний рингтон Element для вхідних викликів</string>
     <string name="settings_call_ringtone_title">Рингтон вхідного виклику</string>
     <string name="settings_call_ringtone_dialog_title">Оберіть рингтон для викликів:</string>
 

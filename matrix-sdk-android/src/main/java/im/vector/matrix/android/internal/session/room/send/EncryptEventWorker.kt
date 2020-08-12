@@ -35,6 +35,10 @@ import im.vector.matrix.android.internal.worker.getSessionComponent
 import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * Possible previous worker: None
+ * Possible next worker    : Always [SendEventWorker]
+ */
 internal class EncryptEventWorker(context: Context, params: WorkerParameters)
     : CoroutineWorker(context, params) {
 
@@ -48,19 +52,19 @@ internal class EncryptEventWorker(context: Context, params: WorkerParameters)
     ) : SessionWorkerParams
 
     @Inject lateinit var crypto: CryptoService
-    @Inject lateinit var localEchoUpdater: LocalEchoUpdater
+    @Inject lateinit var localEchoRepository: LocalEchoRepository
 
     override suspend fun doWork(): Result {
         Timber.v("Start Encrypt work")
         val params = WorkerParamsFactory.fromData<Params>(inputData)
-                ?: return Result.success().also {
-                    Timber.e("Work cancelled due to input error from parent")
-                }
+                ?: return Result.success()
+                        .also { Timber.e("Unable to parse work parameters") }
 
         Timber.v("Start Encrypt work for event ${params.event.eventId}")
         if (params.lastFailureMessage != null) {
             // Transmit the error
             return Result.success(inputData)
+                    .also { Timber.e("Work cancelled due to input error from parent") }
         }
 
         val sessionComponent = getSessionComponent(params.sessionId) ?: return Result.success()
@@ -70,7 +74,7 @@ internal class EncryptEventWorker(context: Context, params: WorkerParameters)
         if (localEvent.eventId == null) {
             return Result.success()
         }
-        localEchoUpdater.updateSendState(localEvent.eventId, SendState.ENCRYPTING)
+        localEchoRepository.updateSendState(localEvent.eventId, SendState.ENCRYPTING)
 
         val localMutableContent = localEvent.content?.toMutableMap() ?: mutableMapOf()
         params.keepKeys?.forEach {
@@ -112,7 +116,7 @@ internal class EncryptEventWorker(context: Context, params: WorkerParameters)
                         senderCurve25519Key = result.eventContent["sender_key"] as? String,
                         claimedEd25519Key = crypto.getMyDevice().fingerprint()
                 )
-                localEchoUpdater.updateEncryptedEcho(localEvent.eventId, safeResult.eventContent, decryptionLocalEcho)
+                localEchoRepository.updateEncryptedEcho(localEvent.eventId, safeResult.eventContent, decryptionLocalEcho)
             }
 
             val nextWorkerParams = SendEventWorker.Params(params.sessionId, encryptedEvent)
@@ -122,7 +126,7 @@ internal class EncryptEventWorker(context: Context, params: WorkerParameters)
                 is Failure.CryptoError -> SendState.FAILED_UNKNOWN_DEVICES
                 else                   -> SendState.UNDELIVERED
             }
-            localEchoUpdater.updateSendState(localEvent.eventId, sendState)
+            localEchoRepository.updateSendState(localEvent.eventId, sendState)
             // always return success, or the chain will be stuck for ever!
             val nextWorkerParams = SendEventWorker.Params(params.sessionId, localEvent, error?.localizedMessage
                     ?: "Error")

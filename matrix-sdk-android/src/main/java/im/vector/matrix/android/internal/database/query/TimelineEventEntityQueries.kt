@@ -59,11 +59,11 @@ internal fun TimelineEventEntity.Companion.latestEvent(realm: Realm,
                                                        filterTypes: List<String> = emptyList()): TimelineEventEntity? {
     val roomEntity = RoomEntity.where(realm, roomId).findFirst() ?: return null
     val sendingTimelineEvents = roomEntity.sendingTimelineEvents.where().filterTypes(filterTypes)
-    val liveEvents = ChunkEntity.findLastLiveChunkFromRoom(realm, roomId)?.timelineEvents?.where()?.filterTypes(filterTypes)
+    val liveEvents = ChunkEntity.findLastForwardChunkOfRoom(realm, roomId)?.timelineEvents?.where()?.filterTypes(filterTypes)
     if (filterContentRelation) {
         liveEvents
-                ?.not()?.like(TimelineEventEntityFields.ROOT.CONTENT, FilterContent.EDIT_TYPE)
-                ?.not()?.like(TimelineEventEntityFields.ROOT.CONTENT, FilterContent.RESPONSE_TYPE)
+                ?.not()?.like(TimelineEventEntityFields.ROOT.CONTENT, TimelineEventFilter.Content.EDIT)
+                ?.not()?.like(TimelineEventEntityFields.ROOT.CONTENT, TimelineEventFilter.Content.RESPONSE)
     }
     val query = if (includesSending && sendingTimelineEvents.findAll().isNotEmpty()) {
         sendingTimelineEvents
@@ -93,9 +93,12 @@ internal fun TimelineEventEntity.Companion.findAllInRoomWithSendStates(realm: Re
                                                                        roomId: String,
                                                                        sendStates: List<SendState>)
         : RealmResults<TimelineEventEntity> {
-    val sendStatesStr = sendStates.map { it.name }.toTypedArray()
-    return realm.where<TimelineEventEntity>()
-            .equalTo(TimelineEventEntityFields.ROOM_ID, roomId)
-            .`in`(TimelineEventEntityFields.ROOT.SEND_STATE_STR, sendStatesStr)
+    return whereRoomId(realm, roomId)
+            .filterSendStates(sendStates)
             .findAll()
+}
+
+internal fun RealmQuery<TimelineEventEntity>.filterSendStates(sendStates: List<SendState>): RealmQuery<TimelineEventEntity> {
+    val sendStatesStr = sendStates.map { it.name }.toTypedArray()
+    return `in`(TimelineEventEntityFields.ROOT.SEND_STATE_STR, sendStatesStr)
 }

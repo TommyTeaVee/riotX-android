@@ -18,24 +18,30 @@ package im.vector.matrix.android.internal.session.room
 
 import im.vector.matrix.android.api.session.events.model.Content
 import im.vector.matrix.android.api.session.events.model.Event
-import im.vector.matrix.android.api.session.room.model.create.CreateRoomParams
-import im.vector.matrix.android.api.session.room.model.create.CreateRoomResponse
-import im.vector.matrix.android.api.session.room.model.create.JoinRoomResponse
 import im.vector.matrix.android.api.session.room.model.roomdirectory.PublicRoomsParams
 import im.vector.matrix.android.api.session.room.model.roomdirectory.PublicRoomsResponse
 import im.vector.matrix.android.api.session.room.model.thirdparty.ThirdPartyProtocol
+import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.internal.network.NetworkConstants
+import im.vector.matrix.android.internal.session.room.alias.AddRoomAliasBody
 import im.vector.matrix.android.internal.session.room.alias.RoomAliasDescription
+import im.vector.matrix.android.internal.session.room.create.CreateRoomBody
+import im.vector.matrix.android.internal.session.room.create.CreateRoomResponse
+import im.vector.matrix.android.internal.session.room.create.JoinRoomResponse
 import im.vector.matrix.android.internal.session.room.membership.RoomMembersResponse
+import im.vector.matrix.android.internal.session.room.membership.admin.UserIdAndReason
 import im.vector.matrix.android.internal.session.room.membership.joining.InviteBody
+import im.vector.matrix.android.internal.session.room.membership.threepid.ThreePidInviteBody
 import im.vector.matrix.android.internal.session.room.relation.RelationsResponse
 import im.vector.matrix.android.internal.session.room.reporting.ReportContentBody
 import im.vector.matrix.android.internal.session.room.send.SendResponse
+import im.vector.matrix.android.internal.session.room.tags.TagBody
 import im.vector.matrix.android.internal.session.room.timeline.EventContextResponse
 import im.vector.matrix.android.internal.session.room.timeline.PaginationResponse
 import im.vector.matrix.android.internal.session.room.typing.TypingBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
@@ -74,7 +80,7 @@ internal interface RoomAPI {
      */
     @Headers("CONNECT_TIMEOUT:60000", "READ_TIMEOUT:60000", "WRITE_TIMEOUT:60000")
     @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "createRoom")
-    fun createRoom(@Body param: CreateRoomParams): Call<CreateRoomResponse>
+    fun createRoom(@Body param: CreateRoomBody): Call<CreateRoomResponse>
 
     /**
      * Get a list of messages starting from a reference.
@@ -124,6 +130,21 @@ internal interface RoomAPI {
     ): Call<SendResponse>
 
     /**
+     * Send an event to a room.
+     *
+     * @param txId      the transaction Id
+     * @param roomId    the room id
+     * @param eventType the event type
+     * @param content   the event content as string
+     */
+    @PUT(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/send/{eventType}/{txId}")
+    fun send(@Path("txId") txId: String,
+             @Path("roomId") roomId: String,
+             @Path("eventType") eventType: String,
+             @Body content: String?
+    ): Call<SendResponse>
+
+    /**
      * Get the context surrounding an event.
      *
      * @param roomId  the room id
@@ -144,7 +165,8 @@ internal interface RoomAPI {
      * @param eventId the event Id
      */
     @GET(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/event/{eventId}")
-    fun getEvent(@Path("roomId") roomId: String, @Path("eventId") eventId: String): Call<Event>
+    fun getEvent(@Path("roomId") roomId: String,
+                 @Path("eventId") eventId: String): Call<Event>
 
     /**
      * Send read markers.
@@ -153,7 +175,8 @@ internal interface RoomAPI {
      * @param markers the read markers
      */
     @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/read_markers")
-    fun sendReadMarker(@Path("roomId") roomId: String, @Body markers: Map<String, String>): Call<Unit>
+    fun sendReadMarker(@Path("roomId") roomId: String,
+                       @Body markers: Map<String, String>): Call<Unit>
 
     /**
      * Invite a user to the given room.
@@ -163,7 +186,17 @@ internal interface RoomAPI {
      * @param body   a object that just contains a user id
      */
     @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/invite")
-    fun invite(@Path("roomId") roomId: String, @Body body: InviteBody): Call<Unit>
+    fun invite(@Path("roomId") roomId: String,
+               @Body body: InviteBody): Call<Unit>
+
+    /**
+     * Invite a user to a room, using a ThreePid
+     * Ref: https://matrix.org/docs/spec/client_server/r0.6.1#id101
+     * @param roomId Required. The room identifier (not alias) to which to invite the user.
+     */
+    @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/invite")
+    fun invite3pid(@Path("roomId") roomId: String,
+                   @Body body: ThreePidInviteBody): Call<Unit>
 
     /**
      * Send a generic state events
@@ -175,7 +208,7 @@ internal interface RoomAPI {
     @PUT(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/state/{state_event_type}")
     fun sendStateEvent(@Path("roomId") roomId: String,
                        @Path("state_event_type") stateEventType: String,
-                       @Body params: Map<String, String>): Call<Unit>
+                       @Body params: JsonDict): Call<Unit>
 
     /**
      * Send a generic state events
@@ -189,7 +222,7 @@ internal interface RoomAPI {
     fun sendStateEvent(@Path("roomId") roomId: String,
                        @Path("state_event_type") stateEventType: String,
                        @Path("state_key") stateKey: String,
-                       @Body params: Map<String, String>): Call<Unit>
+                       @Body params: JsonDict): Call<Unit>
 
     /**
      * Send a relation event to a room.
@@ -243,6 +276,36 @@ internal interface RoomAPI {
               @Body params: Map<String, String?>): Call<Unit>
 
     /**
+     * Ban a user from the given room.
+     *
+     * @param roomId          the room id
+     * @param userIdAndReason the banned user object (userId and reason for ban)
+     */
+    @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/ban")
+    fun ban(@Path("roomId") roomId: String,
+            @Body userIdAndReason: UserIdAndReason): Call<Unit>
+
+    /**
+     * unban a user from the given room.
+     *
+     * @param roomId          the room id
+     * @param userIdAndReason the unbanned user object (userId and reason for unban)
+     */
+    @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/unban")
+    fun unban(@Path("roomId") roomId: String,
+              @Body userIdAndReason: UserIdAndReason): Call<Unit>
+
+    /**
+     * Kick a user from the given room.
+     *
+     * @param roomId          the room id
+     * @param userIdAndReason the kicked user object (userId and reason for kicking)
+     */
+    @POST(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/kick")
+    fun kick(@Path("roomId") roomId: String,
+             @Body userIdAndReason: UserIdAndReason): Call<Unit>
+
+    /**
      * Strips all information out of an event which isn't critical to the integrity of the server-side representation of the room.
      * This cannot be undone.
      * Users may redact their own events, and any user with a power level greater than or equal to the redact power level of the room may redact events there.
@@ -281,10 +344,39 @@ internal interface RoomAPI {
     fun getRoomIdByAlias(@Path("roomAlias") roomAlias: String): Call<RoomAliasDescription>
 
     /**
+     * Add alias to the room.
+     * @param roomAlias the room alias.
+     */
+    @PUT(NetworkConstants.URI_API_PREFIX_PATH_R0 + "directory/room/{roomAlias}")
+    fun addRoomAlias(@Path("roomAlias") roomAlias: String,
+                     @Body body: AddRoomAliasBody): Call<Unit>
+
+    /**
      * Inform that the user is starting to type or has stopped typing
      */
     @PUT(NetworkConstants.URI_API_PREFIX_PATH_R0 + "rooms/{roomId}/typing/{userId}")
     fun sendTypingState(@Path("roomId") roomId: String,
                         @Path("userId") userId: String,
                         @Body body: TypingBody): Call<Unit>
+
+    /**
+     * Room tagging
+     */
+
+    /**
+     * Add a tag to a room.
+     */
+    @PUT(NetworkConstants.URI_API_PREFIX_PATH_R0 + "user/{userId}/rooms/{roomId}/tags/{tag}")
+    fun putTag(@Path("userId") userId: String,
+               @Path("roomId") roomId: String,
+               @Path("tag") tag: String,
+               @Body body: TagBody): Call<Unit>
+
+    /**
+     * Delete a tag from a room.
+     */
+    @DELETE(NetworkConstants.URI_API_PREFIX_PATH_R0 + "user/{userId}/rooms/{roomId}/tags/{tag}")
+    fun deleteTag(@Path("userId") userId: String,
+                  @Path("roomId") roomId: String,
+                  @Path("tag") tag: String): Call<Unit>
 }

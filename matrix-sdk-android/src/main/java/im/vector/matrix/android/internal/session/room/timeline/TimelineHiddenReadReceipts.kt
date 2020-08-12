@@ -24,7 +24,7 @@ import im.vector.matrix.android.internal.database.model.ReadReceiptsSummaryEntit
 import im.vector.matrix.android.internal.database.model.ReadReceiptsSummaryEntityFields
 import im.vector.matrix.android.internal.database.model.TimelineEventEntity
 import im.vector.matrix.android.internal.database.model.TimelineEventEntityFields
-import im.vector.matrix.android.internal.database.query.FilterContent
+import im.vector.matrix.android.internal.database.query.TimelineEventFilter
 import im.vector.matrix.android.internal.database.query.whereInRoom
 import io.realm.OrderedRealmCollectionChangeListener
 import io.realm.Realm
@@ -149,16 +149,26 @@ internal class TimelineHiddenReadReceipts constructor(private val readReceiptsSu
      */
     private fun RealmQuery<ReadReceiptsSummaryEntity>.filterReceiptsWithSettings(): RealmQuery<ReadReceiptsSummaryEntity> {
         beginGroup()
+        var needOr = false
         if (settings.filterTypes) {
             not().`in`("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.TYPE}", settings.allowedTypes.toTypedArray())
+            needOr = true
         }
-        if (settings.filterTypes && settings.filterEdits) {
-            or()
+        if (settings.filterUseless) {
+            if (needOr) or()
+            equalTo("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.IS_USELESS}", true)
+            needOr = true
         }
         if (settings.filterEdits) {
-            like("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.CONTENT}", FilterContent.EDIT_TYPE)
+            if (needOr) or()
+            like("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.CONTENT}", TimelineEventFilter.Content.EDIT)
             or()
-            like("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.CONTENT}", FilterContent.RESPONSE_TYPE)
+            like("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.CONTENT}", TimelineEventFilter.Content.RESPONSE)
+            needOr = true
+        }
+        if (settings.filterRedacted) {
+            if (needOr) or()
+            like("${ReadReceiptsSummaryEntityFields.TIMELINE_EVENT}.${TimelineEventEntityFields.ROOT.UNSIGNED_DATA}", TimelineEventFilter.Unsigned.REDACTED)
         }
         endGroup()
         return this

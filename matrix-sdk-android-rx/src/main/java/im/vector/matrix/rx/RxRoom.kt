@@ -16,11 +16,15 @@
 
 package im.vector.matrix.rx
 
+import android.net.Uri
+import im.vector.matrix.android.api.query.QueryStringValue
 import im.vector.matrix.android.api.session.events.model.Event
+import im.vector.matrix.android.api.session.identity.ThreePid
 import im.vector.matrix.android.api.session.room.Room
 import im.vector.matrix.android.api.session.room.members.RoomMemberQueryParams
 import im.vector.matrix.android.api.session.room.model.EventAnnotationsSummary
 import im.vector.matrix.android.api.session.room.model.ReadReceipt
+import im.vector.matrix.android.api.session.room.model.RoomHistoryVisibility
 import im.vector.matrix.android.api.session.room.model.RoomMemberSummary
 import im.vector.matrix.android.api.session.room.model.RoomSummary
 import im.vector.matrix.android.api.session.room.notification.RoomNotificationState
@@ -28,6 +32,7 @@ import im.vector.matrix.android.api.session.room.send.UserDraft
 import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
 import im.vector.matrix.android.api.util.Optional
 import im.vector.matrix.android.api.util.toOptional
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 
@@ -60,10 +65,17 @@ class RxRoom(private val room: Room) {
                 }
     }
 
-    fun liveStateEvent(eventType: String, stateKey: String): Observable<Optional<Event>> {
+    fun liveStateEvent(eventType: String, stateKey: QueryStringValue): Observable<Optional<Event>> {
         return room.getStateEventLive(eventType, stateKey).asObservable()
                 .startWithCallable {
                     room.getStateEvent(eventType, stateKey).toOptional()
+                }
+    }
+
+    fun liveStateEvents(eventTypes: Set<String>): Observable<List<Event>> {
+        return room.getStateEventsLive(eventTypes).asObservable()
+                .startWithCallable {
+                    room.getStateEvents(eventTypes)
                 }
     }
 
@@ -94,6 +106,38 @@ class RxRoom(private val room: Room) {
 
     fun liveNotificationState(): Observable<RoomNotificationState> {
         return room.getLiveRoomNotificationState().asObservable()
+    }
+
+    fun invite(userId: String, reason: String? = null): Completable = completableBuilder<Unit> {
+        room.invite(userId, reason, it)
+    }
+
+    fun invite3pid(threePid: ThreePid): Completable = completableBuilder<Unit> {
+        room.invite3pid(threePid, it)
+    }
+
+    fun updateTopic(topic: String): Completable = completableBuilder<Unit> {
+        room.updateTopic(topic, it)
+    }
+
+    fun updateName(name: String): Completable = completableBuilder<Unit> {
+        room.updateName(name, it)
+    }
+
+    fun addRoomAlias(alias: String): Completable = completableBuilder<Unit> {
+        room.addRoomAlias(alias, it)
+    }
+
+    fun updateCanonicalAlias(alias: String): Completable = completableBuilder<Unit> {
+        room.updateCanonicalAlias(alias, it)
+    }
+
+    fun updateHistoryReadability(readability: RoomHistoryVisibility): Completable = completableBuilder<Unit> {
+        room.updateHistoryReadability(readability, it)
+    }
+
+    fun updateAvatar(avatarUri: Uri, fileName: String): Completable = completableBuilder<Unit> {
+        room.updateAvatar(avatarUri, fileName, it)
     }
 }
 

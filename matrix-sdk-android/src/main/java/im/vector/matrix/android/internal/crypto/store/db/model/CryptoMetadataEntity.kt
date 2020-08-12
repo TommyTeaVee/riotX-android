@@ -36,9 +36,14 @@ internal open class CryptoMetadataEntity(
         // The keys backup version currently used. Null means no backup.
         var backupVersion: String? = null,
 
+        // The device keys has been sent to the homeserver
+        var deviceKeysSentToServer: Boolean = false,
+
         var xSignMasterPrivateKey: String? = null,
         var xSignUserPrivateKey: String? = null,
-        var xSignSelfSignedPrivateKey: String? = null
+        var xSignSelfSignedPrivateKey: String? = null,
+        var keyBackupRecoveryKey: String? = null,
+        var keyBackupRecoveryKeyVersion: String? = null
 
 //        var crossSigningInfoEntity: CrossSigningInfoEntity? = null
 ) : RealmObject() {

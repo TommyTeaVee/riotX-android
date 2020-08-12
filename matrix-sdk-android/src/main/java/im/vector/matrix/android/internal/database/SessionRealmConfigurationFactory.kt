@@ -17,6 +17,7 @@
 package im.vector.matrix.android.internal.database
 
 import android.content.Context
+import androidx.core.content.edit
 import im.vector.matrix.android.internal.database.model.SessionRealmModule
 import im.vector.matrix.android.internal.di.SessionFilesDirectory
 import im.vector.matrix.android.internal.di.SessionId
@@ -41,7 +42,12 @@ internal class SessionRealmConfigurationFactory @Inject constructor(
         @SessionFilesDirectory val directory: File,
         @SessionId val sessionId: String,
         @UserMd5 val userMd5: String,
+        val migration: RealmSessionStoreMigration,
         context: Context) {
+
+    companion object {
+        const val SESSION_STORE_SCHEMA_VERSION = 2L
+    }
 
     private val sharedPreferences = context.getSharedPreferences("im.vector.matrix.android.realm", Context.MODE_PRIVATE)
 
@@ -54,10 +60,9 @@ internal class SessionRealmConfigurationFactory @Inject constructor(
             Timber.v("************************************************************")
             deleteRealmFiles()
         }
-        sharedPreferences
-                .edit()
-                .putBoolean("$REALM_SHOULD_CLEAR_FLAG_$sessionId", true)
-                .apply()
+        sharedPreferences.edit {
+            putBoolean("$REALM_SHOULD_CLEAR_FLAG_$sessionId", true)
+        }
 
         val realmConfiguration = RealmConfiguration.Builder()
                 .compactOnLaunch()
@@ -67,16 +72,16 @@ internal class SessionRealmConfigurationFactory @Inject constructor(
                     realmKeysUtils.configureEncryption(this, SessionModule.getKeyAlias(userMd5))
                 }
                 .modules(SessionRealmModule())
-                .deleteRealmIfMigrationNeeded()
+                .schemaVersion(SESSION_STORE_SCHEMA_VERSION)
+                .migration(migration)
                 .build()
 
         // Try creating a realm instance and if it succeeds we can clear the flag
         Realm.getInstance(realmConfiguration).use {
             Timber.v("Successfully create realm instance")
-            sharedPreferences
-                    .edit()
-                    .putBoolean("$REALM_SHOULD_CLEAR_FLAG_$sessionId", false)
-                    .apply()
+            sharedPreferences.edit {
+                putBoolean("$REALM_SHOULD_CLEAR_FLAG_$sessionId", false)
+            }
         }
         return realmConfiguration
     }

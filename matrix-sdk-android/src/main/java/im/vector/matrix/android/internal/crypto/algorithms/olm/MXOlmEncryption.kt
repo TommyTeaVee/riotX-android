@@ -29,7 +29,7 @@ import im.vector.matrix.android.internal.crypto.model.CryptoDeviceInfo
 import im.vector.matrix.android.internal.crypto.store.IMXCryptoStore
 
 internal class MXOlmEncryption(
-        private var roomId: String,
+        private val roomId: String,
         private val olmDevice: MXOlmDevice,
         private val cryptoStore: IMXCryptoStore,
         private val messageEncrypter: MessageEncrypter,
@@ -44,7 +44,7 @@ internal class MXOlmEncryption(
         ensureSession(userIds)
         val deviceInfos = ArrayList<CryptoDeviceInfo>()
         for (userId in userIds) {
-            val devices = cryptoStore.getUserDevices(userId)?.values ?: emptyList()
+            val devices = cryptoStore.getUserDevices(userId)?.values.orEmpty()
             for (device in devices) {
                 val key = device.identityKey()
                 if (key == olmDevice.deviceCurve25519Key) {
@@ -77,5 +77,14 @@ internal class MXOlmEncryption(
     private suspend fun ensureSession(users: List<String>) {
         deviceListManager.downloadKeys(users, false)
         ensureOlmSessionsForUsersAction.handle(users)
+    }
+
+    override fun discardSessionKey() {
+        // No need for olm
+    }
+
+    override suspend fun reshareKey(sessionId: String, userId: String, deviceId: String, senderKey: String): Boolean {
+        // No need for olm
+        return false
     }
 }

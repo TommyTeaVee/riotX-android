@@ -28,10 +28,10 @@ import im.vector.matrix.android.api.auth.data.LoginFlowResult
 import im.vector.matrix.android.api.auth.registration.RegistrationResult
 import im.vector.matrix.android.api.session.Session
 import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.events.model.LocalEcho
 import im.vector.matrix.android.api.session.events.model.toModel
 import im.vector.matrix.android.api.session.room.Room
 import im.vector.matrix.android.api.session.room.model.message.MessageContent
+import im.vector.matrix.android.api.session.room.send.SendState
 import im.vector.matrix.android.api.session.room.timeline.Timeline
 import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
 import im.vector.matrix.android.api.session.room.timeline.TimelineSettings
@@ -57,9 +57,10 @@ class CommonTestHelper(context: Context) {
 
     val matrix: Matrix
 
+    fun getTestInterceptor(session: Session): MockOkHttpInterceptor? = TestNetworkModule.interceptorForSession(session.sessionId) as? MockOkHttpInterceptor
+
     init {
         Matrix.initialize(context, MatrixConfiguration("TestFlavor"))
-
         matrix = Matrix.getInstance(context)
     }
 
@@ -88,7 +89,8 @@ class CommonTestHelper(context: Context) {
     fun syncSession(session: Session) {
         val lock = CountDownLatch(1)
 
-        session.open()
+        GlobalScope.launch(Dispatchers.Main) { session.open() }
+
         session.startSync(true)
 
         val syncLiveData = runBlocking(Dispatchers.Main) {
@@ -115,8 +117,9 @@ class CommonTestHelper(context: Context) {
      * @param nbOfMessages the number of time the message will be sent
      */
     fun sendTextMessage(room: Room, message: String, nbOfMessages: Int): List<TimelineEvent> {
+        val timeline = room.createTimeline(null, TimelineSettings(10))
         val sentEvents = ArrayList<TimelineEvent>(nbOfMessages)
-        val latch = CountDownLatch(nbOfMessages)
+        val latch = CountDownLatch(1)
         val timelineListener = object : Timeline.Listener {
             override fun onTimelineFailure(throwable: Throwable) {
             }
@@ -127,28 +130,29 @@ class CommonTestHelper(context: Context) {
 
             override fun onTimelineUpdated(snapshot: List<TimelineEvent>) {
                 val newMessages = snapshot
-                        .filter { LocalEcho.isLocalEchoId(it.eventId).not() }
+                        .filter { it.root.sendState == SendState.SYNCED }
                         .filter { it.root.getClearType() == EventType.MESSAGE }
                         .filter { it.root.getClearContent().toModel<MessageContent>()?.body?.startsWith(message) == true }
 
                 if (newMessages.size == nbOfMessages) {
                     sentEvents.addAll(newMessages)
+                    // Remove listener now, if not at the next update sendEvents could change
+                    timeline.removeListener(this)
                     latch.countDown()
                 }
             }
         }
-        val timeline = room.createTimeline(null, TimelineSettings(10))
         timeline.start()
         timeline.addListener(timelineListener)
         for (i in 0 until nbOfMessages) {
             room.sendTextMessage(message + " #" + (i + 1))
         }
-        await(latch)
-        timeline.removeListener(timelineListener)
+        // Wait 3 second more per message
+        await(latch, timeout = TestConstants.timeOutMillis + 3_000L * nbOfMessages)
         timeline.dispose()
 
         // Check that all events has been created
-        assertEquals(nbOfMessages.toLong(), sentEvents.size.toLong())
+        assertEquals("Message number do not match $sentEvents", nbOfMessages.toLong(), sentEvents.size.toLong())
 
         return sentEvents
     }
@@ -183,9 +187,9 @@ class CommonTestHelper(context: Context) {
      * @param testParams test params about the session
      * @return the session associated with the existing account
      */
-    private fun logIntoAccount(userId: String,
-                               password: String,
-                               testParams: SessionTestParams): Session {
+    fun logIntoAccount(userId: String,
+                       password: String,
+                       testParams: SessionTestParams): Session {
         val session = logAccountAndSync(userId, password, testParams)
         assertNotNull(session)
         return session
@@ -261,13 +265,62 @@ class CommonTestHelper(context: Context) {
     }
 
     /**
+     * Log into the account and expect an error
+     *
+     * @param userName the account username
+     * @param password the password
+     */
+    fun logAccountWithError(userName: String,
+                            password: String): Throwable {
+        val hs = createHomeServerConfig()
+
+        doSync<LoginFlowResult> {
+            matrix.authenticationService
+                    .getLoginFlow(hs, it)
+        }
+
+        var requestFailure: Throwable? = null
+        waitWithLatch { latch ->
+            matrix.authenticationService
+                    .getLoginWizard()
+                    .login(userName, password, "myDevice", object : TestMatrixCallback<Session>(latch, onlySuccessful = false) {
+                        override fun onFailure(failure: Throwable) {
+                            requestFailure = failure
+                            super.onFailure(failure)
+                        }
+                    })
+        }
+
+        assertNotNull(requestFailure)
+        return requestFailure!!
+    }
+
+    fun createEventListener(latch: CountDownLatch, predicate: (List<TimelineEvent>) -> Boolean): Timeline.Listener {
+        return object : Timeline.Listener {
+            override fun onTimelineFailure(throwable: Throwable) {
+                // noop
+            }
+
+            override fun onNewTimelineEvents(eventIds: List<String>) {
+                // noop
+            }
+
+            override fun onTimelineUpdated(snapshot: List<TimelineEvent>) {
+                if (predicate(snapshot)) {
+                    latch.countDown()
+                }
+            }
+        }
+    }
+
+    /**
      * Await for a latch and ensure the result is true
      *
      * @param latch
      * @throws InterruptedException
      */
-    fun await(latch: CountDownLatch) {
-        assertTrue(latch.await(TestConstants.timeOutMillis, TimeUnit.MILLISECONDS))
+    fun await(latch: CountDownLatch, timeout: Long? = TestConstants.timeOutMillis) {
+        assertTrue(latch.await(timeout ?: TestConstants.timeOutMillis, TimeUnit.MILLISECONDS))
     }
 
     fun retryPeriodicallyWithLatch(latch: CountDownLatch, condition: (() -> Boolean)) {
@@ -282,10 +335,10 @@ class CommonTestHelper(context: Context) {
         }
     }
 
-    fun waitWithLatch(block: (CountDownLatch) -> Unit) {
+    fun waitWithLatch(timeout: Long? = TestConstants.timeOutMillis, block: (CountDownLatch) -> Unit) {
         val latch = CountDownLatch(1)
         block(latch)
-        await(latch)
+        await(latch, timeout)
     }
 
     // Transform a method with a MatrixCallback to a synchronous method
@@ -316,5 +369,15 @@ class CommonTestHelper(context: Context) {
     fun signOutAndClose(session: Session) {
         doSync<Unit> { session.signOut(true, it) }
         session.close()
+    }
+}
+
+fun List<TimelineEvent>.checkSendOrder(baseTextMessage: String, numberOfMessages: Int, startIndex: Int): Boolean {
+    return drop(startIndex)
+            .take(numberOfMessages)
+            .foldRightIndexed(true) { index, timelineEvent, acc ->
+        val body = timelineEvent.root.content.toModel<MessageContent>()?.body
+        val currentMessageSuffix = numberOfMessages - index
+        acc && (body == null || body.startsWith(baseTextMessage) && body.endsWith("#$currentMessageSuffix"))
     }
 }

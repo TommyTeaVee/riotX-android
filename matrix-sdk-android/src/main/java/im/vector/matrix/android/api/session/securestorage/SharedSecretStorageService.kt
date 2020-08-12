@@ -18,6 +18,10 @@ package im.vector.matrix.android.api.session.securestorage
 
 import im.vector.matrix.android.api.MatrixCallback
 import im.vector.matrix.android.api.listeners.ProgressListener
+import im.vector.matrix.android.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
+import im.vector.matrix.android.api.session.crypto.crosssigning.MASTER_KEY_SSSS_NAME
+import im.vector.matrix.android.api.session.crypto.crosssigning.SELF_SIGNING_KEY_SSSS_NAME
+import im.vector.matrix.android.api.session.crypto.crosssigning.USER_SIGNING_KEY_SSSS_NAME
 
 /**
  * Some features may require clients to store encrypted data on the server so that it can be shared securely between clients.
@@ -35,12 +39,14 @@ interface SharedSecretStorageService {
      * Use the SsssKeyCreationInfo object returned by the callback to get more information about the created key (recovery key ...)
      *
      * @param keyId the ID of the key
+     * @param key keep null if you want to generate a random key
      * @param keyName a human readable name
      * @param keySigner Used to add a signature to the key (client should check key signature before storing secret)
      *
      * @param callback Get key creation info
      */
     fun generateKey(keyId: String,
+                    key: SsssKeySpec?,
                     keyName: String,
                     keySigner: KeySigner?,
                     callback: MatrixCallback<SsssKeyCreationInfo>)
@@ -109,7 +115,24 @@ interface SharedSecretStorageService {
      */
     fun getSecret(name: String, keyId: String?, secretKey: SsssKeySpec, callback: MatrixCallback<String>)
 
-    fun checkShouldBeAbleToAccessSecrets(secretNames: List<String>, keyId: String?) : IntegrityResult
+    /**
+     * Return true if SSSS is configured
+     */
+    fun isRecoverySetup(): Boolean {
+        return checkShouldBeAbleToAccessSecrets(
+                secretNames = listOf(MASTER_KEY_SSSS_NAME, USER_SIGNING_KEY_SSSS_NAME, SELF_SIGNING_KEY_SSSS_NAME),
+                keyId = null
+        ) is IntegrityResult.Success
+    }
+
+    fun isMegolmKeyInBackup(): Boolean {
+        return checkShouldBeAbleToAccessSecrets(
+                secretNames = listOf(KEYBACKUP_SECRET_SSSS_NAME),
+                keyId = null
+        ) is IntegrityResult.Success
+    }
+
+    fun checkShouldBeAbleToAccessSecrets(secretNames: List<String>, keyId: String?): IntegrityResult
 
     fun requestSecret(name: String, myOtherDeviceId: String)
 

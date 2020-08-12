@@ -2,9 +2,7 @@
 
 Please read https://github.com/matrix-org/synapse/blob/master/CONTRIBUTING.md
 
-Android support can be found in this [![Riot Android Matrix room #riot-android:matrix.org](https://img.shields.io/matrix/riot-android:matrix.org.svg?label=%23riot-android:matrix.org&logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#riot-android:matrix.org) room.
-
-Dedicated room for RiotX: [![RiotX Android Matrix room #riot-android:matrix.org](https://img.shields.io/matrix/riotx:matrix.org.svg?label=%23RiotX:matrix.org&logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#riotx:matrix.org)
+Android support can be found in this [![Element Android Matrix room #element-android:matrix.org](https://img.shields.io/matrix/element-android:matrix.org.svg?label=%23element-android:matrix.org&logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#element-android:matrix.org) room.
 
 # Specific rules for Matrix Android projects
 
@@ -13,16 +11,36 @@ Dedicated room for RiotX: [![RiotX Android Matrix room #riot-android:matrix.org]
 Please set the "hard wrap" setting of Android Studio to 160 chars, this is the setting we use internally to format the source code (Menu `Settings/Editor/Code Style` then `Hard wrap at`).
 Please ensure that your using the project formatting rules (which are in the project at .idea/codeStyles/), and format the file before committing them.
 
+### Template
+
+An Android Studio template has been added to the project to help creating all files needed when adding a new screen to the application. Fragment, ViewModel, Activity, etc.
+
+To install the template (to be done only once):
+- Go to folder `./tools/template`.
+- Mac OSX: Run the script `./configure.sh`.
+
+   Linux: Run `ANDROID_STUDIO=/path/to/android-studio ./configure`
+    - e.g. `ANDROID_STUDIO=/usr/local/android-studio ./configure`
+
+- Restart Android Studio.
+
+To create a new screen:
+- First create a new package in your code.
+- Then right click on the package, and select `New/New Vector/RiotX Feature`.
+- Follow the Wizard, especially replace `Main` by something more relevant to your feature.
+- Click on `Finish`.
+- Remaining steps are described as TODO in the generated files, or will be pointed out by the compilator, or at runtime :)
+
+Note that if the templates are modified, the only things to do is to restart Android Studio for the change to take effect.
+
 ## Compilation
 
-For now, the Matrix SDK and the RiotX application are in the same project. So there is no specific thing to do, this project should compile without any special action.
+For now, the Matrix SDK and the Element application are in the same project. So there is no specific thing to do, this project should compile without any special action.
 
-## I want to help translating RiotX
+## I want to help translating Element
 
 If you want to fix an issue with an English string, please submit a PR.
-If you want to fix an issue in other languages, or add a missing translation, or even add a new language, please use [Weblate](https://translate.riot.im/projects/riot-android/).
-
-For the moment, Strings from Riot will be used, there is no dedicated project in Weblate for RiotX.
+If you want to fix an issue in other languages, or add a missing translation, or even add a new language, please use [Weblate](https://translate.riot.im/projects/element-android/).
 
 ## I want to submit a PR to fix an issue
 
@@ -79,7 +97,7 @@ Make sure the following commands execute without any error:
 
 ### Tests
 
-RiotX is currently supported on Android KitKat (API 19+): please test your change on an Android device (or Android emulator) running with API 19. Many issues can happen (including crashes) on older devices.
+Element is currently supported on Android Lollipop (API 21+): please test your change on an Android device (or Android emulator) running with API 21. Many issues can happen (including crashes) on older devices.
 Also, if possible, please test your change on a real device. Testing on Android emulator may not be sufficient.
 
 You should consider adding Unit tests with your PR, and also integration tests (AndroidTest). Please refer to [this document](./docs/integration_tests.md) to install and run the integration test environment.
@@ -98,7 +116,7 @@ Please consider accessibility as an important point. As a minimum requirement, i
 When adding or editing layouts, make sure the layout will render correctly if device uses a RTL (Right To Left) language.
 You can check this in the layout editor preview by selecting any RTL language (ex: Arabic).
 
-Also please check that the colors are ok for all the current themes of RiotX. Please use `?attr` instead of `@color` to reference colors in the layout. You can check this in the layout editor preview by selecting all the main themes (`AppTheme.Status`, `AppTheme.Dark`, etc.).
+Also please check that the colors are ok for all the current themes of Element. Please use `?attr` instead of `@color` to reference colors in the layout. You can check this in the layout editor preview by selecting all the main themes (`AppTheme.Status`, `AppTheme.Dark`, etc.).
 
 ### Authors
 

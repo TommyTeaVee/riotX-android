@@ -17,10 +17,9 @@ package im.vector.matrix.android.internal.crypto.verification
 
 import im.vector.matrix.android.api.MatrixCallback
 import im.vector.matrix.android.api.session.crypto.crosssigning.CrossSigningService
-import im.vector.matrix.android.api.session.crypto.crosssigning.SELF_SIGNING_KEY_SSSS_NAME
-import im.vector.matrix.android.api.session.crypto.crosssigning.USER_SIGNING_KEY_SSSS_NAME
 import im.vector.matrix.android.api.session.crypto.verification.VerificationTransaction
 import im.vector.matrix.android.api.session.crypto.verification.VerificationTxState
+import im.vector.matrix.android.internal.crypto.IncomingGossipingRequestManager
 import im.vector.matrix.android.internal.crypto.OutgoingGossipingRequestManager
 import im.vector.matrix.android.internal.crypto.actions.SetDeviceVerificationAction
 import im.vector.matrix.android.internal.crypto.crosssigning.DeviceTrustLevel
@@ -33,6 +32,7 @@ internal abstract class DefaultVerificationTransaction(
         private val setDeviceVerificationAction: SetDeviceVerificationAction,
         private val crossSigningService: CrossSigningService,
         private val outgoingGossipingRequestManager: OutgoingGossipingRequestManager,
+        private val incomingGossipingRequestManager: IncomingGossipingRequestManager,
         private val userId: String,
         override val transactionId: String,
         override val otherUserId: String,
@@ -57,7 +57,7 @@ internal abstract class DefaultVerificationTransaction(
 
     protected fun trust(canTrustOtherUserMasterKey: Boolean,
                         toVerifyDeviceIds: List<String>,
-                        eventuallyMarkMyMasterKeyAsTrusted: Boolean) {
+                        eventuallyMarkMyMasterKeyAsTrusted: Boolean, autoDone : Boolean = true) {
         Timber.d("## Verification: trust ($otherUserId,$otherDeviceId) , verifiedDevices:$toVerifyDeviceIds")
         Timber.d("## Verification: trust Mark myMSK trusted $eventuallyMarkMyMasterKeyAsTrusted")
 
@@ -86,6 +86,8 @@ internal abstract class DefaultVerificationTransaction(
         }
 
         if (otherUserId == userId) {
+            incomingGossipingRequestManager.onVerificationCompleteForDevice(otherDeviceId!!)
+
             // If me it's reasonable to sign and upload the device signature
             // Notice that i might not have the private keys, so may not be able to do it
             crossSigningService.trustDevice(otherDeviceId!!, object : MatrixCallback<Unit> {
@@ -95,14 +97,10 @@ internal abstract class DefaultVerificationTransaction(
             })
         }
 
-        transport.done(transactionId) {
-            if (otherUserId == userId) {
-                outgoingGossipingRequestManager.sendSecretShareRequest(SELF_SIGNING_KEY_SSSS_NAME, mapOf(userId to listOf(otherDeviceId ?: "*")))
-                outgoingGossipingRequestManager.sendSecretShareRequest(USER_SIGNING_KEY_SSSS_NAME, mapOf(userId to listOf(otherDeviceId ?: "*")))
-            }
+        if (autoDone) {
+            state = VerificationTxState.Verified
+            transport.done(transactionId) {}
         }
-
-        state = VerificationTxState.Verified
     }
 
     private fun setDeviceVerified(userId: String, deviceId: String) {

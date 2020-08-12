@@ -17,7 +17,10 @@
 
 package im.vector.matrix.android.api.session.profile
 
+import android.net.Uri
+import androidx.lifecycle.LiveData
 import im.vector.matrix.android.api.MatrixCallback
+import im.vector.matrix.android.api.session.identity.ThreePid
 import im.vector.matrix.android.api.util.Cancelable
 import im.vector.matrix.android.api.util.JsonDict
 import im.vector.matrix.android.api.util.Optional
@@ -33,11 +36,26 @@ interface ProfileService {
     }
 
     /**
-     * Return the current dispayname for this user
+     * Return the current display name for this user
      * @param userId the userId param to look for
      *
      */
     fun getDisplayName(userId: String, matrixCallback: MatrixCallback<Optional<String>>): Cancelable
+
+    /**
+     * Update the display name for this user
+     * @param userId the userId to update the display name of
+     * @param newDisplayName the new display name of the user
+     */
+    fun setDisplayName(userId: String, newDisplayName: String, matrixCallback: MatrixCallback<Unit>): Cancelable
+
+    /**
+     * Update the avatar for this user
+     * @param userId the userId to update the avatar of
+     * @param newAvatarUri the new avatar uri of the user
+     * @param fileName the fileName of selected image
+     */
+    fun updateAvatar(userId: String, newAvatarUri: Uri, fileName: String, matrixCallback: MatrixCallback<Unit>): Cancelable
 
     /**
      * Return the current avatarUrl for this user.
@@ -53,4 +71,15 @@ interface ProfileService {
      *
      */
     fun getProfile(userId: String, matrixCallback: MatrixCallback<JsonDict>): Cancelable
+
+    /**
+     * Get the current user 3Pids
+     */
+    fun getThreePids(): List<ThreePid>
+
+    /**
+     * Get the current user 3Pids Live
+     * @param refreshData set to true to fetch data from the homeserver
+     */
+    fun getThreePidsLive(refreshData: Boolean): LiveData<List<ThreePid>>
 }

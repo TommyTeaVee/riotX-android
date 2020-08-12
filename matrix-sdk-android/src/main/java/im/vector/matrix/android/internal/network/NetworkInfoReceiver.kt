@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// This BroadcastReceiver is used only if the build code is below 24.
+@file:Suppress("DEPRECATION")
+
 package im.vector.matrix.android.internal.network
 
 import android.content.BroadcastReceiver
@@ -21,6 +24,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import androidx.core.content.getSystemService
 import javax.inject.Inject
 
 internal class NetworkInfoReceiver @Inject constructor() : BroadcastReceiver() {
@@ -28,7 +32,7 @@ internal class NetworkInfoReceiver @Inject constructor() : BroadcastReceiver() {
     var isConnectedCallback: ((Boolean) -> Unit)? = null
 
     override fun onReceive(context: Context, intent: Intent) {
-        val conn = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val conn = context.getSystemService<ConnectivityManager>()!!
         val networkInfo: NetworkInfo? = conn.activeNetworkInfo
         isConnectedCallback?.invoke(networkInfo?.isConnected ?: false)
     }

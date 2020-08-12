@@ -22,6 +22,7 @@ import im.vector.matrix.android.api.util.Optional
 import im.vector.matrix.android.internal.crypto.crosssigning.DeviceTrustResult
 import im.vector.matrix.android.internal.crypto.crosssigning.UserTrustResult
 import im.vector.matrix.android.internal.crypto.model.rest.UserPasswordAuth
+import im.vector.matrix.android.internal.crypto.store.PrivateKeysInfo
 
 interface CrossSigningService {
 
@@ -40,11 +41,13 @@ interface CrossSigningService {
      * Users needs to enter credentials
      */
     fun initializeCrossSigning(authParams: UserPasswordAuth?,
-                               callback: MatrixCallback<Unit>? = null)
+                               callback: MatrixCallback<Unit>)
+
+    fun isCrossSigningInitialized(): Boolean = getMyCrossSigningKeys() != null
 
     fun checkTrustFromPrivateKeys(masterKeyPrivateKey: String?,
                                   uskKeyPrivateKey: String?,
-                                  sskPrivateKey: String?) : UserTrustResult
+                                  sskPrivateKey: String?): UserTrustResult
 
     fun getUserCrossSigningKeys(otherUserId: String): MXCrossSigningInfo?
 
@@ -52,7 +55,13 @@ interface CrossSigningService {
 
     fun getMyCrossSigningKeys(): MXCrossSigningInfo?
 
+    fun getCrossSigningPrivateKeys(): PrivateKeysInfo?
+
+    fun getLiveCrossSigningPrivateKeys(): LiveData<Optional<PrivateKeysInfo>>
+
     fun canCrossSign(): Boolean
+
+    fun allPrivateKeysKnown(): Boolean
 
     fun trustUser(otherUserId: String,
                   callback: MatrixCallback<Unit>)
@@ -69,6 +78,8 @@ interface CrossSigningService {
                          otherDeviceId: String,
                          locallyTrusted: Boolean?): DeviceTrustResult
 
+    // FIXME Those method do not have to be in the service
+    fun onSecretMSKGossip(mskPrivateKey: String)
     fun onSecretSSKGossip(sskPrivateKey: String)
     fun onSecretUSKGossip(uskPrivateKey: String)
 }
