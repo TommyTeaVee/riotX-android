@@ -21,7 +21,8 @@ import androidx.annotation.StringRes
 import im.vector.app.R
 import im.vector.app.core.platform.VectorSharedAction
 import im.vector.app.features.home.room.detail.timeline.item.MessageInformationData
-import im.vector.matrix.android.api.session.room.model.message.MessageWithAttachmentContent
+import org.matrix.android.sdk.api.session.room.model.message.MessageContent
+import org.matrix.android.sdk.api.session.room.model.message.MessageWithAttachmentContent
 
 sealed class EventSharedAction(@StringRes val titleRes: Int,
                                @DrawableRes val iconResId: Int,
@@ -36,7 +37,7 @@ sealed class EventSharedAction(@StringRes val titleRes: Int,
             EventSharedAction(R.string.message_add_reaction, R.drawable.ic_add_reaction)
 
     data class Copy(val content: String) :
-            EventSharedAction(R.string.copy, R.drawable.ic_copy)
+            EventSharedAction(R.string.action_copy, R.drawable.ic_copy)
 
     data class Edit(val eventId: String) :
             EventSharedAction(R.string.edit, R.drawable.ic_edit)
@@ -47,7 +48,7 @@ sealed class EventSharedAction(@StringRes val titleRes: Int,
     data class Reply(val eventId: String) :
             EventSharedAction(R.string.reply, R.drawable.ic_reply)
 
-    data class Share(val eventId: String, val messageContent: MessageWithAttachmentContent) :
+    data class Share(val eventId: String, val messageContent: MessageContent) :
             EventSharedAction(R.string.share, R.drawable.ic_share)
 
     data class Save(val eventId: String, val messageContent: MessageWithAttachmentContent) :
@@ -62,7 +63,7 @@ sealed class EventSharedAction(@StringRes val titleRes: Int,
     data class Redact(val eventId: String, val askForReason: Boolean) :
             EventSharedAction(R.string.message_action_item_redact, R.drawable.ic_delete, true)
 
-    data class Cancel(val eventId: String) :
+    data class Cancel(val eventId: String, val force: Boolean) :
             EventSharedAction(R.string.cancel, R.drawable.ic_close_round)
 
     data class ViewSource(val content: String) :

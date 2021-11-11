@@ -15,94 +15,113 @@
  */
 package im.vector.app.features.discovery
 
-import androidx.lifecycle.viewModelScope
 import com.airbnb.mvrx.Async
 import com.airbnb.mvrx.Fail
-import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.Loading
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.Uninitialized
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.R
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorViewModel
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.identity.IdentityServiceError
-import im.vector.matrix.android.api.session.identity.IdentityServiceListener
-import im.vector.matrix.android.api.session.identity.SharedState
-import im.vector.matrix.android.api.session.identity.ThreePid
-import im.vector.matrix.android.internal.util.awaitCallback
-import im.vector.matrix.rx.rx
+import im.vector.app.core.resources.StringProvider
+import im.vector.app.core.utils.ensureProtocol
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.identity.IdentityServiceError
+import org.matrix.android.sdk.api.session.identity.IdentityServiceListener
+import org.matrix.android.sdk.api.session.identity.SharedState
+import org.matrix.android.sdk.api.session.identity.ThreePid
+import org.matrix.android.sdk.api.session.terms.TermsService
+import org.matrix.android.sdk.flow.flow
 
 class DiscoverySettingsViewModel @AssistedInject constructor(
         @Assisted initialState: DiscoverySettingsState,
-        private val session: Session)
-    : VectorViewModel<DiscoverySettingsState, DiscoverySettingsAction, DiscoverySettingsViewEvents>(initialState) {
+        private val session: Session,
+        private val stringProvider: StringProvider
+) : VectorViewModel<DiscoverySettingsState, DiscoverySettingsAction, DiscoverySettingsViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: DiscoverySettingsState): DiscoverySettingsViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<DiscoverySettingsViewModel, DiscoverySettingsState> {
+        override fun create(initialState: DiscoverySettingsState): DiscoverySettingsViewModel
     }
 
-    companion object : MvRxViewModelFactory<DiscoverySettingsViewModel, DiscoverySettingsState> {
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: DiscoverySettingsState): DiscoverySettingsViewModel? {
-            val fragment: DiscoverySettingsFragment = (viewModelContext as FragmentViewModelContext).fragment()
-            return fragment.viewModelFactory.create(state)
-        }
-    }
+    companion object : MavericksViewModelFactory<DiscoverySettingsViewModel, DiscoverySettingsState> by hiltMavericksViewModelFactory()
 
     private val identityService = session.identityService()
+    private val termsService: TermsService = session
 
     private val identityServerManagerListener = object : IdentityServiceListener {
         override fun onIdentityServerChange() = withState { state ->
-            val identityServerUrl = identityService.getCurrentIdentityServerUrl()
-            val currentIS = state.identityServer()
-            setState {
-                copy(identityServer = Success(identityServerUrl))
+            viewModelScope.launch {
+                runCatching { fetchIdentityServerWithTerms() }.fold(
+                        onSuccess = {
+                            val currentIS = state.identityServer()
+                            setState {
+                                copy(
+                                        identityServer = Success(it),
+                                        userConsent = identityService.getUserConsent()
+                                )
+                            }
+                            if (currentIS != it) retrieveBinding()
+                        },
+                        onFailure = { _viewEvents.post(DiscoverySettingsViewEvents.Failure(it)) }
+                )
             }
-            if (currentIS != identityServerUrl) retrieveBinding()
         }
     }
 
     init {
         setState {
-            copy(identityServer = Success(identityService.getCurrentIdentityServerUrl()))
+            copy(
+                    identityServer = Success(identityService.getCurrentIdentityServerUrl()?.let { IdentityServerWithTerms(it, emptyList()) }),
+                    userConsent = identityService.getUserConsent()
+            )
         }
         startListenToIdentityManager()
         observeThreePids()
     }
 
     private fun observeThreePids() {
-        session.rx()
+        session.flow()
                 .liveThreePIds(true)
-                .subscribe {
+                .onEach {
                     retrieveBinding(it)
                 }
-                .disposeOnClear()
+                .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
-        super.onCleared()
         stopListenToIdentityManager()
+        super.onCleared()
     }
 
     override fun handle(action: DiscoverySettingsAction) {
         when (action) {
-            DiscoverySettingsAction.Refresh                  -> refreshPendingEmailBindings()
-            DiscoverySettingsAction.RetrieveBinding          -> retrieveBinding()
-            DiscoverySettingsAction.DisconnectIdentityServer -> disconnectIdentityServer()
-            is DiscoverySettingsAction.ChangeIdentityServer  -> changeIdentityServer(action)
-            is DiscoverySettingsAction.RevokeThreePid        -> revokeThreePid(action)
-            is DiscoverySettingsAction.ShareThreePid         -> shareThreePid(action)
-            is DiscoverySettingsAction.FinalizeBind3pid      -> finalizeBind3pid(action, true)
-            is DiscoverySettingsAction.SubmitMsisdnToken     -> submitMsisdnToken(action)
-            is DiscoverySettingsAction.CancelBinding         -> cancelBinding(action)
+            DiscoverySettingsAction.Refresh                   -> fetchContent()
+            DiscoverySettingsAction.RetrieveBinding           -> retrieveBinding()
+            DiscoverySettingsAction.DisconnectIdentityServer  -> disconnectIdentityServer()
+            is DiscoverySettingsAction.SetPoliciesExpandState -> updatePolicyUrlsExpandedState(action.expanded)
+            is DiscoverySettingsAction.ChangeIdentityServer   -> changeIdentityServer(action)
+            is DiscoverySettingsAction.UpdateUserConsent      -> handleUpdateUserConsent(action)
+            is DiscoverySettingsAction.RevokeThreePid         -> revokeThreePid(action)
+            is DiscoverySettingsAction.ShareThreePid          -> shareThreePid(action)
+            is DiscoverySettingsAction.FinalizeBind3pid       -> finalizeBind3pid(action, true)
+            is DiscoverySettingsAction.SubmitMsisdnToken      -> submitMsisdnToken(action)
+            is DiscoverySettingsAction.CancelBinding          -> cancelBinding(action)
         }.exhaustive
+    }
+
+    private fun handleUpdateUserConsent(action: DiscoverySettingsAction.UpdateUserConsent) {
+        identityService.setUserConsent(action.newConsent)
+        setState { copy(userConsent = action.newConsent) }
     }
 
     private fun disconnectIdentityServer() {
@@ -110,12 +129,21 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> { session.identityService().disconnect(it) }
-                setState { copy(identityServer = Success(null)) }
+                session.identityService().disconnect()
+                setState {
+                    copy(
+                            identityServer = Success(null),
+                            userConsent = false
+                    )
+                }
             } catch (failure: Throwable) {
                 setState { copy(identityServer = Fail(failure)) }
             }
         }
+    }
+
+    private fun updatePolicyUrlsExpandedState(isExpanded: Boolean) {
+        setState { copy(isIdentityPolicyUrlsExpanded = isExpanded) }
     }
 
     private fun changeIdentityServer(action: DiscoverySettingsAction.ChangeIdentityServer) {
@@ -123,10 +151,13 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                val data = awaitCallback<String?> {
-                    session.identityService().setNewIdentityServer(action.url, it)
+                val data = session.identityService().setNewIdentityServer(action.url)
+                setState {
+                    copy(
+                            identityServer = Success(IdentityServerWithTerms(data, emptyList())),
+                            userConsent = false
+                    )
                 }
-                setState { copy(identityServer = Success(data)) }
                 retrieveBinding()
             } catch (failure: Throwable) {
                 setState { copy(identityServer = Fail(failure)) }
@@ -140,7 +171,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> { identityService.startBindThreePid(action.threePid, it) }
+                identityService.startBindThreePid(action.threePid)
                 changeThreePidState(action.threePid, Success(SharedState.BINDING_IN_PROGRESS))
             } catch (failure: Throwable) {
                 _viewEvents.post(DiscoverySettingsViewEvents.Failure(failure))
@@ -217,7 +248,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> { identityService.unbindThreePid(threePid, it) }
+                identityService.unbindThreePid(threePid)
                 changeThreePidState(threePid, Success(SharedState.NOT_SHARED))
             } catch (failure: Throwable) {
                 _viewEvents.post(DiscoverySettingsViewEvents.Failure(failure))
@@ -233,7 +264,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> { identityService.unbindThreePid(threePid, it) }
+                identityService.unbindThreePid(threePid)
                 changeThreePidState(threePid, Success(SharedState.NOT_SHARED))
             } catch (failure: Throwable) {
                 _viewEvents.post(DiscoverySettingsViewEvents.Failure(failure))
@@ -245,7 +276,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
     private fun cancelBinding(action: DiscoverySettingsAction.CancelBinding) {
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> { identityService.cancelBindThreePid(action.threePid, it) }
+                identityService.cancelBindThreePid(action.threePid)
                 changeThreePidState(action.threePid, Success(SharedState.NOT_SHARED))
                 changeThreePidSubmitState(action.threePid, Uninitialized)
             } catch (failure: Throwable) {
@@ -267,7 +298,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
     }
 
     private fun retrieveBinding(threePids: List<ThreePid>) = withState { state ->
-        if (state.identityServer().isNullOrBlank()) return@withState
+        if (state.identityServer()?.serverUrl.isNullOrBlank()) return@withState
 
         val emails = threePids.filterIsInstance<ThreePid.Email>()
         val msisdns = threePids.filterIsInstance<ThreePid.Msisdn>()
@@ -281,9 +312,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                val data = awaitCallback<Map<ThreePid, SharedState>> {
-                    identityService.getShareStatus(threePids, it)
-                }
+                val data = identityService.getShareStatus(threePids)
                 setState {
                     copy(
                             emailList = Success(data.filter { it.key is ThreePid.Email }.toPidInfoList()),
@@ -317,15 +346,13 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
     }
 
     private fun submitMsisdnToken(action: DiscoverySettingsAction.SubmitMsisdnToken) = withState { state ->
-        if (state.identityServer().isNullOrBlank()) return@withState
+        if (state.identityServer()?.serverUrl.isNullOrBlank()) return@withState
 
         changeThreePidSubmitState(action.threePid, Loading())
 
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> {
-                    identityService.submitValidationToken(action.threePid, action.code, it)
-                }
+                identityService.submitValidationToken(action.threePid, action.code)
                 changeThreePidSubmitState(action.threePid, Uninitialized)
                 finalizeBind3pid(DiscoverySettingsAction.FinalizeBind3pid(action.threePid), true)
             } catch (failure: Throwable) {
@@ -348,7 +375,7 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             try {
-                awaitCallback<Unit> { identityService.finalizeBindThreePid(threePid, it) }
+                identityService.finalizeBindThreePid(threePid)
                 changeThreePidSubmitState(action.threePid, Uninitialized)
                 changeThreePidState(action.threePid, Success(SharedState.SHARED))
             } catch (failure: Throwable) {
@@ -362,12 +389,37 @@ class DiscoverySettingsViewModel @AssistedInject constructor(
         }
     }
 
-    private fun refreshPendingEmailBindings() = withState { state ->
+    private fun fetchContent() = withState { state ->
         state.emailList()?.forEach { info ->
             when (info.isShared()) {
                 SharedState.BINDING_IN_PROGRESS -> finalizeBind3pid(DiscoverySettingsAction.FinalizeBind3pid(info.threePid), false)
                 else                            -> Unit
             }
+        }
+        viewModelScope.launch {
+            runCatching { fetchIdentityServerWithTerms() }.fold(
+                    onSuccess = { setState { copy(identityServer = Success(it)) } },
+                    onFailure = { _viewEvents.post(DiscoverySettingsViewEvents.Failure(it)) }
+            )
+        }
+    }
+
+    private suspend fun fetchIdentityServerWithTerms(): IdentityServerWithTerms? {
+        val identityServerUrl = identityService.getCurrentIdentityServerUrl()
+        return identityServerUrl?.let {
+            val terms = termsService.getTerms(TermsService.ServiceType.IdentityService, identityServerUrl.ensureProtocol())
+                    .serverResponse
+                    .getLocalizedTerms(stringProvider.getString(R.string.resources_language))
+            val policyUrls = terms.mapNotNull {
+                val name = it.localizedName ?: it.policyName
+                val url = it.localizedUrl
+                if (name == null || url == null) {
+                    null
+                } else {
+                    IdentityServerPolicy(name = name, url = url)
+                }
+            }
+            IdentityServerWithTerms(identityServerUrl, policyUrls)
         }
     }
 }

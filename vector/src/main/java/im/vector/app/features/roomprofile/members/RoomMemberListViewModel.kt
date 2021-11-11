@@ -16,57 +16,52 @@
 
 package im.vector.app.features.roomprofile.members
 
-import androidx.lifecycle.viewModelScope
-import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxViewModelFactory
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.matrix.android.api.NoOpMatrixCallback
-import im.vector.matrix.android.api.crypto.RoomEncryptionTrustLevel
-import im.vector.matrix.android.api.extensions.orFalse
-import im.vector.matrix.android.api.query.QueryStringValue
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.events.model.toModel
-import im.vector.matrix.android.api.session.room.members.roomMemberQueryParams
-import im.vector.matrix.android.api.session.room.model.Membership
-import im.vector.matrix.android.api.session.room.model.PowerLevelsContent
-import im.vector.matrix.android.api.session.room.model.RoomMemberSummary
-import im.vector.matrix.android.api.session.room.powerlevels.PowerLevelsHelper
-import im.vector.matrix.android.api.session.room.powerlevels.Role
-import im.vector.matrix.rx.asObservable
-import im.vector.matrix.rx.mapOptional
-import im.vector.matrix.rx.rx
-import im.vector.matrix.rx.unwrap
+import androidx.lifecycle.asFlow
+import com.airbnb.mvrx.MavericksViewModelFactory
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.EmptyViewEvents
 import im.vector.app.core.platform.VectorViewModel
-import im.vector.app.features.powerlevel.PowerLevelsObservableFactory
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.BiFunction
+import im.vector.app.features.powerlevel.PowerLevelsFlowFactory
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.crypto.RoomEncryptionTrustLevel
+import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.query.QueryStringValue
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.events.model.EventType
+import org.matrix.android.sdk.api.session.events.model.toModel
+import org.matrix.android.sdk.api.session.room.members.roomMemberQueryParams
+import org.matrix.android.sdk.api.session.room.model.Membership
+import org.matrix.android.sdk.api.session.room.model.PowerLevelsContent
+import org.matrix.android.sdk.api.session.room.model.RoomMemberSummary
+import org.matrix.android.sdk.api.session.room.powerlevels.PowerLevelsHelper
+import org.matrix.android.sdk.api.session.room.powerlevels.Role
+import org.matrix.android.sdk.flow.flow
+import org.matrix.android.sdk.flow.mapOptional
+import org.matrix.android.sdk.flow.unwrap
 import timber.log.Timber
 
 class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState: RoomMemberListViewState,
                                                           private val roomMemberSummaryComparator: RoomMemberSummaryComparator,
-                                                          private val session: Session)
-    : VectorViewModel<RoomMemberListViewState, RoomMemberListAction, EmptyViewEvents>(initialState) {
+                                                          private val session: Session) :
+        VectorViewModel<RoomMemberListViewState, RoomMemberListAction, EmptyViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: RoomMemberListViewState): RoomMemberListViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<RoomMemberListViewModel, RoomMemberListViewState> {
+        override fun create(initialState: RoomMemberListViewState): RoomMemberListViewModel
     }
 
-    companion object : MvRxViewModelFactory<RoomMemberListViewModel, RoomMemberListViewState> {
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: RoomMemberListViewState): RoomMemberListViewModel? {
-            val fragment: RoomMemberListFragment = (viewModelContext as FragmentViewModelContext).fragment()
-            return fragment.viewModelFactory.create(state)
-        }
-    }
+    companion object : MavericksViewModelFactory<RoomMemberListViewModel, RoomMemberListViewState> by hiltMavericksViewModelFactory()
 
     private val room = session.getRoom(initialState.roomId)!!
 
@@ -83,28 +78,25 @@ class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState
             memberships = Membership.activeMemberships()
         }
 
-        Observable
-                .combineLatest<List<RoomMemberSummary>, PowerLevelsContent, RoomMemberSummaries>(
-                        room.rx().liveRoomMembers(roomMemberQueryParams),
-                        room.rx()
-                                .liveStateEvent(EventType.STATE_ROOM_POWER_LEVELS, QueryStringValue.NoCondition)
-                                .mapOptional { it.content.toModel<PowerLevelsContent>() }
-                                .unwrap(),
-                        BiFunction { roomMembers, powerLevelsContent ->
-                            buildRoomMemberSummaries(powerLevelsContent, roomMembers)
-                        }
-                )
+        combine(
+                room.flow().liveRoomMembers(roomMemberQueryParams),
+                room.flow()
+                        .liveStateEvent(EventType.STATE_ROOM_POWER_LEVELS, QueryStringValue.NoCondition)
+                        .mapOptional { it.content.toModel<PowerLevelsContent>() }
+                        .unwrap()
+        ) { roomMembers, powerLevelsContent ->
+            buildRoomMemberSummaries(powerLevelsContent, roomMembers)
+        }
                 .execute { async ->
                     copy(roomMemberSummaries = async)
                 }
 
         if (room.isEncrypted()) {
-            room.rx().liveRoomMembers(roomMemberQueryParams)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .switchMap { membersSummary ->
+            room.flow().liveRoomMembers(roomMemberQueryParams)
+                    .flatMapLatest { membersSummary ->
                         session.cryptoService().getLiveCryptoDeviceInfo(membersSummary.map { it.userId })
-                                .asObservable()
-                                .doOnError { Timber.e(it) }
+                                .asFlow()
+                                .catch { Timber.e(it) }
                                 .map { deviceList ->
                                     // If any key change, emit the userIds list
                                     deviceList.groupBy { it.userId }.mapValues {
@@ -126,8 +118,8 @@ class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState
     }
 
     private fun observePowerLevel() {
-        PowerLevelsObservableFactory(room).createObservable()
-                .subscribe {
+        PowerLevelsFlowFactory(room).createFlow()
+                .onEach {
                     val permissions = ActionPermissions(
                             canInvite = PowerLevelsHelper(it).isUserAbleToInvite(session.myUserId),
                             canRevokeThreePidInvite = PowerLevelsHelper(it).isUserAllowedToSend(
@@ -139,11 +131,11 @@ class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState
                     setState {
                         copy(actionsPermissions = permissions)
                     }
-                }.disposeOnClear()
+                }.launchIn(viewModelScope)
     }
 
     private fun observeRoomSummary() {
-        room.rx().liveRoomSummary()
+        room.flow().liveRoomSummary()
                 .unwrap()
                 .execute { async ->
                     copy(roomSummary = async)
@@ -151,7 +143,7 @@ class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState
     }
 
     private fun observeThirdPartyInvites() {
-        room.rx().liveStateEvents(setOf(EventType.STATE_ROOM_THIRD_PARTY_INVITE))
+        room.flow().liveStateEvents(setOf(EventType.STATE_ROOM_THIRD_PARTY_INVITE))
                 .execute { async ->
                     copy(threePidInvites = async)
                 }
@@ -188,6 +180,7 @@ class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState
     override fun handle(action: RoomMemberListAction) {
         when (action) {
             is RoomMemberListAction.RevokeThreePidInvite -> handleRevokeThreePidInvite(action)
+            is RoomMemberListAction.FilterMemberList     -> handleFilterMemberList(action)
         }.exhaustive
     }
 
@@ -196,8 +189,15 @@ class RoomMemberListViewModel @AssistedInject constructor(@Assisted initialState
             room.sendStateEvent(
                     eventType = EventType.STATE_ROOM_THIRD_PARTY_INVITE,
                     stateKey = action.stateKey,
-                    body = emptyMap(),
-                    callback = NoOpMatrixCallback()
+                    body = emptyMap()
+            )
+        }
+    }
+
+    private fun handleFilterMemberList(action: RoomMemberListAction.FilterMemberList) {
+        setState {
+            copy(
+                    filter = action.searchTerm
             )
         }
     }

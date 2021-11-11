@@ -19,9 +19,9 @@ package im.vector.app.features.rageshake
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
+import androidx.fragment.app.FragmentActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.seismic.ShakeDetector
 import im.vector.app.R
 import im.vector.app.core.hardware.vibrate
@@ -30,7 +30,7 @@ import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.settings.VectorSettingsActivity
 import javax.inject.Inject
 
-class RageShake @Inject constructor(private val activity: AppCompatActivity,
+class RageShake @Inject constructor(private val activity: FragmentActivity,
                                     private val bugReporter: BugReporter,
                                     private val navigator: Navigator,
                                     private val vectorPreferences: VectorPreferences) : ShakeDetector.Listener {
@@ -72,7 +72,7 @@ class RageShake @Inject constructor(private val activity: AppCompatActivity,
             vibrate(activity)
             dialogDisplayed = true
 
-            AlertDialog.Builder(activity)
+            MaterialAlertDialogBuilder(activity)
                     .setMessage(R.string.send_bug_report_alert_message)
                     .setPositiveButton(R.string.yes) { _, _ -> openBugReportScreen() }
                     .setNeutralButton(R.string.settings) { _, _ -> openSettings() }

@@ -15,6 +15,7 @@
  */
 package im.vector.app.features.reactions
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Trace
 import android.text.Layout
@@ -30,9 +31,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import im.vector.app.R
-import im.vector.app.features.reactions.data.EmojiDataSource
+import im.vector.app.features.reactions.data.EmojiData
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
@@ -43,13 +44,13 @@ import kotlin.math.abs
  * TODO: Performances
  * TODO: Scroll to section - Find a way to snap section to the top
  */
-class EmojiRecyclerAdapter @Inject constructor(
-        private val dataSource: EmojiDataSource
-) :
+class EmojiRecyclerAdapter @Inject constructor() :
         RecyclerView.Adapter<EmojiRecyclerAdapter.ViewHolder>() {
 
     var reactionClickListener: ReactionClickListener? = null
     var interactionListener: InteractionListener? = null
+
+    private var rawData: EmojiData = EmojiData(emptyList(), emptyMap(), emptyMap())
     private var mRecyclerView: RecyclerView? = null
 
     private var currentFirstVisibleSection = 0
@@ -59,6 +60,12 @@ class EmojiRecyclerAdapter @Inject constructor(
         DRAGGING,
         SETTLING,
         UNKNOWN
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun update(emojiData: EmojiData) {
+        rawData = emojiData
+        notifyDataSetChanged()
     }
 
     private var scrollState = ScrollState.UNKNOWN
@@ -71,10 +78,10 @@ class EmojiRecyclerAdapter @Inject constructor(
             if (itemPosition != RecyclerView.NO_POSITION) {
                 val sectionNumber = getSectionForAbsoluteIndex(itemPosition)
                 if (!isSection(itemPosition)) {
-                    val sectionMojis = dataSource.rawData.categories[sectionNumber].emojis
+                    val sectionMojis = rawData.categories[sectionNumber].emojis
                     val sectionOffset = getSectionOffset(sectionNumber)
                     val emoji = sectionMojis[itemPosition - sectionOffset]
-                    val item = dataSource.rawData.emojis.getValue(emoji).emoji
+                    val item = rawData.emojis.getValue(emoji).emoji
                     reactionClickListener?.onReactionSelected(item)
                 }
             }
@@ -115,7 +122,7 @@ class EmojiRecyclerAdapter @Inject constructor(
     }
 
     fun scrollToSection(section: Int) {
-        if (section < 0 || section >= dataSource.rawData.categories.size) {
+        if (section < 0 || section >= rawData.categories.size) {
             // ignore
             return
         }
@@ -125,7 +132,7 @@ class EmojiRecyclerAdapter @Inject constructor(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        beginTraceSession("MyAdapter.onCreateViewHolder")
+        Trace.beginSection("MyAdapter.onCreateViewHolder")
         val inflater = LayoutInflater.from(parent.context)
         val itemView = inflater.inflate(viewType, parent, false)
         itemView.setOnClickListener(itemClickListener)
@@ -133,23 +140,23 @@ class EmojiRecyclerAdapter @Inject constructor(
             R.layout.grid_section_header -> SectionViewHolder(itemView)
             else                         -> EmojiViewHolder(itemView)
         }
-        endTraceSession()
+        Trace.endSection()
         return viewHolder
     }
 
     override fun getItemViewType(position: Int): Int {
-        beginTraceSession("MyAdapter.getItemViewType")
+        Trace.beginSection("MyAdapter.getItemViewType")
         if (isSection(position)) {
             return R.layout.grid_section_header
         }
-        endTraceSession()
+        Trace.endSection()
         return R.layout.grid_item_emoji
     }
 
     private fun isSection(position: Int): Boolean {
         var sectionOffset = 1
         var lastItemInSection: Int
-        dataSource.rawData.categories.forEach { category ->
+        rawData.categories.forEach { category ->
             lastItemInSection = sectionOffset + category.emojis.size - 1
             if (position == sectionOffset - 1) return true
             sectionOffset = lastItemInSection + 2
@@ -161,7 +168,7 @@ class EmojiRecyclerAdapter @Inject constructor(
         var sectionOffset = 1
         var lastItemInSection: Int
         var index = 0
-        dataSource.rawData.categories.forEach { category ->
+        rawData.categories.forEach { category ->
             lastItemInSection = sectionOffset + category.emojis.size - 1
             if (position <= lastItemInSection) return index
             sectionOffset = lastItemInSection + 2
@@ -174,7 +181,7 @@ class EmojiRecyclerAdapter @Inject constructor(
         // Todo cache this for fast access
         var sectionOffset = 1
         var lastItemInSection: Int
-        dataSource.rawData.categories.forEachIndexed { index, category ->
+        rawData.categories.forEachIndexed { index, category ->
             lastItemInSection = sectionOffset + category.emojis.size - 1
             if (section == index) return sectionOffset
             sectionOffset = lastItemInSection + 2
@@ -183,15 +190,15 @@ class EmojiRecyclerAdapter @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        beginTraceSession("MyAdapter.onBindViewHolder")
+        Trace.beginSection("MyAdapter.onBindViewHolder")
         val sectionNumber = getSectionForAbsoluteIndex(position)
         if (isSection(position)) {
-            holder.bind(dataSource.rawData.categories[sectionNumber].name)
+            holder.bind(rawData.categories[sectionNumber].name)
         } else {
-            val sectionMojis = dataSource.rawData.categories[sectionNumber].emojis
+            val sectionMojis = rawData.categories[sectionNumber].emojis
             val sectionOffset = getSectionOffset(sectionNumber)
             val emoji = sectionMojis[position - sectionOffset]
-            val item = dataSource.rawData.emojis[emoji]!!.emoji
+            val item = rawData.emojis[emoji]!!.emoji
             (holder as EmojiViewHolder).data = item
             if (scrollState != ScrollState.SETTLING || !isFastScroll) {
 //                    Log.i("PERF","Bind with draw at position:$position")
@@ -202,7 +209,7 @@ class EmojiRecyclerAdapter @Inject constructor(
                 holder.bind(null)
             }
         }
-        endTraceSession()
+        Trace.endSection()
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
@@ -220,8 +227,8 @@ class EmojiRecyclerAdapter @Inject constructor(
         super.onViewRecycled(holder)
     }
 
-    override fun getItemCount() = dataSource.rawData.categories
-            .sumBy { emojiCategory -> 1 /* Section */ + emojiCategory.emojis.size }
+    override fun getItemCount() = rawData.categories
+            .sumOf { emojiCategory -> 1 /* Section */ + emojiCategory.emojis.size }
 
     abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(s: String?)
@@ -259,18 +266,6 @@ class EmojiRecyclerAdapter @Inject constructor(
     }
 
     companion object {
-        fun endTraceSession() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                Trace.endSection()
-            }
-        }
-
-        fun beginTraceSession(sectionName: String) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                Trace.beginSection(sectionName)
-            }
-        }
-
         private val staticLayoutCache = HashMap<String, StaticLayout>()
 
         private fun getStaticLayoutForEmoji(emoji: String): StaticLayout {
@@ -290,6 +285,7 @@ class EmojiRecyclerAdapter @Inject constructor(
     }
 
     interface InteractionListener {
+        fun getCoroutineScope(): CoroutineScope
         fun firstVisibleSectionChange(section: Int)
     }
 
@@ -335,11 +331,11 @@ class EmojiRecyclerAdapter @Inject constructor(
             // Log.i("SCROLL SPEED","scroll speed $dy")
             isFastScroll = abs(dy) > 50
             val visible = (recyclerView.layoutManager as GridLayoutManager).findFirstCompletelyVisibleItemPosition()
-            GlobalScope.launch {
+            interactionListener?.getCoroutineScope()?.launch {
                 val section = getSectionForAbsoluteIndex(visible)
                 if (section != currentFirstVisibleSection) {
                     currentFirstVisibleSection = section
-                    GlobalScope.launch(Dispatchers.Main) {
+                    interactionListener?.getCoroutineScope()?.launch(Dispatchers.Main) {
                         interactionListener?.firstVisibleSectionChange(currentFirstVisibleSection)
                     }
                 }

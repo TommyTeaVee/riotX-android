@@ -16,170 +16,287 @@
 
 package im.vector.app.features.roomprofile.settings
 
-import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxViewModelFactory
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.matrix.android.api.MatrixCallback
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.room.powerlevels.PowerLevelsHelper
-import im.vector.matrix.rx.rx
-import im.vector.matrix.rx.unwrap
+import androidx.core.net.toFile
+import com.airbnb.mvrx.MavericksViewModelFactory
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorViewModel
-import im.vector.app.features.powerlevel.PowerLevelsObservableFactory
-import io.reactivex.Completable
-import io.reactivex.Observable
+import im.vector.app.features.powerlevel.PowerLevelsFlowFactory
+import im.vector.app.features.settings.VectorPreferences
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.extensions.tryOrNull
+import org.matrix.android.sdk.api.query.QueryStringValue
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.events.model.EventType
+import org.matrix.android.sdk.api.session.events.model.toModel
+import org.matrix.android.sdk.api.session.homeserver.HomeServerCapabilities
+import org.matrix.android.sdk.api.session.room.model.RoomAvatarContent
+import org.matrix.android.sdk.api.session.room.model.RoomGuestAccessContent
+import org.matrix.android.sdk.api.session.room.model.RoomHistoryVisibilityContent
+import org.matrix.android.sdk.api.session.room.model.RoomJoinRulesContent
+import org.matrix.android.sdk.api.session.room.powerlevels.PowerLevelsHelper
+import org.matrix.android.sdk.flow.flow
+import org.matrix.android.sdk.flow.mapOptional
+import org.matrix.android.sdk.flow.unwrap
 
 class RoomSettingsViewModel @AssistedInject constructor(@Assisted initialState: RoomSettingsViewState,
-                                                        private val session: Session)
-    : VectorViewModel<RoomSettingsViewState, RoomSettingsAction, RoomSettingsViewEvents>(initialState) {
+                                                        private val vectorPreferences: VectorPreferences,
+                                                        private val session: Session) :
+        VectorViewModel<RoomSettingsViewState, RoomSettingsAction, RoomSettingsViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: RoomSettingsViewState): RoomSettingsViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<RoomSettingsViewModel, RoomSettingsViewState> {
+        override fun create(initialState: RoomSettingsViewState): RoomSettingsViewModel
     }
 
-    companion object : MvRxViewModelFactory<RoomSettingsViewModel, RoomSettingsViewState> {
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: RoomSettingsViewState): RoomSettingsViewModel? {
-            val fragment: RoomSettingsFragment = (viewModelContext as FragmentViewModelContext).fragment()
-            return fragment.viewModelFactory.create(state)
-        }
-    }
+    companion object : MavericksViewModelFactory<RoomSettingsViewModel, RoomSettingsViewState> by hiltMavericksViewModelFactory()
 
     private val room = session.getRoom(initialState.roomId)!!
 
     init {
         observeRoomSummary()
+        observeRoomHistoryVisibility()
+        observeJoinRule()
+        observeGuestAccess()
+        observeRoomAvatar()
         observeState()
+
+        val homeServerCapabilities = session.getHomeServerCapabilities()
+        val canUseRestricted = homeServerCapabilities
+                .isFeatureSupported(HomeServerCapabilities.ROOM_CAP_RESTRICTED, room.getRoomVersion())
+
+        val restrictedSupport = homeServerCapabilities.isFeatureSupported(HomeServerCapabilities.ROOM_CAP_RESTRICTED)
+        val couldUpgradeToRestricted = when (restrictedSupport) {
+            HomeServerCapabilities.RoomCapabilitySupport.SUPPORTED          -> true
+            HomeServerCapabilities.RoomCapabilitySupport.SUPPORTED_UNSTABLE -> vectorPreferences.labsUseExperimentalRestricted()
+            else                                                            -> false
+        }
+
+        setState {
+            copy(
+                    supportsRestricted = canUseRestricted,
+                    canUpgradeToRestricted = couldUpgradeToRestricted
+            )
+        }
     }
 
     private fun observeState() {
-        selectSubscribe(
+        onEach(
+                RoomSettingsViewState::avatarAction,
                 RoomSettingsViewState::newName,
-                RoomSettingsViewState::newCanonicalAlias,
                 RoomSettingsViewState::newTopic,
                 RoomSettingsViewState::newHistoryVisibility,
-                RoomSettingsViewState::roomSummary) { newName,
-                                                      newCanonicalAlias,
+                RoomSettingsViewState::newRoomJoinRules,
+                RoomSettingsViewState::roomSummary) { avatarAction,
+                                                      newName,
                                                       newTopic,
                                                       newHistoryVisibility,
+                                                      newJoinRule,
                                                       asyncSummary ->
             val summary = asyncSummary()
             setState {
                 copy(
-                        showSaveAction = summary?.name != newName
-                                || summary?.topic != newTopic
-                                || summary?.canonicalAlias != newCanonicalAlias?.takeIf { it.isNotEmpty() }
-                                || newHistoryVisibility != null
+                        showSaveAction = avatarAction !is RoomSettingsViewState.AvatarAction.None ||
+                                summary?.name != newName ||
+                                summary?.topic != newTopic ||
+                                (newHistoryVisibility != null && newHistoryVisibility != currentHistoryVisibility) ||
+                                newJoinRule.hasChanged()
                 )
             }
         }
     }
 
     private fun observeRoomSummary() {
-        room.rx().liveRoomSummary()
+        room.flow().liveRoomSummary()
                 .unwrap()
                 .execute { async ->
                     val roomSummary = async.invoke()
                     copy(
-                            historyVisibilityEvent = room.getStateEvent(EventType.STATE_ROOM_HISTORY_VISIBILITY),
                             roomSummary = async,
                             newName = roomSummary?.name,
-                            newTopic = roomSummary?.topic,
-                            newCanonicalAlias = roomSummary?.canonicalAlias
+                            newTopic = roomSummary?.topic
                     )
                 }
 
-        val powerLevelsContentLive = PowerLevelsObservableFactory(room).createObservable()
+        val powerLevelsContentLive = PowerLevelsFlowFactory(room).createFlow()
 
         powerLevelsContentLive
-                .subscribe {
+                .onEach {
                     val powerLevelsHelper = PowerLevelsHelper(it)
                     val permissions = RoomSettingsViewState.ActionPermissions(
+                            canChangeAvatar = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true, EventType.STATE_ROOM_AVATAR),
                             canChangeName = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true, EventType.STATE_ROOM_NAME),
-                            canChangeTopic =  powerLevelsHelper.isUserAllowedToSend(session.myUserId,  true, EventType.STATE_ROOM_TOPIC),
-                            canChangeCanonicalAlias = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true,
-                                    EventType.STATE_ROOM_CANONICAL_ALIAS),
-                            canChangeHistoryReadability = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true,
+                            canChangeTopic = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true, EventType.STATE_ROOM_TOPIC),
+                            canChangeHistoryVisibility = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true,
                                     EventType.STATE_ROOM_HISTORY_VISIBILITY),
-                            canEnableEncryption =  powerLevelsHelper.isUserAllowedToSend(session.myUserId, true, EventType.STATE_ROOM_ENCRYPTION)
+                            canChangeJoinRule = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true,
+                                    EventType.STATE_ROOM_JOIN_RULES) &&
+                                    powerLevelsHelper.isUserAllowedToSend(session.myUserId, true,
+                                            EventType.STATE_ROOM_GUEST_ACCESS),
+                            canAddChildren = powerLevelsHelper.isUserAllowedToSend(session.myUserId, true,
+                                    EventType.STATE_SPACE_CHILD)
                     )
-                    setState { copy(actionPermissions = permissions) }
+                    setState {
+                        copy(actionPermissions = permissions)
+                    }
+                }.launchIn(viewModelScope)
+    }
+
+    private fun observeRoomHistoryVisibility() {
+        room.flow()
+                .liveStateEvent(EventType.STATE_ROOM_HISTORY_VISIBILITY, QueryStringValue.NoCondition)
+                .mapOptional { it.content.toModel<RoomHistoryVisibilityContent>() }
+                .unwrap()
+                .mapNotNull { it.historyVisibility }
+                .setOnEach {
+                    copy(currentHistoryVisibility = it)
                 }
-                .disposeOnClear()
+    }
+
+    private fun observeJoinRule() {
+        room.flow()
+                .liveStateEvent(EventType.STATE_ROOM_JOIN_RULES, QueryStringValue.NoCondition)
+                .mapOptional { it.content.toModel<RoomJoinRulesContent>() }
+                .unwrap()
+                .mapNotNull { it.joinRules }
+                .setOnEach {
+                    copy(currentRoomJoinRules = it)
+                }
+    }
+
+    private fun observeGuestAccess() {
+        room.flow()
+                .liveStateEvent(EventType.STATE_ROOM_GUEST_ACCESS, QueryStringValue.NoCondition)
+                .mapOptional { it.content.toModel<RoomGuestAccessContent>() }
+                .unwrap()
+                .mapNotNull { it.guestAccess }
+                .setOnEach {
+                    copy(currentGuestAccess = it)
+                }
+    }
+
+    /**
+     * We do not want to use the fallback avatar url, which can be the other user avatar, or the current user avatar.
+     */
+    private fun observeRoomAvatar() {
+        room.flow()
+                .liveStateEvent(EventType.STATE_ROOM_AVATAR, QueryStringValue.NoCondition)
+                .mapOptional { it.content.toModel<RoomAvatarContent>() }
+                .unwrap()
+                .setOnEach {
+                    copy(currentRoomAvatarUrl = it.avatarUrl)
+                }
     }
 
     override fun handle(action: RoomSettingsAction) {
         when (action) {
-            is RoomSettingsAction.EnableEncryption         -> handleEnableEncryption()
+            is RoomSettingsAction.SetAvatarAction          -> handleSetAvatarAction(action)
             is RoomSettingsAction.SetRoomName              -> setState { copy(newName = action.newName) }
             is RoomSettingsAction.SetRoomTopic             -> setState { copy(newTopic = action.newTopic) }
             is RoomSettingsAction.SetRoomHistoryVisibility -> setState { copy(newHistoryVisibility = action.visibility) }
-            is RoomSettingsAction.SetRoomCanonicalAlias    -> setState { copy(newCanonicalAlias = action.newCanonicalAlias) }
+            is RoomSettingsAction.SetRoomJoinRule          -> handleSetRoomJoinRule(action)
+            is RoomSettingsAction.SetRoomGuestAccess       -> handleSetGuestAccess(action)
             is RoomSettingsAction.Save                     -> saveSettings()
+            is RoomSettingsAction.Cancel                   -> cancel()
         }.exhaustive
     }
 
-    private fun saveSettings() = withState { state ->
-        postLoading(true)
+    private fun handleSetRoomJoinRule(action: RoomSettingsAction.SetRoomJoinRule) = withState { state ->
+        setState {
+            copy(newRoomJoinRules = RoomSettingsViewState.NewJoinRule(
+                    newJoinRules = action.roomJoinRule.takeIf { it != state.currentRoomJoinRules },
+                    newGuestAccess = state.newRoomJoinRules.newGuestAccess.takeIf { it != state.currentGuestAccess }
+            ))
+        }
+    }
 
-        val operationList = mutableListOf<Completable>()
+    private fun handleSetGuestAccess(action: RoomSettingsAction.SetRoomGuestAccess) = withState { state ->
+        setState {
+            copy(newRoomJoinRules = RoomSettingsViewState.NewJoinRule(
+                    newJoinRules = state.newRoomJoinRules.newJoinRules.takeIf { it != state.currentRoomJoinRules },
+                    newGuestAccess = action.guestAccess.takeIf { it != state.currentGuestAccess }
+            ))
+        }
+    }
+
+    private fun handleSetAvatarAction(action: RoomSettingsAction.SetAvatarAction) {
+        setState {
+            deletePendingAvatar(this)
+            copy(avatarAction = action.avatarAction)
+        }
+    }
+
+    private fun deletePendingAvatar(state: RoomSettingsViewState) {
+        // Maybe delete the pending avatar
+        (state.avatarAction as? RoomSettingsViewState.AvatarAction.UpdateAvatar)
+                ?.let { tryOrNull { it.newAvatarUri.toFile().delete() } }
+    }
+
+    private fun cancel() {
+        withState { deletePendingAvatar(it) }
+
+        _viewEvents.post(RoomSettingsViewEvents.GoBack)
+    }
+
+    private fun saveSettings() = withState { state ->
+        val operationList = mutableListOf<suspend () -> Unit>()
 
         val summary = state.roomSummary.invoke()
 
+        when (val avatarAction = state.avatarAction) {
+            RoomSettingsViewState.AvatarAction.None            -> Unit
+            RoomSettingsViewState.AvatarAction.DeleteAvatar    -> {
+                operationList.add { room.deleteAvatar() }
+            }
+            is RoomSettingsViewState.AvatarAction.UpdateAvatar -> {
+                operationList.add { room.updateAvatar(avatarAction.newAvatarUri, avatarAction.newAvatarFileName) }
+            }
+        }
         if (summary?.name != state.newName) {
-            operationList.add(room.rx().updateName(state.newName ?: ""))
+            operationList.add { room.updateName(state.newName ?: "") }
         }
         if (summary?.topic != state.newTopic) {
-            operationList.add(room.rx().updateTopic(state.newTopic ?: ""))
-        }
-
-        if (state.newCanonicalAlias != null && summary?.canonicalAlias != state.newCanonicalAlias.takeIf { it.isNotEmpty() }) {
-            operationList.add(room.rx().addRoomAlias(state.newCanonicalAlias))
-            operationList.add(room.rx().updateCanonicalAlias(state.newCanonicalAlias))
+            operationList.add { room.updateTopic(state.newTopic ?: "") }
         }
 
         if (state.newHistoryVisibility != null) {
-            operationList.add(room.rx().updateHistoryReadability(state.newHistoryVisibility))
+            operationList.add { room.updateHistoryReadability(state.newHistoryVisibility) }
         }
 
-        Observable
-                .fromIterable(operationList)
-                .concatMapCompletable { it }
-                .subscribe(
-                        {
-                            postLoading(false)
-                            setState { copy(newHistoryVisibility = null) }
-                            _viewEvents.post(RoomSettingsViewEvents.Success)
-                        },
-                        {
-                            postLoading(false)
-                            _viewEvents.post(RoomSettingsViewEvents.Failure(it))
-                        }
-                )
-    }
-
-    private fun handleEnableEncryption() {
-        postLoading(true)
-
-        room.enableEncryption(callback = object : MatrixCallback<Unit> {
-            override fun onFailure(failure: Throwable) {
-                postLoading(false)
+        if (state.newRoomJoinRules.hasChanged()) {
+            operationList.add { room.updateJoinRule(state.newRoomJoinRules.newJoinRules, state.newRoomJoinRules.newGuestAccess) }
+        }
+        viewModelScope.launch {
+            updateLoadingState(isLoading = true)
+            try {
+                for (operation in operationList) {
+                    operation.invoke()
+                }
+                setState {
+                    deletePendingAvatar(this)
+                    copy(
+                            avatarAction = RoomSettingsViewState.AvatarAction.None,
+                            newHistoryVisibility = null,
+                            newRoomJoinRules = RoomSettingsViewState.NewJoinRule()
+                    )
+                }
+                _viewEvents.post(RoomSettingsViewEvents.Success)
+            } catch (failure: Throwable) {
                 _viewEvents.post(RoomSettingsViewEvents.Failure(failure))
+            } finally {
+                updateLoadingState(isLoading = false)
             }
-
-            override fun onSuccess(data: Unit) {
-                postLoading(false)
-            }
-        })
+        }
     }
 
-    private fun postLoading(isLoading: Boolean) {
+    private fun updateLoadingState(isLoading: Boolean) {
         setState {
             copy(isLoading = isLoading)
         }

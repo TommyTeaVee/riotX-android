@@ -25,8 +25,10 @@ import androidx.core.view.isVisible
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
 import im.vector.app.R
+import im.vector.app.core.epoxy.ClickListener
 import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
+import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.extensions.setTextOrHide
 
 /**
@@ -38,23 +40,14 @@ import im.vector.app.core.extensions.setTextOrHide
 @EpoxyModelClass(layout = R.layout.item_generic_list)
 abstract class GenericItem : VectorEpoxyModel<GenericItem.Holder>() {
 
-    enum class STYLE {
-        BIG_TEXT,
-        NORMAL_TEXT
-    }
-
-    class Action(var title: String) {
-        var perform: Runnable? = null
-    }
-
     @EpoxyAttribute
-    var title: String? = null
+    var title: CharSequence? = null
 
     @EpoxyAttribute
     var description: CharSequence? = null
 
     @EpoxyAttribute
-    var style: STYLE = STYLE.NORMAL_TEXT
+    var style: ItemStyle = ItemStyle.NORMAL_TEXT
 
     @EpoxyAttribute
     @DrawableRes
@@ -71,7 +64,10 @@ abstract class GenericItem : VectorEpoxyModel<GenericItem.Holder>() {
     var buttonAction: Action? = null
 
     @EpoxyAttribute
-    var itemClickAction: Action? = null
+    var destructiveButtonAction: Action? = null
+
+    @EpoxyAttribute(EpoxyAttribute.Option.DoNotHash)
+    var itemClickAction: ClickListener? = null
 
     override fun bind(holder: Holder) {
         super.bind(holder)
@@ -84,10 +80,7 @@ abstract class GenericItem : VectorEpoxyModel<GenericItem.Holder>() {
             holder.titleIcon.isVisible = false
         }
 
-        when (style) {
-            STYLE.BIG_TEXT    -> holder.titleText.textSize = 18f
-            STYLE.NORMAL_TEXT -> holder.titleText.textSize = 14f
-        }
+        holder.titleText.textSize = style.toTextSize()
 
         holder.descriptionText.setTextOrHide(description)
 
@@ -105,13 +98,12 @@ abstract class GenericItem : VectorEpoxyModel<GenericItem.Holder>() {
         }
 
         holder.actionButton.setTextOrHide(buttonAction?.title)
-        holder.actionButton.setOnClickListener {
-            buttonAction?.perform?.run()
-        }
+        holder.actionButton.onClick(buttonAction?.listener)
 
-        holder.root.setOnClickListener {
-            itemClickAction?.perform?.run()
-        }
+        holder.destructiveButton.setTextOrHide(destructiveButtonAction?.title)
+        holder.destructiveButton.onClick(destructiveButtonAction?.listener)
+
+        holder.root.onClick(itemClickAction)
     }
 
     class Holder : VectorEpoxyHolder() {
@@ -122,5 +114,6 @@ abstract class GenericItem : VectorEpoxyModel<GenericItem.Holder>() {
         val accessoryImage by bind<ImageView>(R.id.item_generic_accessory_image)
         val progressBar by bind<ProgressBar>(R.id.item_generic_progress_bar)
         val actionButton by bind<Button>(R.id.item_generic_action_button)
+        val destructiveButton by bind<Button>(R.id.item_generic_destructive_action_button)
     }
 }

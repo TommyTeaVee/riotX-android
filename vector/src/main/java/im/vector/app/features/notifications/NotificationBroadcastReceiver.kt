@@ -20,13 +20,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.RemoteInput
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
-import im.vector.app.core.extensions.vectorComponent
-import im.vector.matrix.android.api.NoOpMatrixCallback
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.room.Room
-import im.vector.matrix.android.api.session.room.read.ReadService
+import im.vector.app.features.session.coroutineScope
+import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.extensions.tryOrNull
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.room.Room
+import org.matrix.android.sdk.api.session.room.read.ReadService
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -34,6 +36,7 @@ import javax.inject.Inject
 /**
  * Receives actions broadcast by notification (on click, on dismiss, inline replies, etc.)
  */
+@AndroidEntryPoint
 class NotificationBroadcastReceiver : BroadcastReceiver() {
 
     @Inject lateinit var notificationDrawerManager: NotificationDrawerManager
@@ -42,7 +45,6 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent == null || context == null) return
         Timber.v("NotificationBroadcastReceiver received : $intent")
-        context.vectorComponent().inject(this)
         when (intent.action) {
             NotificationUtils.SMART_REPLY_ACTION        ->
                 handleSmartReply(intent, context)
@@ -74,22 +76,34 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
 
     private fun handleJoinRoom(roomId: String) {
         activeSessionHolder.getSafeActiveSession()?.let { session ->
-            session.getRoom(roomId)
-                    ?.join(callback = NoOpMatrixCallback())
+            val room = session.getRoom(roomId)
+            if (room != null) {
+                session.coroutineScope.launch {
+                    tryOrNull { room.join() }
+                }
+            }
         }
     }
 
     private fun handleRejectRoom(roomId: String) {
         activeSessionHolder.getSafeActiveSession()?.let { session ->
-            session.getRoom(roomId)
-                    ?.leave(callback = NoOpMatrixCallback())
+            val room = session.getRoom(roomId)
+            if (room != null) {
+                session.coroutineScope.launch {
+                    tryOrNull { room.leave() }
+                }
+            }
         }
     }
 
     private fun handleMarkAsRead(roomId: String) {
         activeSessionHolder.getActiveSession().let { session ->
-            session.getRoom(roomId)
-                    ?.markAsRead(ReadService.MarkAsReadParams.READ_RECEIPT, NoOpMatrixCallback())
+            val room = session.getRoom(roomId)
+            if (room != null) {
+                session.coroutineScope.launch {
+                    tryOrNull { room.markAsRead(ReadService.MarkAsReadParams.READ_RECEIPT) }
+                }
+            }
         }
     }
 
@@ -116,19 +130,20 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
 
         val notifiableMessageEvent = NotifiableMessageEvent(
                 // Generate a Fake event id
-                UUID.randomUUID().toString(),
-                null,
-                false,
-                System.currentTimeMillis(),
-                session.getUser(session.myUserId)?.displayName
+                eventId = UUID.randomUUID().toString(),
+                editedEventId = null,
+                noisy = false,
+                timestamp = System.currentTimeMillis(),
+                senderName = session.getRoomMember(session.myUserId, room.roomId)?.displayName
                         ?: context?.getString(R.string.notification_sender_me),
-                session.myUserId,
-                message,
-                room.roomId,
-                room.roomSummary()?.displayName ?: room.roomId,
-                room.roomSummary()?.isDirect == true
+                senderId = session.myUserId,
+                body = message,
+                roomId = room.roomId,
+                roomName = room.roomSummary()?.displayName ?: room.roomId,
+                roomIsDirect = room.roomSummary()?.isDirect == true,
+                outGoingMessage = true,
+                canBeReplaced = false
         )
-        notifiableMessageEvent.outGoingMessage = true
 
         notificationDrawerManager.onNotifiableEventReceived(notifiableMessageEvent)
         notificationDrawerManager.refreshNotificationDrawer()

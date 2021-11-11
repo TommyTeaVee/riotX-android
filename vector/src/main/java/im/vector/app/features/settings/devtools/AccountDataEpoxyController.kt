@@ -21,13 +21,12 @@ import com.airbnb.epoxy.TypedEpoxyController
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.Loading
 import com.airbnb.mvrx.Success
-import im.vector.matrix.android.api.session.accountdata.UserAccountDataEvent
 import im.vector.app.R
 import im.vector.app.core.epoxy.loadingItem
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.ui.list.genericFooterItem
-import im.vector.app.core.ui.list.genericItemWithValue
-import im.vector.app.core.utils.DebouncedClickListener
+import im.vector.app.core.ui.list.genericWithValueItem
+import org.matrix.android.sdk.api.session.accountdata.UserAccountDataEvent
 import javax.inject.Inject
 
 class AccountDataEpoxyController @Inject constructor(
@@ -36,17 +35,19 @@ class AccountDataEpoxyController @Inject constructor(
 
     interface InteractionListener {
         fun didTap(data: UserAccountDataEvent)
+        fun didLongTap(data: UserAccountDataEvent)
     }
 
     var interactionListener: InteractionListener? = null
 
     override fun buildModels(data: AccountDataViewState?) {
         if (data == null) return
+        val host = this
         when (data.accountData) {
             is Loading -> {
                 loadingItem {
                     id("loading")
-                    loadingText(stringProvider.getString(R.string.loading))
+                    loadingText(host.stringProvider.getString(R.string.loading))
                 }
             }
             is Fail    -> {
@@ -60,16 +61,20 @@ class AccountDataEpoxyController @Inject constructor(
                 if (dataList.isEmpty()) {
                     genericFooterItem {
                         id("noResults")
-                        text(stringProvider.getString(R.string.no_result_placeholder))
+                        text(host.stringProvider.getString(R.string.no_result_placeholder))
                     }
                 } else {
                     dataList.forEach { accountData ->
-                        genericItemWithValue {
+                        genericWithValueItem {
                             id(accountData.type)
                             title(accountData.type)
-                            itemClickAction(DebouncedClickListener(View.OnClickListener {
-                                interactionListener?.didTap(accountData)
-                            }))
+                            itemClickAction {
+                                host.interactionListener?.didTap(accountData)
+                            }
+                            itemLongClickAction(View.OnLongClickListener {
+                                host.interactionListener?.didLongTap(accountData)
+                                true
+                            })
                         }
                     }
                 }

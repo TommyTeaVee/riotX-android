@@ -28,9 +28,11 @@ import im.vector.app.core.epoxy.noResultItem
 import im.vector.app.core.error.ErrorFormatter
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.matrix.android.api.session.room.members.ChangeMembershipState
-import im.vector.matrix.android.api.session.room.model.roomdirectory.PublicRoom
-import im.vector.matrix.android.api.util.toMatrixItem
+import org.matrix.android.sdk.api.MatrixPatterns
+import org.matrix.android.sdk.api.session.room.members.ChangeMembershipState
+import org.matrix.android.sdk.api.session.room.model.roomdirectory.PublicRoom
+import org.matrix.android.sdk.api.util.MatrixItem
+import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
 
 class PublicRoomsController @Inject constructor(private val stringProvider: StringProvider,
@@ -40,22 +42,27 @@ class PublicRoomsController @Inject constructor(private val stringProvider: Stri
     var callback: Callback? = null
 
     override fun buildModels(viewState: PublicRoomsViewState) {
+        val host = this
         val publicRooms = viewState.publicRooms
 
-        if (publicRooms.isEmpty()
-                && viewState.asyncPublicRoomsRequest is Success) {
+        val unknownRoomItem = viewState.buildUnknownRoomIfNeeded()
+
+        val noResult = publicRooms.isEmpty() && viewState.asyncPublicRoomsRequest is Success && unknownRoomItem == null
+        if (noResult) {
             // No result
             noResultItem {
                 id("noResult")
-                text(stringProvider.getString(R.string.no_result_placeholder))
+                text(host.stringProvider.getString(R.string.no_result_placeholder))
             }
         } else {
             publicRooms.forEach {
                 buildPublicRoom(it, viewState)
             }
 
-            if ((viewState.hasMore && viewState.asyncPublicRoomsRequest is Success)
-                    || viewState.asyncPublicRoomsRequest is Incomplete) {
+            unknownRoomItem?.addTo(this)
+
+            if ((viewState.hasMore && viewState.asyncPublicRoomsRequest is Success) ||
+                    viewState.asyncPublicRoomsRequest is Incomplete) {
                 loadingItem {
                     // Change id to avoid list to scroll automatically when first results are displayed
                     if (publicRooms.isEmpty()) {
@@ -65,7 +72,7 @@ class PublicRoomsController @Inject constructor(private val stringProvider: Stri
                     }
                     onVisibilityStateChanged { _, _, visibilityState ->
                         if (visibilityState == VisibilityState.VISIBLE) {
-                            callback?.loadMore()
+                            host.callback?.loadMore()
                         }
                     }
                 }
@@ -75,15 +82,16 @@ class PublicRoomsController @Inject constructor(private val stringProvider: Stri
         if (viewState.asyncPublicRoomsRequest is Fail) {
             errorWithRetryItem {
                 id("error")
-                text(errorFormatter.toHumanReadable(viewState.asyncPublicRoomsRequest.error))
-                listener { callback?.loadMore() }
+                text(host.errorFormatter.toHumanReadable(viewState.asyncPublicRoomsRequest.error))
+                listener { host.callback?.loadMore() }
             }
         }
     }
 
     private fun buildPublicRoom(publicRoom: PublicRoom, viewState: PublicRoomsViewState) {
+        val host = this
         publicRoomItem {
-            avatarRenderer(avatarRenderer)
+            avatarRenderer(host.avatarRenderer)
             id(publicRoom.roomId)
             matrixItem(publicRoom.toMatrixItem())
             roomAlias(publicRoom.getPrimaryAlias())
@@ -101,15 +109,38 @@ class PublicRoomsController @Inject constructor(private val stringProvider: Stri
             joinState(joinState)
 
             joinListener {
-                callback?.onPublicRoomJoin(publicRoom)
+                host.callback?.onPublicRoomJoin(publicRoom)
             }
             globalListener {
-                callback?.onPublicRoomClicked(publicRoom, joinState)
+                host.callback?.onPublicRoomClicked(publicRoom, joinState)
+            }
+        }
+    }
+
+    private fun PublicRoomsViewState.buildUnknownRoomIfNeeded(): UnknownRoomItem? {
+        val roomIdOrAlias = currentFilter.trim()
+        val isAlias = MatrixPatterns.isRoomAlias(roomIdOrAlias) && !publicRooms.any { it.canonicalAlias == roomIdOrAlias }
+        val isRoomId = !isAlias && MatrixPatterns.isRoomId(roomIdOrAlias) && !publicRooms.any { it.roomId == roomIdOrAlias }
+        val roomItem = when {
+            isAlias  -> MatrixItem.RoomAliasItem(roomIdOrAlias, roomIdOrAlias)
+            isRoomId -> MatrixItem.RoomItem(roomIdOrAlias)
+            else     -> null
+        }
+        val host = this@PublicRoomsController
+        return roomItem?.let {
+            UnknownRoomItem_().apply {
+                id(roomIdOrAlias)
+                matrixItem(it)
+                avatarRenderer(host.avatarRenderer)
+                globalListener {
+                    host.callback?.onUnknownRoomClicked(roomIdOrAlias)
+                }
             }
         }
     }
 
     interface Callback {
+        fun onUnknownRoomClicked(roomIdOrAlias: String)
         fun onPublicRoomClicked(publicRoom: PublicRoom, joinState: JoinState)
         fun onPublicRoomJoin(publicRoom: PublicRoom)
         fun loadMore()

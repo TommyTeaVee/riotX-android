@@ -18,36 +18,38 @@ package im.vector.app.features.pin
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.widget.Toolbar
-import com.airbnb.mvrx.MvRx
+import com.airbnb.mvrx.Mavericks
+import com.google.android.material.appbar.MaterialToolbar
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
 import im.vector.app.core.extensions.addFragment
 import im.vector.app.core.platform.ToolbarConfigurable
 import im.vector.app.core.platform.VectorBaseActivity
+import im.vector.app.databinding.ActivitySimpleBinding
 
-class PinActivity : VectorBaseActivity(), ToolbarConfigurable, UnlockedActivity {
+@AndroidEntryPoint
+class PinActivity : VectorBaseActivity<ActivitySimpleBinding>(), ToolbarConfigurable, UnlockedActivity {
 
     companion object {
-
-        const val PIN_REQUEST_CODE = 17890
-
         fun newIntent(context: Context, args: PinArgs): Intent {
             return Intent(context, PinActivity::class.java).apply {
-                putExtra(MvRx.KEY_ARG, args)
+                putExtra(Mavericks.KEY_ARG, args)
             }
         }
     }
 
-    override fun getLayoutRes() = R.layout.activity_simple
+    override fun getBinding() = ActivitySimpleBinding.inflate(layoutInflater)
+
+    override fun getCoordinatorLayout() = views.coordinatorLayout
 
     override fun initUiAndData() {
         if (isFirstCreation()) {
-            val fragmentArgs: PinArgs = intent?.extras?.getParcelable(MvRx.KEY_ARG) ?: return
+            val fragmentArgs: PinArgs = intent?.extras?.getParcelable(Mavericks.KEY_ARG) ?: return
             addFragment(R.id.simpleFragmentContainer, PinFragment::class.java, fragmentArgs)
         }
     }
 
-    override fun configure(toolbar: Toolbar) {
+    override fun configure(toolbar: MaterialToolbar) {
         configureToolbar(toolbar)
     }
 }

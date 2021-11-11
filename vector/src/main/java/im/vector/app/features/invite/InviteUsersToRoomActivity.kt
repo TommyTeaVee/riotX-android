@@ -21,79 +21,73 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
-import androidx.appcompat.app.AlertDialog
-import com.airbnb.mvrx.MvRx
+import androidx.lifecycle.lifecycleScope
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.error.ErrorFormatter
 import im.vector.app.core.extensions.addFragment
 import im.vector.app.core.extensions.addFragmentToBackstack
-import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.SimpleFragmentActivity
 import im.vector.app.core.platform.WaitingViewData
 import im.vector.app.core.utils.PERMISSIONS_FOR_MEMBERS_SEARCH
-import im.vector.app.core.utils.PERMISSION_REQUEST_CODE_READ_CONTACTS
-import im.vector.app.core.utils.allGranted
 import im.vector.app.core.utils.checkPermissions
+import im.vector.app.core.utils.onPermissionDeniedSnackbar
+import im.vector.app.core.utils.registerForPermissionsResult
 import im.vector.app.core.utils.toast
 import im.vector.app.features.contactsbook.ContactsBookFragment
-import im.vector.app.features.contactsbook.ContactsBookViewModel
-import im.vector.app.features.userdirectory.KnownUsersFragment
-import im.vector.app.features.userdirectory.KnownUsersFragmentArgs
-import im.vector.app.features.userdirectory.UserDirectoryFragment
-import im.vector.app.features.userdirectory.UserDirectorySharedAction
-import im.vector.app.features.userdirectory.UserDirectorySharedActionViewModel
-import im.vector.app.features.userdirectory.UserDirectoryViewModel
-import im.vector.matrix.android.api.failure.Failure
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.activity.*
+import im.vector.app.features.userdirectory.UserListFragment
+import im.vector.app.features.userdirectory.UserListFragmentArgs
+import im.vector.app.features.userdirectory.UserListSharedAction
+import im.vector.app.features.userdirectory.UserListSharedActionViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.parcelize.Parcelize
+import org.matrix.android.sdk.api.failure.Failure
 import java.net.HttpURLConnection
 import javax.inject.Inject
 
 @Parcelize
 data class InviteUsersToRoomArgs(val roomId: String) : Parcelable
 
+@AndroidEntryPoint
 class InviteUsersToRoomActivity : SimpleFragmentActivity() {
 
     private val viewModel: InviteUsersToRoomViewModel by viewModel()
-    private lateinit var sharedActionViewModel: UserDirectorySharedActionViewModel
-    @Inject lateinit var userDirectoryViewModelFactory: UserDirectoryViewModel.Factory
-    @Inject lateinit var inviteUsersToRoomViewModelFactory: InviteUsersToRoomViewModel.Factory
-    @Inject lateinit var contactsBookViewModelFactory: ContactsBookViewModel.Factory
+    private lateinit var sharedActionViewModel: UserListSharedActionViewModel
     @Inject lateinit var errorFormatter: ErrorFormatter
-
-    override fun injectWith(injector: ScreenComponent) {
-        super.injectWith(injector)
-        injector.inject(this)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        toolbar.visibility = View.GONE
-        sharedActionViewModel = viewModelProvider.get(UserDirectorySharedActionViewModel::class.java)
+        views.toolbar.visibility = View.GONE
+
+        sharedActionViewModel = viewModelProvider.get(UserListSharedActionViewModel::class.java)
         sharedActionViewModel
-                .observe()
-                .subscribe { sharedAction ->
+                .stream()
+                .onEach { sharedAction ->
                     when (sharedAction) {
-                        UserDirectorySharedAction.OpenUsersDirectory    ->
-                            addFragmentToBackstack(R.id.container, UserDirectoryFragment::class.java)
-                        UserDirectorySharedAction.Close                 -> finish()
-                        UserDirectorySharedAction.GoBack                -> onBackPressed()
-                        is UserDirectorySharedAction.OnMenuItemSelected -> onMenuItemSelected(sharedAction)
-                        UserDirectorySharedAction.OpenPhoneBook         -> openPhoneBook()
-                    }.exhaustive
+                        UserListSharedAction.Close                 -> finish()
+                        UserListSharedAction.GoBack                -> onBackPressed()
+                        is UserListSharedAction.OnMenuItemSelected -> onMenuItemSelected(sharedAction)
+                        UserListSharedAction.OpenPhoneBook         -> openPhoneBook()
+                        // not exhaustive because it's a sharedAction
+                        else                                       -> {
+                        }
+                    }
                 }
-                .disposeOnDestroy()
+                .launchIn(lifecycleScope)
         if (isFirstCreation()) {
             addFragment(
                     R.id.container,
-                    KnownUsersFragment::class.java,
-                    KnownUsersFragmentArgs(
+                    UserListFragment::class.java,
+                    UserListFragmentArgs(
                             title = getString(R.string.invite_users_to_room_title),
                             menuResId = R.menu.vector_invite_users_to_room,
-                            excludedUserIds = viewModel.getUserIdsOfRoomMembers()
+                            excludedUserIds = viewModel.getUserIdsOfRoomMembers(),
+                            showInviteActions = false
                     )
             )
         }
@@ -101,27 +95,24 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
         viewModel.observeViewEvents { renderInviteEvents(it) }
     }
 
+    private fun onMenuItemSelected(action: UserListSharedAction.OnMenuItemSelected) {
+        if (action.itemId == R.id.action_invite_users_to_room_invite) {
+            viewModel.handle(InviteUsersToRoomAction.InviteSelectedUsers(action.selections))
+        }
+    }
+
     private fun openPhoneBook() {
         // Check permission first
-        if (checkPermissions(PERMISSIONS_FOR_MEMBERS_SEARCH,
-                        this,
-                        PERMISSION_REQUEST_CODE_READ_CONTACTS,
-                        0)) {
+        if (checkPermissions(PERMISSIONS_FOR_MEMBERS_SEARCH, this, permissionContactLauncher)) {
             addFragmentToBackstack(R.id.container, ContactsBookFragment::class.java)
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (allGranted(grantResults)) {
-            if (requestCode == PERMISSION_REQUEST_CODE_READ_CONTACTS) {
-                addFragmentToBackstack(R.id.container, ContactsBookFragment::class.java)
-            }
-        }
-    }
-
-    private fun onMenuItemSelected(action: UserDirectorySharedAction.OnMenuItemSelected) {
-        if (action.itemId == R.id.action_invite_users_to_room_invite) {
-            viewModel.handle(InviteUsersToRoomAction.InviteSelectedUsers(action.invitees))
+    private val permissionContactLauncher = registerForPermissionsResult { allGranted, deniedPermanently ->
+        if (allGranted) {
+            doOnPostResume { addFragmentToBackstack(R.id.container, ContactsBookFragment::class.java) }
+        } else if (deniedPermanently) {
+            onPermissionDeniedSnackbar(R.string.permissions_denied_add_contact)
         }
     }
 
@@ -145,7 +136,7 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
         } else {
             errorFormatter.toHumanReadable(error)
         }
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
                 .setMessage(message)
                 .setPositiveButton(R.string.ok, null)
                 .show()
@@ -160,7 +151,7 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
 
         fun getIntent(context: Context, roomId: String): Intent {
             return Intent(context, InviteUsersToRoomActivity::class.java).also {
-                it.putExtra(MvRx.KEY_ARG, InviteUsersToRoomArgs(roomId))
+                it.putExtra(Mavericks.KEY_ARG, InviteUsersToRoomArgs(roomId))
             }
         }
     }

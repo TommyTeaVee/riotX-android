@@ -17,20 +17,20 @@ package im.vector.app.features.settings.devices
 
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import com.airbnb.mvrx.MvRx
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.parentFragmentViewModel
 import com.airbnb.mvrx.withState
-import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.bottom_sheet_generic_list_with_title.*
+import im.vector.app.databinding.BottomSheetGenericListWithTitleBinding
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 @Parcelize
@@ -39,42 +39,38 @@ data class DeviceVerificationInfoArgs(
         val deviceId: String
 ) : Parcelable
 
-class DeviceVerificationInfoBottomSheet : VectorBaseBottomSheetDialogFragment(), DeviceVerificationInfoEpoxyController.Callback {
+@AndroidEntryPoint
+class DeviceVerificationInfoBottomSheet :
+        VectorBaseBottomSheetDialogFragment<BottomSheetGenericListWithTitleBinding>(),
+        DeviceVerificationInfoBottomSheetController.Callback {
 
     private val viewModel: DeviceVerificationInfoBottomSheetViewModel by fragmentViewModel(DeviceVerificationInfoBottomSheetViewModel::class)
 
     private val sharedViewModel: DevicesViewModel by parentFragmentViewModel(DevicesViewModel::class)
 
-    @Inject lateinit var deviceVerificationInfoViewModelFactory: DeviceVerificationInfoBottomSheetViewModel.Factory
+    @Inject lateinit var controller: DeviceVerificationInfoBottomSheetController
 
-    @BindView(R.id.bottomSheetRecyclerView)
-    lateinit var recyclerView: RecyclerView
-
-    override fun injectWith(injector: ScreenComponent) {
-        injector.inject(this)
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): BottomSheetGenericListWithTitleBinding {
+        return BottomSheetGenericListWithTitleBinding.inflate(inflater, container, false)
     }
 
-    @Inject lateinit var epoxyController: DeviceVerificationInfoEpoxyController
-
-    override fun getLayoutResId() = R.layout.bottom_sheet_generic_list_with_title
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        recyclerView.configureWith(
-                epoxyController,
-                showDivider = false,
-                hasFixedSize = false)
-        epoxyController.callback = this
-        bottomSheetTitle.isVisible = false
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        views.bottomSheetRecyclerView.configureWith(
+                controller,
+                hasFixedSize = false
+        )
+        controller.callback = this
+        views.bottomSheetTitle.isVisible = false
     }
 
     override fun onDestroyView() {
-        recyclerView.cleanup()
+        views.bottomSheetRecyclerView.cleanup()
         super.onDestroyView()
     }
 
     override fun invalidate() = withState(viewModel) {
-        epoxyController.setData(it)
+        controller.setData(it)
         super.invalidate()
     }
 
@@ -82,7 +78,7 @@ class DeviceVerificationInfoBottomSheet : VectorBaseBottomSheetDialogFragment(),
         fun newInstance(userId: String, deviceId: String): DeviceVerificationInfoBottomSheet {
             val args = Bundle()
             val parcelableArgs = DeviceVerificationInfoArgs(userId, deviceId)
-            args.putParcelable(MvRx.KEY_ARG, parcelableArgs)
+            args.putParcelable(Mavericks.KEY_ARG, parcelableArgs)
             return DeviceVerificationInfoBottomSheet().apply { arguments = args }
         }
     }

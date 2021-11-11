@@ -24,11 +24,12 @@ import androidx.core.view.isVisible
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
 import im.vector.app.R
+import im.vector.app.core.epoxy.ClickListener
+import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.extensions.setTextOrHide
-import im.vector.app.core.utils.DebouncedClickListener
 import im.vector.app.features.home.room.detail.RoomDetailAction
 import im.vector.app.features.home.room.detail.timeline.TimelineEventController
-import im.vector.matrix.android.api.session.room.model.message.MessageOptionsContent
+import org.matrix.android.sdk.api.session.room.model.message.MessageOptionsContent
 import kotlin.math.roundToInt
 
 @EpoxyModelClass(layout = R.layout.item_timeline_event_base)
@@ -75,6 +76,8 @@ abstract class MessagePollItem : AbsMessageItem<MessagePollItem.Holder>() {
             optionsContent?.options?.forEachIndexed { index, item ->
                 if (index < buttons.size) {
                     buttons[index].let {
+                        // current limitation, have to wait for event to be sent in order to reply
+                        it.isEnabled = informationData?.sendState?.isSent() ?: false
                         it.text = item.label
                         it.isVisible = true
                     }
@@ -82,7 +85,7 @@ abstract class MessagePollItem : AbsMessageItem<MessagePollItem.Holder>() {
             }
         } else {
             holder.resultWrapper.isVisible = true
-            val maxCount = votes?.maxBy { it.value }?.value ?: 0
+            val maxCount = votes?.maxByOrNull { it.value }?.value ?: 0
             optionsContent?.options?.forEachIndexed { index, item ->
                 if (index < resultLines.size) {
                     val optionCount = votes?.get(index) ?: 0
@@ -141,14 +144,16 @@ abstract class MessagePollItem : AbsMessageItem<MessagePollItem.Holder>() {
         override fun bindView(itemView: View) {
             super.bindView(itemView)
             val buttons = listOf(button1, button2, button3, button4, button5)
-            val clickListener = DebouncedClickListener(View.OnClickListener {
-                val optionIndex = buttons.indexOf(it)
-                if (optionIndex != -1 && pollId != null) {
-                    val compatValue = if (optionIndex < optionValues?.size ?: 0) optionValues?.get(optionIndex) else null
-                    callback?.onTimelineItemAction(RoomDetailAction.ReplyToOptions(pollId!!, optionIndex, compatValue ?: "$optionIndex"))
+            val clickListener = object : ClickListener {
+                override fun invoke(p1: View) {
+                    val optionIndex = buttons.indexOf(p1)
+                    if (optionIndex != -1 && pollId != null) {
+                        val compatValue = if (optionIndex < optionValues?.size ?: 0) optionValues?.get(optionIndex) else null
+                        callback?.onTimelineItemAction(RoomDetailAction.ReplyToOptions(pollId!!, optionIndex, compatValue ?: "$optionIndex"))
+                    }
                 }
-            })
-            buttons.forEach { it.setOnClickListener(clickListener) }
+            }
+            buttons.forEach { it.onClick(clickListener) }
         }
     }
 

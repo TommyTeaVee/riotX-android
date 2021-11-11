@@ -1,7 +1,9 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.3.72'
+
+    apply from: 'dependencies.gradle'
+
     repositories {
         google()
         jcenter()
@@ -9,21 +11,31 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
     }
+
     dependencies {
-        // Warning: 3.6.3 leads to infinite gradle builds. Stick to 3.5.3 for the moment
-        classpath 'com.android.tools.build:gradle:3.5.3'
-        classpath 'com.google.gms:google-services:4.3.2'
-        classpath "com.airbnb.okreplay:gradle-plugin:1.5.0"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.1'
-        classpath 'com.google.android.gms:oss-licenses-plugin:0.10.2'
+        // Release notes of Android Gradle Plugin (AGP):
+        // https://developer.android.com/studio/releases/gradle-plugin
+        classpath libs.gradle.gradlePlugin
+        classpath libs.gradle.kotlinPlugin
+        classpath libs.gradle.hiltPlugin
+        classpath 'com.google.gms:google-services:4.3.10'
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3'
+        classpath 'com.google.android.gms:oss-licenses-plugin:0.10.4'
+        classpath "com.likethesalad.android:string-reference:1.2.2"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
 
+// ktlint Plugin
+plugins {
+    id "org.jlleitschuh.gradle.ktlint" version "10.2.0"
+}
+
 allprojects {
+    apply plugin: "org.jlleitschuh.gradle.ktlint"
+
     repositories {
         // For olm library. This has to be declared first, to ensure that Olm library is not downloaded from another repo
         maven {
@@ -42,25 +54,55 @@ allprojects {
                 // PhotoView
                 includeGroupByRegex 'com\\.github\\.chrisbanes'
                 // PFLockScreen-Android
-                includeGroupByRegex 'com\\.github\\.ganfra'
-            }
-        }
-        maven {
-            url "http://dl.bintray.com/piasy/maven"
-            content {
-                includeGroupByRegex "com\\.github\\.piasy"
+                includeGroupByRegex 'com\\.github\\.vector-im'
+                // DraggableView
+                includeGroupByRegex 'com\\.github\\.hyuwah'
+
+                // Chat effects
+                includeGroupByRegex 'com\\.github\\.jetradarmobile'
+                includeGroupByRegex 'nl\\.dionsegijn'
+
+                // Voice RecordView
+                includeGroupByRegex 'com\\.github\\.Armen101'
             }
         }
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        // Jitsi repo
+        maven {
+            url "https://github.com/vector-im/jitsi_libre_maven/raw/main/android-sdk-3.1.0"
+            // Note: to test Jitsi release you can use a local file like this:
+            // url "file:///Users/bmarty/workspaces/jitsi_libre_maven/android-sdk-3.1.0"
+        }
         google()
+        mavenCentral()
         jcenter()
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         // Warnings are potential errors, so stop ignoring them
-        kotlinOptions.allWarningsAsErrors = true
+        // You can override by passing `-PallWarningsAsErrors=false` in the command line
+        kotlinOptions.allWarningsAsErrors = project.getProperties().getOrDefault("allWarningsAsErrors", "true").toBoolean()
     }
 
+    // Fix "Java heap space" issue
+    tasks.withType(org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask).configureEach {
+        it.workerMaxHeapSize.set("2G")
+    }
+
+    // See https://github.com/JLLeitschuh/ktlint-gradle#configuration
+    ktlint {
+        android = true
+        ignoreFailures = false
+        enableExperimentalRules = true
+        // display the corresponding rule
+        verbose = true
+        disabledRules = [
+                "spacing-between-declarations-with-comments",
+                "no-multi-spaces",
+                "experimental:spacing-between-declarations-with-annotations",
+                "experimental:annotation"
+        ]
+    }
 }
 
 task clean(type: Delete) {
@@ -75,15 +117,15 @@ apply plugin: 'org.sonarqube'
 
 sonarqube {
     properties {
-        property "sonar.projectName", "RiotX-Android"
-        property "sonar.projectKey", "vector.android.riotx"
+        property "sonar.projectName", "Element-Android"
+        property "sonar.projectKey", "im.vector.app.android"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.projectVersion", project(":vector").android.defaultConfig.versionName
         property "sonar.sourceEncoding", "UTF-8"
-        property "sonar.links.homepage", "https://github.com/vector-im/riotX-android/"
-        property "sonar.links.ci", "https://buildkite.com/matrix-dot-org/riotx-android"
-        property "sonar.links.scm", "https://github.com/vector-im/riotX-android/"
-        property "sonar.links.issue", "https://github.com/vector-im/riotX-android/issues"
+        property "sonar.links.homepage", "https://github.com/vector-im/element-android/"
+        property "sonar.links.ci", "https://buildkite.com/matrix-dot-org/element-android"
+        property "sonar.links.scm", "https://github.com/vector-im/element-android/"
+        property "sonar.links.issue", "https://github.com/vector-im/element-android/issues"
         property "sonar.organization", "new_vector_ltd_organization"
         property "sonar.login", project.hasProperty("SONAR_LOGIN") ? SONAR_LOGIN : "invalid"
     }
@@ -94,8 +136,15 @@ project(":vector") {
         properties {
             property "sonar.sources", project(":vector").android.sourceSets.main.java.srcDirs
             // exclude source code from analyses separated by a colon (:)
-            // property "sonar.exclusions", "**/*.*"
+            // Exclude Java source
+            property "sonar.exclusions", "**/BugReporterMultipartBody.java"
         }
+    }
+}
+
+project(":diff-match-patch") {
+    sonarqube {
+        skipProject = true
     }
 }
 

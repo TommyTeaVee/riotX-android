@@ -16,26 +16,27 @@
 
 package im.vector.app.features.settings.locale
 
-import androidx.lifecycle.viewModelScope
-import com.airbnb.mvrx.ActivityViewModelContext
-import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.Success
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorViewModel
+import im.vector.app.features.configuration.VectorConfiguration
 import im.vector.app.features.settings.VectorLocale
 import kotlinx.coroutines.launch
 
 class LocalePickerViewModel @AssistedInject constructor(
-        @Assisted initialState: LocalePickerViewState
+        @Assisted initialState: LocalePickerViewState,
+        private val vectorConfiguration: VectorConfiguration
 ) : VectorViewModel<LocalePickerViewState, LocalePickerAction, LocalePickerViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: LocalePickerViewState): LocalePickerViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<LocalePickerViewModel, LocalePickerViewState> {
+        override fun create(initialState: LocalePickerViewState): LocalePickerViewModel
     }
 
     init {
@@ -50,17 +51,7 @@ class LocalePickerViewModel @AssistedInject constructor(
         }
     }
 
-    companion object : MvRxViewModelFactory<LocalePickerViewModel, LocalePickerViewState> {
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: LocalePickerViewState): LocalePickerViewModel? {
-            val factory = when (viewModelContext) {
-                is FragmentViewModelContext -> viewModelContext.fragment as? Factory
-                is ActivityViewModelContext -> viewModelContext.activity as? Factory
-            }
-            return factory?.create(state) ?: error("You should let your activity/fragment implements Factory interface")
-        }
-    }
+    companion object : MavericksViewModelFactory<LocalePickerViewModel, LocalePickerViewState> by hiltMavericksViewModelFactory()
 
     override fun handle(action: LocalePickerAction) {
         when (action) {
@@ -70,6 +61,7 @@ class LocalePickerViewModel @AssistedInject constructor(
 
     private fun handleSelectLocale(action: LocalePickerAction.SelectLocale) {
         VectorLocale.saveApplicationLocale(action.locale)
+        vectorConfiguration.applyToApplicationContext()
         _viewEvents.post(LocalePickerViewEvents.RestartActivity)
     }
 }

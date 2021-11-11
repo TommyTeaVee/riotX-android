@@ -17,58 +17,63 @@
 package im.vector.app.features.crypto.recover
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.core.view.isGone
+import androidx.lifecycle.lifecycleScope
 import com.airbnb.mvrx.parentFragmentViewModel
 import com.airbnb.mvrx.withState
-import com.jakewharton.rxbinding3.widget.editorActionEvents
-import com.jakewharton.rxbinding3.widget.textChanges
 import im.vector.app.R
 import im.vector.app.core.extensions.hideKeyboard
-import im.vector.app.core.extensions.showPassword
+import im.vector.app.core.flow.throttleFirst
 import im.vector.app.core.platform.VectorBaseFragment
-import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_bootstrap_enter_passphrase.*
-import java.util.concurrent.TimeUnit
+import im.vector.app.databinding.FragmentBootstrapEnterPassphraseBinding
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.widget.editorActionEvents
+import reactivecircus.flowbinding.android.widget.textChanges
 import javax.inject.Inject
 
-class BootstrapConfirmPassphraseFragment @Inject constructor() : VectorBaseFragment() {
+class BootstrapConfirmPassphraseFragment @Inject constructor() :
+    VectorBaseFragment<FragmentBootstrapEnterPassphraseBinding>() {
 
-    override fun getLayoutResId() = R.layout.fragment_bootstrap_enter_passphrase
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentBootstrapEnterPassphraseBinding {
+        return FragmentBootstrapEnterPassphraseBinding.inflate(inflater, container, false)
+    }
 
     val sharedViewModel: BootstrapSharedViewModel by parentFragmentViewModel()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ssss_passphrase_security_progress.isGone = true
+        views.ssssPassphraseSecurityProgress.isGone = true
 
-        bootstrapDescriptionText.text = getString(R.string.set_a_security_phrase_again_notice)
-        ssss_passphrase_enter_edittext.hint = getString(R.string.set_a_security_phrase_hint)
+        views.bootstrapDescriptionText.text = getString(R.string.set_a_security_phrase_again_notice)
+        views.ssssPassphraseEnterEdittext.hint = getString(R.string.set_a_security_phrase_hint)
 
         withState(sharedViewModel) {
             // set initial value (useful when coming back)
-            ssss_passphrase_enter_edittext.setText(it.passphraseRepeat ?: "")
-            ssss_passphrase_enter_edittext.requestFocus()
+            views.ssssPassphraseEnterEdittext.setText(it.passphraseRepeat ?: "")
+            views.ssssPassphraseEnterEdittext.requestFocus()
         }
 
-        ssss_passphrase_enter_edittext.editorActionEvents()
-                .throttleFirst(300, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
+        views.ssssPassphraseEnterEdittext.editorActionEvents()
+                .throttleFirst(300)
+                .onEach {
                     if (it.actionId == EditorInfo.IME_ACTION_DONE) {
                         submit()
                     }
                 }
-                .disposeOnDestroyView()
+                .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        ssss_passphrase_enter_edittext.textChanges()
-                .subscribe {
-                    ssss_passphrase_enter_til.error = null
-                    sharedViewModel.handle(BootstrapActions.UpdateConfirmCandidatePassphrase(it?.toString() ?: ""))
+        views.ssssPassphraseEnterEdittext.textChanges()
+                .onEach {
+                    views.ssssPassphraseEnterTil.error = null
+                    sharedViewModel.handle(BootstrapActions.UpdateConfirmCandidatePassphrase(it.toString()))
                 }
-                .disposeOnDestroyView()
+                .launchIn(viewLifecycleOwner.lifecycleScope)
 
         sharedViewModel.observeViewEvents {
             //            when (it) {
@@ -78,32 +83,23 @@ class BootstrapConfirmPassphraseFragment @Inject constructor() : VectorBaseFragm
 //            }
         }
 
-        ssss_view_show_password.debouncedClicks { sharedViewModel.handle(BootstrapActions.TogglePasswordVisibility) }
-        bootstrapSubmit.debouncedClicks { submit() }
+        views.bootstrapSubmit.debouncedClicks { submit() }
     }
 
     private fun submit() = withState(sharedViewModel) { state ->
         if (state.step !is BootstrapStep.ConfirmPassphrase) {
             return@withState
         }
-        val passphrase = ssss_passphrase_enter_edittext.text?.toString()
+        val passphrase = views.ssssPassphraseEnterEdittext.text?.toString()
         when {
             passphrase.isNullOrBlank()     ->
-                ssss_passphrase_enter_til.error = getString(R.string.passphrase_empty_error_message)
+                views.ssssPassphraseEnterTil.error = getString(R.string.passphrase_empty_error_message)
             passphrase != state.passphrase ->
-                ssss_passphrase_enter_til.error = getString(R.string.passphrase_passphrase_does_not_match)
+                views.ssssPassphraseEnterTil.error = getString(R.string.passphrase_passphrase_does_not_match)
             else                           -> {
                 view?.hideKeyboard()
                 sharedViewModel.handle(BootstrapActions.DoInitialize(passphrase))
             }
-        }
-    }
-
-    override fun invalidate() = withState(sharedViewModel) { state ->
-        if (state.step is BootstrapStep.ConfirmPassphrase) {
-            val isPasswordVisible = state.step.isPasswordVisible
-            ssss_passphrase_enter_edittext.showPassword(isPasswordVisible, updateCursor = false)
-            ssss_view_show_password.setImageResource(if (isPasswordVisible) R.drawable.ic_eye_closed else R.drawable.ic_eye)
         }
     }
 }

@@ -23,19 +23,19 @@ import im.vector.app.R
 import im.vector.app.core.platform.WaitingViewData
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.LiveEvent
-import im.vector.matrix.android.api.MatrixCallback
-import im.vector.matrix.android.api.listeners.StepProgressListener
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
-import im.vector.matrix.android.api.session.crypto.keysbackup.KeysBackupService
-import im.vector.matrix.android.api.session.securestorage.KeyInfoResult
-import im.vector.matrix.android.internal.crypto.crosssigning.fromBase64
-import im.vector.matrix.android.internal.crypto.keysbackup.model.rest.KeysVersionResult
-import im.vector.matrix.android.internal.crypto.keysbackup.util.computeRecoveryKey
-import im.vector.matrix.android.internal.crypto.model.ImportRoomKeysResult
-import im.vector.matrix.android.internal.util.awaitCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.MatrixCallback
+import org.matrix.android.sdk.api.listeners.StepProgressListener
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
+import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupService
+import org.matrix.android.sdk.api.session.securestorage.KeyInfoResult
+import org.matrix.android.sdk.internal.crypto.crosssigning.fromBase64
+import org.matrix.android.sdk.internal.crypto.keysbackup.model.rest.KeysVersionResult
+import org.matrix.android.sdk.internal.crypto.keysbackup.util.computeRecoveryKey
+import org.matrix.android.sdk.internal.crypto.model.ImportRoomKeysResult
+import org.matrix.android.sdk.internal.util.awaitCallback
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -88,26 +88,26 @@ class KeysBackupRestoreSharedViewModel @Inject constructor(
         override fun onStepProgress(step: StepProgressListener.Step) {
             when (step) {
                 is StepProgressListener.Step.ComputingKey   -> {
-                    loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message)
-                            + "\n" + stringProvider.getString(R.string.keys_backup_restoring_computing_key_waiting_message),
+                    loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message) +
+                            "\n" + stringProvider.getString(R.string.keys_backup_restoring_computing_key_waiting_message),
                             step.progress,
                             step.total))
                 }
                 is StepProgressListener.Step.DownloadingKey -> {
-                    loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message)
-                            + "\n" + stringProvider.getString(R.string.keys_backup_restoring_downloading_backup_waiting_message),
+                    loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message) +
+                            "\n" + stringProvider.getString(R.string.keys_backup_restoring_downloading_backup_waiting_message),
                             isIndeterminate = true))
                 }
                 is StepProgressListener.Step.ImportingKey   -> {
                     Timber.d("backupKeys.ImportingKey.progress: ${step.progress}")
                     // Progress 0 can take a while, display an indeterminate progress in this case
                     if (step.progress == 0) {
-                        loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message)
-                                + "\n" + stringProvider.getString(R.string.keys_backup_restoring_importing_keys_waiting_message),
+                        loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message) +
+                                "\n" + stringProvider.getString(R.string.keys_backup_restoring_importing_keys_waiting_message),
                                 isIndeterminate = true))
                     } else {
-                        loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message)
-                                + "\n" + stringProvider.getString(R.string.keys_backup_restoring_importing_keys_waiting_message),
+                        loadingEvent.postValue(WaitingViewData(stringProvider.getString(R.string.keys_backup_restoring_waiting_message) +
+                                "\n" + stringProvider.getString(R.string.keys_backup_restoring_importing_keys_waiting_message),
                                 step.progress,
                                 step.total))
                     }
@@ -252,7 +252,7 @@ class KeysBackupRestoreSharedViewModel @Inject constructor(
     }
 
     private fun isBackupKeyInQuadS(): Boolean {
-        val sssBackupSecret = session.getAccountDataEvent(KEYBACKUP_SECRET_SSSS_NAME)
+        val sssBackupSecret = session.accountDataService().getUserAccountDataEvent(KEYBACKUP_SECRET_SSSS_NAME)
                 ?: return false
 
         // Some sanity ?

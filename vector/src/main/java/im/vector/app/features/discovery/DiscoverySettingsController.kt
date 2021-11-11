@@ -15,7 +15,6 @@
  */
 package im.vector.app.features.discovery
 
-import android.view.View
 import com.airbnb.epoxy.TypedEpoxyController
 import com.airbnb.mvrx.Async
 import com.airbnb.mvrx.Fail
@@ -23,19 +22,19 @@ import com.airbnb.mvrx.Incomplete
 import com.airbnb.mvrx.Loading
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.Uninitialized
-import com.google.i18n.phonenumbers.PhoneNumberUtil
 import im.vector.app.R
 import im.vector.app.core.epoxy.attributes.ButtonStyle
 import im.vector.app.core.epoxy.attributes.ButtonType
 import im.vector.app.core.epoxy.attributes.IconMode
 import im.vector.app.core.epoxy.loadingItem
 import im.vector.app.core.error.ErrorFormatter
+import im.vector.app.core.extensions.getFormattedValue
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
-import im.vector.matrix.android.api.failure.Failure
-import im.vector.matrix.android.api.session.identity.SharedState
-import im.vector.matrix.android.api.session.identity.ThreePid
-import timber.log.Timber
+import im.vector.app.features.form.formAdvancedToggleItem
+import org.matrix.android.sdk.api.failure.Failure
+import org.matrix.android.sdk.api.session.identity.SharedState
+import org.matrix.android.sdk.api.session.identity.ThreePid
 import javax.inject.Inject
 import javax.net.ssl.HttpsURLConnection
 
@@ -64,8 +63,9 @@ class DiscoverySettingsController @Inject constructor(
             }
             is Success -> {
                 buildIdentityServerSection(data)
-                val hasIdentityServer = data.identityServer().isNullOrBlank().not()
+                val hasIdentityServer = data.identityServer()?.serverUrl.isNullOrBlank().not()
                 if (hasIdentityServer && !data.termsNotSigned) {
+                    buildConsentSection(data)
                     buildEmailsSection(data.emailList)
                     buildMsisdnSection(data.phoneNumbersList)
                 }
@@ -73,8 +73,43 @@ class DiscoverySettingsController @Inject constructor(
         }
     }
 
+    private fun buildConsentSection(data: DiscoverySettingsState) {
+        val host = this
+        settingsSectionTitleItem {
+            id("idConsentTitle")
+            titleResId(R.string.settings_discovery_consent_title)
+        }
+
+        if (data.userConsent) {
+            settingsInfoItem {
+                id("idConsentInfo")
+                helperTextResId(R.string.settings_discovery_consent_notice_on)
+            }
+            settingsButtonItem {
+                id("idConsentButton")
+                colorProvider(host.colorProvider)
+                buttonTitleId(R.string.settings_discovery_consent_action_revoke)
+                buttonStyle(ButtonStyle.DESTRUCTIVE)
+                buttonClickListener { host.listener?.onTapUpdateUserConsent(false) }
+            }
+        } else {
+            settingsInfoItem {
+                id("idConsentInfo")
+                helperTextResId(R.string.settings_discovery_consent_notice_off_2)
+            }
+            settingsButtonItem {
+                id("idConsentButton")
+                colorProvider(host.colorProvider)
+                buttonTitleId(R.string.settings_discovery_consent_action_give_consent)
+                buttonClickListener { host.listener?.onTapUpdateUserConsent(true) }
+            }
+        }
+    }
+
     private fun buildIdentityServerSection(data: DiscoverySettingsState) {
-        val identityServer = data.identityServer() ?: stringProvider.getString(R.string.none)
+        val identityServer = data.identityServer()
+        val identityServerUrl = identityServer?.serverUrl ?: stringProvider.getString(R.string.none)
+        val host = this
 
         settingsSectionTitleItem {
             id("idServerTitle")
@@ -83,28 +118,58 @@ class DiscoverySettingsController @Inject constructor(
 
         settingsItem {
             id("idServer")
-            title(identityServer)
+            title(identityServerUrl)
         }
 
-        if (data.identityServer() != null && data.termsNotSigned) {
+        val policies = identityServer?.policies
+        if (policies != null) {
+            formAdvancedToggleItem {
+                id("policy-urls")
+                val titleRes = if (data.isIdentityPolicyUrlsExpanded) {
+                    R.string.settings_discovery_hide_identity_server_policy_title
+                } else R.string.settings_discovery_show_identity_server_policy_title
+                title(host.stringProvider.getString(titleRes))
+                expanded(data.isIdentityPolicyUrlsExpanded)
+                listener { host.listener?.onPolicyUrlsExpandedStateToggled(!data.isIdentityPolicyUrlsExpanded) }
+            }
+            if (data.isIdentityPolicyUrlsExpanded) {
+                if (policies.isEmpty()) {
+                    settingsInfoItem {
+                        id("emptyPolicy")
+                        helperText(host.stringProvider.getString(R.string.settings_discovery_no_policy_provided))
+                    }
+                } else {
+                    policies.forEach { policy ->
+                        discoveryPolicyItem {
+                            id(policy.url)
+                            name(policy.name)
+                            url(policy.url)
+                            clickListener { host.listener?.onPolicyTapped(policy) }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (identityServer != null && data.termsNotSigned) {
             settingsInfoItem {
                 id("idServerFooter")
-                helperText(stringProvider.getString(R.string.settings_agree_to_terms, identityServer))
+                helperText(host.stringProvider.getString(R.string.settings_agree_to_terms, identityServerUrl))
                 showCompoundDrawable(true)
-                itemClickListener(View.OnClickListener { listener?.openIdentityServerTerms() })
+                itemClickListener { host.listener?.openIdentityServerTerms() }
             }
             settingsButtonItem {
                 id("seeTerms")
-                colorProvider(colorProvider)
-                buttonTitle(stringProvider.getString(R.string.open_terms_of, identityServer))
-                buttonClickListener { listener?.openIdentityServerTerms() }
+                colorProvider(host.colorProvider)
+                buttonTitle(host.stringProvider.getString(R.string.open_terms_of, identityServerUrl))
+                buttonClickListener { host.listener?.openIdentityServerTerms() }
             }
         } else {
             settingsInfoItem {
                 id("idServerFooter")
                 showCompoundDrawable(false)
-                if (data.identityServer() != null) {
-                    helperText(stringProvider.getString(R.string.settings_discovery_identity_server_info, identityServer))
+                if (identityServer != null) {
+                    helperText(host.stringProvider.getString(R.string.settings_discovery_identity_server_info, identityServerUrl))
                 } else {
                     helperTextResId(R.string.settings_discovery_identity_server_info_none)
                 }
@@ -113,31 +178,32 @@ class DiscoverySettingsController @Inject constructor(
 
         settingsButtonItem {
             id("change")
-            colorProvider(colorProvider)
-            if (data.identityServer() == null) {
+            colorProvider(host.colorProvider)
+            if (identityServer == null) {
                 buttonTitleId(R.string.add_identity_server)
             } else {
                 buttonTitleId(R.string.change_identity_server)
             }
-            buttonClickListener { listener?.onTapChangeIdentityServer() }
+            buttonClickListener { host.listener?.onTapChangeIdentityServer() }
         }
 
-        if (data.identityServer() != null) {
+        if (identityServer != null) {
             settingsInfoItem {
                 id("removeInfo")
                 helperTextResId(R.string.settings_discovery_disconnect_identity_server_info)
             }
             settingsButtonItem {
                 id("remove")
-                colorProvider(colorProvider)
+                colorProvider(host.colorProvider)
                 buttonTitleId(R.string.disconnect_identity_server)
                 buttonStyle(ButtonStyle.DESTRUCTIVE)
-                buttonClickListener { listener?.onTapDisconnectIdentityServer() }
+                buttonClickListener { host.listener?.onTapDisconnectIdentityServer() }
             }
         }
     }
 
     private fun buildEmailsSection(emails: Async<List<PidInfo>>) {
+        val host = this
         settingsSectionTitleItem {
             id("emails")
             titleResId(R.string.settings_discovery_emails_title)
@@ -158,7 +224,7 @@ class DiscoverySettingsController @Inject constructor(
                 if (emails().isEmpty()) {
                     settingsInfoItem {
                         id("emailsEmpty")
-                        helperText(stringProvider.getString(R.string.settings_discovery_no_mails))
+                        helperText(host.stringProvider.getString(R.string.settings_discovery_no_mails))
                     }
                 } else {
                     emails().forEach { buildEmail(it) }
@@ -170,6 +236,7 @@ class DiscoverySettingsController @Inject constructor(
     private fun buildEmail(pidInfo: PidInfo) {
         buildThreePid(pidInfo)
 
+        val host = this
         if (pidInfo.isShared is Fail) {
             buildSharedFail(pidInfo)
         } else if (pidInfo.isShared() == SharedState.BINDING_IN_PROGRESS) {
@@ -178,15 +245,14 @@ class DiscoverySettingsController @Inject constructor(
                 is Loading ->
                     settingsInformationItem {
                         id("info${pidInfo.threePid.value}")
-                        colorProvider(colorProvider)
-                        message(stringProvider.getString(R.string.settings_discovery_confirm_mail, pidInfo.threePid.value))
+                        message(host.stringProvider.getString(R.string.settings_discovery_confirm_mail, pidInfo.threePid.value))
+                        textColor(host.colorProvider.getColor(R.color.vector_info_color))
                     }
                 is Fail    ->
                     settingsInformationItem {
                         id("info${pidInfo.threePid.value}")
-                        colorProvider(colorProvider)
-                        message(stringProvider.getString(R.string.settings_discovery_confirm_mail_not_clicked, pidInfo.threePid.value))
-                        textColorId(R.color.riotx_destructive_accent)
+                        message(host.stringProvider.getString(R.string.settings_discovery_confirm_mail_not_clicked, pidInfo.threePid.value))
+                        textColor(host.colorProvider.getColorFromAttribute(R.attr.colorError))
                     }
                 is Success -> Unit /* Cannot happen */
             }
@@ -204,6 +270,7 @@ class DiscoverySettingsController @Inject constructor(
     }
 
     private fun buildMsisdnSection(msisdns: Async<List<PidInfo>>) {
+        val host = this
         settingsSectionTitleItem {
             id("msisdn")
             titleResId(R.string.settings_discovery_msisdn_title)
@@ -225,7 +292,7 @@ class DiscoverySettingsController @Inject constructor(
                 if (msisdns().isEmpty()) {
                     settingsInfoItem {
                         id("no_msisdn")
-                        helperText(stringProvider.getString(R.string.settings_discovery_no_msisdn))
+                        helperText(host.stringProvider.getString(R.string.settings_discovery_no_msisdn))
                     }
                 } else {
                     msisdns().forEach { buildMsisdn(it) }
@@ -235,16 +302,8 @@ class DiscoverySettingsController @Inject constructor(
     }
 
     private fun buildMsisdn(pidInfo: PidInfo) {
-        val phoneNumber = try {
-            PhoneNumberUtil.getInstance().parse("+${pidInfo.threePid.value}", null)
-        } catch (t: Throwable) {
-            Timber.e(t, "Unable to parse the phone number")
-            null
-        }
-                ?.let {
-                    PhoneNumberUtil.getInstance().format(it, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)
-                }
-                ?: pidInfo.threePid.value
+        val host = this
+        val phoneNumber = pidInfo.threePid.getFormattedValue()
 
         buildThreePid(pidInfo, phoneNumber)
 
@@ -255,8 +314,8 @@ class DiscoverySettingsController @Inject constructor(
                 val error = pidInfo.finalRequest.error
                 // Deal with error 500
                 // Ref: https://github.com/matrix-org/sydent/issues/292
-                if (error is Failure.ServerError
-                        && error.httpCode == HttpsURLConnection.HTTP_INTERNAL_ERROR /* 500 */) {
+                if (error is Failure.ServerError &&
+                        error.httpCode == HttpsURLConnection.HTTP_INTERNAL_ERROR /* 500 */) {
                     stringProvider.getString(R.string.settings_text_message_sent_wrong_code)
                 } else {
                     errorFormatter.toHumanReadable(error)
@@ -266,19 +325,19 @@ class DiscoverySettingsController @Inject constructor(
             }
             settingsEditTextItem {
                 id("msisdnVerification${pidInfo.threePid.value}")
-                descriptionText(stringProvider.getString(R.string.settings_text_message_sent, phoneNumber))
+                descriptionText(host.stringProvider.getString(R.string.settings_text_message_sent, phoneNumber))
                 errorText(errorText)
                 inProgress(pidInfo.finalRequest is Loading)
                 interactionListener(object : SettingsEditTextItem.Listener {
                     override fun onValidate() {
-                        val code = codes[pidInfo.threePid]
+                        val code = host.codes[pidInfo.threePid]
                         if (pidInfo.threePid is ThreePid.Msisdn && code != null) {
-                            listener?.sendMsisdnVerificationCode(pidInfo.threePid, code)
+                            host.listener?.sendMsisdnVerificationCode(pidInfo.threePid, code)
                         }
                     }
 
-                    override fun onCodeChange(code: String) {
-                        codes[pidInfo.threePid] = code
+                    override fun onTextChange(text: String) {
+                        host.codes[pidInfo.threePid] = text
                     }
                 })
             }
@@ -287,11 +346,12 @@ class DiscoverySettingsController @Inject constructor(
     }
 
     private fun buildThreePid(pidInfo: PidInfo, title: String = pidInfo.threePid.value) {
+        val host = this
         settingsTextButtonSingleLineItem {
             id(pidInfo.threePid.value)
             title(title)
-            colorProvider(colorProvider)
-            stringProvider(stringProvider)
+            colorProvider(host.colorProvider)
+            stringProvider(host.stringProvider)
             when (pidInfo.isShared) {
                 is Loading -> {
                     buttonIndeterminate(true)
@@ -299,9 +359,9 @@ class DiscoverySettingsController @Inject constructor(
                 is Fail    -> {
                     buttonType(ButtonType.NORMAL)
                     buttonStyle(ButtonStyle.DESTRUCTIVE)
-                    buttonTitle(stringProvider.getString(R.string.global_retry))
+                    buttonTitle(host.stringProvider.getString(R.string.global_retry))
                     iconMode(IconMode.ERROR)
-                    buttonClickListener { listener?.onTapRetryToRetrieveBindings() }
+                    buttonClickListener { host.listener?.onTapRetryToRetrieveBindings() }
                 }
                 is Success -> when (pidInfo.isShared()) {
                     SharedState.SHARED,
@@ -310,9 +370,9 @@ class DiscoverySettingsController @Inject constructor(
                         checked(pidInfo.isShared() == SharedState.SHARED)
                         switchChangeListener { _, checked ->
                             if (checked) {
-                                listener?.onTapShare(pidInfo.threePid)
+                                host.listener?.onTapShare(pidInfo.threePid)
                             } else {
-                                listener?.onTapRevoke(pidInfo.threePid)
+                                host.listener?.onTapRevoke(pidInfo.threePid)
                             }
                         }
                     }
@@ -330,36 +390,34 @@ class DiscoverySettingsController @Inject constructor(
     }
 
     private fun buildSharedFail(pidInfo: PidInfo) {
+        val host = this
         settingsInformationItem {
             id("info${pidInfo.threePid.value}")
-            colorProvider(colorProvider)
-            textColorId(R.color.vector_error_color)
             message((pidInfo.isShared as? Fail)?.error?.message ?: "")
+            textColor(host.colorProvider.getColorFromAttribute(R.attr.colorError))
         }
     }
 
     private fun buildContinueCancel(threePid: ThreePid) {
+        val host = this
         settingsContinueCancelItem {
             id("bottom${threePid.value}")
-            interactionListener(object : SettingsContinueCancelItem.Listener {
-                override fun onContinue() {
-                    when (threePid) {
-                        is ThreePid.Email  -> {
-                            listener?.checkEmailVerification(threePid)
-                        }
-                        is ThreePid.Msisdn -> {
-                            val code = codes[threePid]
-                            if (code != null) {
-                                listener?.sendMsisdnVerificationCode(threePid, code)
-                            }
+            continueOnClick {
+                when (threePid) {
+                    is ThreePid.Email  -> {
+                        host.listener?.checkEmailVerification(threePid)
+                    }
+                    is ThreePid.Msisdn -> {
+                        val code = host.codes[threePid]
+                        if (code != null) {
+                            host.listener?.sendMsisdnVerificationCode(threePid, code)
                         }
                     }
                 }
-
-                override fun onCancel() {
-                    listener?.cancelBinding(threePid)
-                }
-            })
+            }
+            cancelOnClick {
+                host.listener?.cancelBinding(threePid)
+            }
         }
     }
 
@@ -372,6 +430,9 @@ class DiscoverySettingsController @Inject constructor(
         fun sendMsisdnVerificationCode(threePid: ThreePid.Msisdn, code: String)
         fun onTapChangeIdentityServer()
         fun onTapDisconnectIdentityServer()
+        fun onTapUpdateUserConsent(newValue: Boolean)
         fun onTapRetryToRetrieveBindings()
+        fun onPolicyUrlsExpandedStateToggled(newExpandedState: Boolean)
+        fun onPolicyTapped(policy: IdentityServerPolicy)
     }
 }

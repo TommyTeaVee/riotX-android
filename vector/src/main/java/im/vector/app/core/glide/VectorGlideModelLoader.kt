@@ -16,6 +16,7 @@
 
 package im.vector.app.core.glide
 
+import android.content.Context
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.Options
@@ -24,22 +25,22 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import com.bumptech.glide.signature.ObjectKey
-import im.vector.app.core.di.ActiveSessionHolder
+import im.vector.app.core.extensions.singletonEntryPoint
+import im.vector.app.core.files.LocalFilesHelper
 import im.vector.app.features.media.ImageContentRenderer
-import im.vector.matrix.android.api.Matrix
+import im.vector.app.features.session.coroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 
-class VectorGlideModelLoaderFactory(private val activeSessionHolder: ActiveSessionHolder)
-    : ModelLoaderFactory<ImageContentRenderer.Data, InputStream> {
+class VectorGlideModelLoaderFactory(private val context: Context) : ModelLoaderFactory<ImageContentRenderer.Data, InputStream> {
 
     override fun build(multiFactory: MultiModelLoaderFactory): ModelLoader<ImageContentRenderer.Data, InputStream> {
-        return VectorGlideModelLoader(activeSessionHolder)
+        return VectorGlideModelLoader(context)
     }
 
     override fun teardown() {
@@ -47,23 +48,26 @@ class VectorGlideModelLoaderFactory(private val activeSessionHolder: ActiveSessi
     }
 }
 
-class VectorGlideModelLoader(private val activeSessionHolder: ActiveSessionHolder)
-    : ModelLoader<ImageContentRenderer.Data, InputStream> {
+class VectorGlideModelLoader(private val context: Context) :
+    ModelLoader<ImageContentRenderer.Data, InputStream> {
     override fun handles(model: ImageContentRenderer.Data): Boolean {
         // Always handle
         return true
     }
 
     override fun buildLoadData(model: ImageContentRenderer.Data, width: Int, height: Int, options: Options): ModelLoader.LoadData<InputStream>? {
-        return ModelLoader.LoadData(ObjectKey(model), VectorGlideDataFetcher(activeSessionHolder, model, width, height))
+        return ModelLoader.LoadData(ObjectKey(model), VectorGlideDataFetcher(context, model, width, height))
     }
 }
 
-class VectorGlideDataFetcher(private val activeSessionHolder: ActiveSessionHolder,
+class VectorGlideDataFetcher(context: Context,
                              private val data: ImageContentRenderer.Data,
                              private val width: Int,
-                             private val height: Int)
-    : DataFetcher<InputStream> {
+                             private val height: Int) :
+    DataFetcher<InputStream> {
+
+    private val localFilesHelper = LocalFilesHelper(context)
+    private val activeSessionHolder = context.singletonEntryPoint().activeSessionHolder()
 
     private val client = activeSessionHolder.getSafeActiveSession()?.getOkHttpClient() ?: OkHttpClient()
 
@@ -85,41 +89,66 @@ class VectorGlideDataFetcher(private val activeSessionHolder: ActiveSessionHolde
     override fun cancel() {
         if (stream != null) {
             try {
+                // This is often called on main thread, and this could be a network Stream..
+                // on close will throw android.os.NetworkOnMainThreadException, so we catch throwable
                 stream?.close() // interrupts decode if any
                 stream = null
-            } catch (ignore: IOException) {
-                Timber.e(ignore)
+            } catch (ignore: Throwable) {
+                Timber.e("Failed to close stream ${ignore.localizedMessage}")
+            } finally {
+                stream = null
             }
         }
     }
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
         Timber.v("Load data: $data")
-        if (data.isLocalFile() && data.url != null) {
-            val initialFile = File(data.url)
-            callback.onDataReady(FileInputStream(initialFile))
+        if (localFilesHelper.isLocalFile(data.url)) {
+            localFilesHelper.openInputStream(data.url)?.use {
+                callback.onDataReady(it)
+            }
             return
         }
-        val contentUrlResolver = activeSessionHolder.getActiveSession().contentUrlResolver()
-        val url = contentUrlResolver.resolveFullSize(data.url)
-                ?: return
+//        val contentUrlResolver = activeSessionHolder.getActiveSession().contentUrlResolver()
 
-        val request = Request.Builder()
-                .url(url)
-                .build()
-
-        val response = client.newCall(request).execute()
-        val inputStream = response.body?.byteStream()
-        Timber.v("Response size ${response.body?.contentLength()} - Stream available: ${inputStream?.available()}")
-        if (!response.isSuccessful) {
-            callback.onLoadFailed(IOException("Unexpected code $response"))
-            return
+        val fileService = activeSessionHolder.getSafeActiveSession()?.fileService() ?: return Unit.also {
+            callback.onLoadFailed(IllegalArgumentException("No File service"))
         }
-        stream = if (data.elementToDecrypt != null && data.elementToDecrypt.k.isNotBlank()) {
-            Matrix.decryptStream(inputStream, data.elementToDecrypt)
-        } else {
-            inputStream
+        // Use the file vector service, will avoid flickering and redownload after upload
+        activeSessionHolder.getSafeActiveSession()?.coroutineScope?.launch {
+            val result = runCatching {
+                fileService.downloadFile(
+                        fileName = data.filename,
+                        mimeType = data.mimeType,
+                        url = data.url,
+                        elementToDecrypt = data.elementToDecrypt)
+            }
+            withContext(Dispatchers.Main) {
+                result.fold(
+                        { callback.onDataReady(it.inputStream()) },
+                        { callback.onLoadFailed(it as? Exception ?: IOException(it.localizedMessage)) }
+                )
+            }
         }
-        callback.onDataReady(stream)
+//        val url = contentUrlResolver.resolveFullSize(data.url)
+//                ?: return
+//
+//        val request = Request.Builder()
+//                .url(url)
+//                .build()
+//
+//        val response = client.newCall(request).execute()
+//        val inputStream = response.body?.byteStream()
+//        Timber.v("Response size ${response.body?.contentLength()} - Stream available: ${inputStream?.available()}")
+//        if (!response.isSuccessful) {
+//            callback.onLoadFailed(IOException("Unexpected code $response"))
+//            return
+//        }
+//        stream = if (data.elementToDecrypt != null && data.elementToDecrypt.k.isNotBlank()) {
+//            Matrix.decryptStream(inputStream, data.elementToDecrypt)
+//        } else {
+//            inputStream
+//        }
+//        callback.onDataReady(stream)
     }
 }

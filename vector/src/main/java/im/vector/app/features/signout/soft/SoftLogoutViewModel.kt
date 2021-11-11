@@ -19,22 +19,23 @@ package im.vector.app.features.signout.soft
 import com.airbnb.mvrx.ActivityViewModelContext
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.Loading
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.Uninitialized
 import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.matrix.android.api.MatrixCallback
-import im.vector.matrix.android.api.auth.AuthenticationService
-import im.vector.matrix.android.api.auth.data.LoginFlowResult
-import im.vector.matrix.android.api.auth.data.LoginFlowTypes
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.util.Cancelable
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import im.vector.app.core.di.ActiveSessionHolder
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.hasUnsavedKeys
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.features.login.LoginMode
+import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.auth.AuthenticationService
+import org.matrix.android.sdk.api.auth.data.LoginFlowTypes
+import org.matrix.android.sdk.api.session.Session
 import timber.log.Timber
 
 /**
@@ -47,12 +48,12 @@ class SoftLogoutViewModel @AssistedInject constructor(
         private val authenticationService: AuthenticationService
 ) : VectorViewModel<SoftLogoutViewState, SoftLogoutAction, SoftLogoutViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: SoftLogoutViewState): SoftLogoutViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<SoftLogoutViewModel, SoftLogoutViewState> {
+        override fun create(initialState: SoftLogoutViewState): SoftLogoutViewModel
     }
 
-    companion object : MvRxViewModelFactory<SoftLogoutViewModel, SoftLogoutViewState> {
+    companion object : MavericksViewModelFactory<SoftLogoutViewModel, SoftLogoutViewState> by hiltMavericksViewModelFactory() {
 
         override fun initialState(viewModelContext: ViewModelContext): SoftLogoutViewState? {
             val activity: SoftLogoutActivity = (viewModelContext as ActivityViewModelContext).activity()
@@ -65,15 +66,7 @@ class SoftLogoutViewModel @AssistedInject constructor(
                     hasUnsavedKeys = activity.session.hasUnsavedKeys()
             )
         }
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: SoftLogoutViewState): SoftLogoutViewModel? {
-            val activity: SoftLogoutActivity = (viewModelContext as ActivityViewModelContext).activity()
-            return activity.softLogoutViewModelFactory.create(state)
-        }
     }
-
-    private var currentTask: Cancelable? = null
 
     init {
         // Get the supported login flow
@@ -81,68 +74,49 @@ class SoftLogoutViewModel @AssistedInject constructor(
     }
 
     private fun getSupportedLoginFlow() {
-        currentTask?.cancel()
-        currentTask = null
-        authenticationService.cancelPendingLoginOrRegistration()
+        viewModelScope.launch {
+            authenticationService.cancelPendingLoginOrRegistration()
 
-        setState {
-            copy(
-                    asyncHomeServerLoginFlowRequest = Loading()
-            )
-        }
+            setState {
+                copy(
+                        asyncHomeServerLoginFlowRequest = Loading()
+                )
+            }
 
-        currentTask = authenticationService.getLoginFlowOfSession(session.sessionId, object : MatrixCallback<LoginFlowResult> {
-            override fun onFailure(failure: Throwable) {
+            val data = try {
+                authenticationService.getLoginFlowOfSession(session.sessionId)
+            } catch (failure: Throwable) {
                 setState {
                     copy(
                             asyncHomeServerLoginFlowRequest = Fail(failure)
                     )
                 }
+                null
             }
 
-            override fun onSuccess(data: LoginFlowResult) {
-                when (data) {
-                    is LoginFlowResult.Success            -> {
-                        val loginMode = when {
-                            // SSO login is taken first
-                            data.supportedLoginTypes.contains(LoginFlowTypes.SSO)      -> LoginMode.Sso
-                            data.supportedLoginTypes.contains(LoginFlowTypes.PASSWORD) -> LoginMode.Password
-                            else                                                       -> LoginMode.Unsupported
-                        }
+            data ?: return@launch
 
-                        if (loginMode == LoginMode.Password && !data.isLoginAndRegistrationSupported) {
-                            notSupported()
-                        } else {
-                            setState {
-                                copy(
-                                        asyncHomeServerLoginFlowRequest = Success(loginMode)
-                                )
-                            }
-                        }
-                    }
-                    is LoginFlowResult.OutdatedHomeserver -> {
-                        notSupported()
-                    }
-                }
+            val loginMode = when {
+                // SSO login is taken first
+                data.supportedLoginTypes.contains(LoginFlowTypes.SSO) &&
+                        data.supportedLoginTypes.contains(LoginFlowTypes.PASSWORD) -> LoginMode.SsoAndPassword(data.ssoIdentityProviders)
+                data.supportedLoginTypes.contains(LoginFlowTypes.SSO)              -> LoginMode.Sso(data.ssoIdentityProviders)
+                data.supportedLoginTypes.contains(LoginFlowTypes.PASSWORD)         -> LoginMode.Password
+                else                                                               -> LoginMode.Unsupported
             }
 
-            private fun notSupported() {
-                // Should not happen since it's a re-logout
-                // Notify the UI
-                setState {
-                    copy(
-                            asyncHomeServerLoginFlowRequest = Fail(IllegalStateException("Should not happen"))
-                    )
-                }
+            setState {
+                copy(
+                        asyncHomeServerLoginFlowRequest = Success(loginMode)
+                )
             }
-        })
+        }
     }
 
     override fun handle(action: SoftLogoutAction) {
         when (action) {
             is SoftLogoutAction.RetryLoginFlow  -> getSupportedLoginFlow()
             is SoftLogoutAction.PasswordChanged -> handlePasswordChange(action)
-            is SoftLogoutAction.TogglePassword  -> handleTogglePassword()
             is SoftLogoutAction.SignInAgain     -> handleSignInAgain(action)
             is SoftLogoutAction.WebLoginSuccess -> handleWebLoginSuccess(action)
             is SoftLogoutAction.ClearData       -> handleClearData()
@@ -158,18 +132,8 @@ class SoftLogoutViewModel @AssistedInject constructor(
         setState {
             copy(
                     asyncLoginAction = Uninitialized,
-                    submitEnabled = action.password.isNotBlank()
+                    enteredPassword = action.password
             )
-        }
-    }
-
-    private fun handleTogglePassword() {
-        withState {
-            setState {
-                copy(
-                        passwordShown = !this.passwordShown
-                )
-            }
         }
     }
 
@@ -188,22 +152,19 @@ class SoftLogoutViewModel @AssistedInject constructor(
                             asyncLoginAction = Loading()
                     )
                 }
-                currentTask = session.updateCredentials(action.credentials,
-                        object : MatrixCallback<Unit> {
-                            override fun onFailure(failure: Throwable) {
-                                _viewEvents.post(SoftLogoutViewEvents.Failure(failure))
-                                setState {
-                                    copy(
-                                            asyncLoginAction = Uninitialized
-                                    )
-                                }
-                            }
-
-                            override fun onSuccess(data: Unit) {
-                                onSessionRestored()
-                            }
+                viewModelScope.launch {
+                    try {
+                        session.updateCredentials(action.credentials)
+                        onSessionRestored()
+                    } catch (failure: Throwable) {
+                        _viewEvents.post(SoftLogoutViewEvents.Failure(failure))
+                        setState {
+                            copy(
+                                    asyncLoginAction = Uninitialized
+                            )
                         }
-                )
+                    }
+                }
             }
         }
     }
@@ -211,26 +172,21 @@ class SoftLogoutViewModel @AssistedInject constructor(
     private fun handleSignInAgain(action: SoftLogoutAction.SignInAgain) {
         setState {
             copy(
-                    asyncLoginAction = Loading(),
-                    // Ensure password is hidden
-                    passwordShown = false
+                    asyncLoginAction = Loading()
             )
         }
-        currentTask = session.signInAgain(action.password,
-                object : MatrixCallback<Unit> {
-                    override fun onFailure(failure: Throwable) {
-                        setState {
-                            copy(
-                                    asyncLoginAction = Fail(failure)
-                            )
-                        }
-                    }
-
-                    override fun onSuccess(data: Unit) {
-                        onSessionRestored()
-                    }
+        viewModelScope.launch {
+            try {
+                session.signInAgain(action.password)
+                onSessionRestored()
+            } catch (failure: Throwable) {
+                setState {
+                    copy(
+                            asyncLoginAction = Fail(failure)
+                    )
                 }
-        )
+            }
+        }
     }
 
     private fun onSessionRestored() {
@@ -244,11 +200,5 @@ class SoftLogoutViewModel @AssistedInject constructor(
                     asyncLoginAction = Success(Unit)
             )
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-
-        currentTask?.cancel()
     }
 }

@@ -15,23 +15,26 @@
  */
 package im.vector.app.features.crypto.verification.choose
 
-import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxState
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksState
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.app.core.di.HasScreenInjector
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.EntryPoints
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.SingletonEntryPoint
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.EmptyAction
 import im.vector.app.core.platform.EmptyViewEvents
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.features.crypto.verification.VerificationBottomSheet
-import im.vector.matrix.android.api.extensions.orFalse
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.crypto.verification.PendingVerificationRequest
-import im.vector.matrix.android.api.session.crypto.verification.QrCodeVerificationTransaction
-import im.vector.matrix.android.api.session.crypto.verification.VerificationService
-import im.vector.matrix.android.api.session.crypto.verification.VerificationTransaction
+import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.crypto.verification.PendingVerificationRequest
+import org.matrix.android.sdk.api.session.crypto.verification.QrCodeVerificationTransaction
+import org.matrix.android.sdk.api.session.crypto.verification.VerificationService
+import org.matrix.android.sdk.api.session.crypto.verification.VerificationTransaction
 
 data class VerificationChooseMethodViewState(
         val otherUserId: String = "",
@@ -39,15 +42,19 @@ data class VerificationChooseMethodViewState(
         val otherCanShowQrCode: Boolean = false,
         val otherCanScanQrCode: Boolean = false,
         val qrCodeText: String? = null,
-        val SASModeAvailable: Boolean = false,
+        val sasModeAvailable: Boolean = false,
         val isMe: Boolean = false,
         val canCrossSign: Boolean = false
-) : MvRxState
+) : MavericksState
 
 class VerificationChooseMethodViewModel @AssistedInject constructor(
         @Assisted initialState: VerificationChooseMethodViewState,
         private val session: Session
 ) : VectorViewModel<VerificationChooseMethodViewState, EmptyAction, EmptyViewEvents>(initialState), VerificationService.Listener {
+
+    init {
+        session.cryptoService().verificationService().addListener(this)
+    }
 
     override fun transactionCreated(tx: VerificationTransaction) {
         transactionUpdated(tx)
@@ -74,34 +81,21 @@ class VerificationChooseMethodViewModel @AssistedInject constructor(
             copy(
                     otherCanShowQrCode = pvr?.otherCanShowQrCode().orFalse(),
                     otherCanScanQrCode = pvr?.otherCanScanQrCode().orFalse(),
-                    SASModeAvailable = pvr?.isSasSupported().orFalse()
+                    sasModeAvailable = pvr?.isSasSupported().orFalse()
             )
         }
     }
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: VerificationChooseMethodViewState): VerificationChooseMethodViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<VerificationChooseMethodViewModel, VerificationChooseMethodViewState> {
+        override fun create(initialState: VerificationChooseMethodViewState): VerificationChooseMethodViewModel
     }
 
-    init {
-        session.cryptoService().verificationService().addListener(this)
-    }
+    companion object : MavericksViewModelFactory<VerificationChooseMethodViewModel, VerificationChooseMethodViewState> by hiltMavericksViewModelFactory() {
 
-    override fun onCleared() {
-        super.onCleared()
-        session.cryptoService().verificationService().removeListener(this)
-    }
-
-    companion object : MvRxViewModelFactory<VerificationChooseMethodViewModel, VerificationChooseMethodViewState> {
-        override fun create(viewModelContext: ViewModelContext, state: VerificationChooseMethodViewState): VerificationChooseMethodViewModel? {
-            val fragment: VerificationChooseMethodFragment = (viewModelContext as FragmentViewModelContext).fragment()
-            return fragment.verificationChooseMethodViewModelFactory.create(state)
-        }
-
-        override fun initialState(viewModelContext: ViewModelContext): VerificationChooseMethodViewState? {
+        override fun initialState(viewModelContext: ViewModelContext): VerificationChooseMethodViewState {
             val args: VerificationBottomSheet.VerificationArgs = viewModelContext.args()
-            val session = (viewModelContext.activity as HasScreenInjector).injector().activeSessionHolder().getActiveSession()
+            val session = EntryPoints.get(viewModelContext.app(), SingletonEntryPoint::class.java).activeSessionHolder().getActiveSession()
             val verificationService = session.cryptoService().verificationService()
             val pvr = verificationService.getExistingVerificationRequest(args.otherUserId, args.verificationId)
 
@@ -115,9 +109,14 @@ class VerificationChooseMethodViewModel @AssistedInject constructor(
                     otherCanShowQrCode = pvr?.otherCanShowQrCode().orFalse(),
                     otherCanScanQrCode = pvr?.otherCanScanQrCode().orFalse(),
                     qrCodeText = (qrCodeVerificationTransaction as? QrCodeVerificationTransaction)?.qrCodeText,
-                    SASModeAvailable = pvr?.isSasSupported().orFalse()
+                    sasModeAvailable = pvr?.isSasSupported().orFalse()
             )
         }
+    }
+
+    override fun onCleared() {
+        session.cryptoService().verificationService().removeListener(this)
+        super.onCleared()
     }
 
     override fun handle(action: EmptyAction) {}

@@ -18,16 +18,17 @@
 package im.vector.app.features.roommemberprofile
 
 import com.airbnb.mvrx.Async
-import com.airbnb.mvrx.MvRxState
+import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.Uninitialized
-import im.vector.matrix.android.api.session.crypto.crosssigning.MXCrossSigningInfo
-import im.vector.matrix.android.api.session.room.model.Membership
-import im.vector.matrix.android.api.session.room.model.PowerLevelsContent
-import im.vector.matrix.android.api.util.MatrixItem
+import org.matrix.android.sdk.api.session.crypto.crosssigning.MXCrossSigningInfo
+import org.matrix.android.sdk.api.session.room.model.Membership
+import org.matrix.android.sdk.api.session.room.model.PowerLevelsContent
+import org.matrix.android.sdk.api.util.MatrixItem
 
 data class RoomMemberProfileViewState(
         val userId: String,
         val roomId: String?,
+        val isSpace: Boolean = false,
         val showAsMember: Boolean = false,
         val isMine: Boolean = false,
         val isIgnored: Async<Boolean> = Uninitialized,
@@ -39,8 +40,9 @@ data class RoomMemberProfileViewState(
         val allDevicesAreTrusted: Boolean = false,
         val allDevicesAreCrossSignedTrusted: Boolean = false,
         val asyncMembership: Async<Membership> = Uninitialized,
+        val hasReadReceipt: Boolean = false,
         val actionPermissions: ActionPermissions = ActionPermissions()
-) : MvRxState {
+) : MavericksState {
 
     constructor(args: RoomMemberProfileArgs) : this(userId = args.userId, roomId = args.roomId)
 }

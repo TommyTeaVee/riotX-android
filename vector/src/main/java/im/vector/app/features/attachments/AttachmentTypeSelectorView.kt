@@ -18,10 +18,8 @@ package im.vector.app.features.attachments
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
-import android.os.Build
 import android.util.Pair
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -32,7 +30,6 @@ import android.view.animation.AnimationSet
 import android.view.animation.OvershootInterpolator
 import android.view.animation.ScaleAnimation
 import android.view.animation.TranslateAnimation
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.PopupWindow
@@ -44,7 +41,7 @@ import im.vector.app.core.extensions.getMeasurements
 import im.vector.app.core.utils.PERMISSIONS_EMPTY
 import im.vector.app.core.utils.PERMISSIONS_FOR_PICKING_CONTACT
 import im.vector.app.core.utils.PERMISSIONS_FOR_TAKING_PHOTO
-import im.vector.app.core.utils.PERMISSIONS_FOR_WRITING_FILES
+import im.vector.app.databinding.ViewAttachmentTypeSelectorBinding
 import im.vector.app.features.attachments.AttachmentTypeSelectorView.Callback
 import kotlin.math.max
 
@@ -56,8 +53,8 @@ private const val ANIMATION_DURATION = 250
  */
 class AttachmentTypeSelectorView(context: Context,
                                  inflater: LayoutInflater,
-                                 var callback: Callback?)
-    : PopupWindow(context) {
+                                 var callback: Callback?) :
+    PopupWindow(context) {
 
     interface Callback {
         fun onTypeSelected(type: Type)
@@ -65,25 +62,19 @@ class AttachmentTypeSelectorView(context: Context,
 
     private val iconColorGenerator = ColorGenerator.MATERIAL
 
-    private var galleryButton: ImageButton
-    private var cameraButton: ImageButton
-    private var fileButton: ImageButton
-    private var stickersButton: ImageButton
-    private var audioButton: ImageButton
-    private var contactButton: ImageButton
+    private val views: ViewAttachmentTypeSelectorBinding
 
     private var anchor: View? = null
 
     init {
-        val root = FrameLayout(context)
-        val layout = inflater.inflate(R.layout.view_attachment_type_selector, root, true)
-        galleryButton = layout.findViewById<ImageButton>(R.id.attachmentGalleryButton).configure(Type.GALLERY)
-        cameraButton = layout.findViewById<ImageButton>(R.id.attachmentCameraButton).configure(Type.CAMERA)
-        fileButton = layout.findViewById<ImageButton>(R.id.attachmentFileButton).configure(Type.FILE)
-        stickersButton = layout.findViewById<ImageButton>(R.id.attachmentStickersButton).configure(Type.STICKER)
-        audioButton = layout.findViewById<ImageButton>(R.id.attachmentAudioButton).configure(Type.AUDIO)
-        contactButton = layout.findViewById<ImageButton>(R.id.attachmentContactButton).configure(Type.CONTACT)
-        contentView = root
+        contentView = inflater.inflate(R.layout.view_attachment_type_selector, null, false)
+        views = ViewAttachmentTypeSelectorBinding.bind(contentView)
+        views.attachmentGalleryButton.configure(Type.GALLERY)
+        views.attachmentCameraButton.configure(Type.CAMERA)
+        views.attachmentFileButton.configure(Type.FILE)
+        views.attachmentStickersButton.configure(Type.STICKER)
+        views.attachmentAudioButton.configure(Type.AUDIO)
+        views.attachmentContactButton.configure(Type.CONTACT)
         width = LinearLayout.LayoutParams.MATCH_PARENT
         height = LinearLayout.LayoutParams.WRAP_CONTENT
         animationStyle = 0
@@ -109,25 +100,19 @@ class AttachmentTypeSelectorView(context: Context,
             showAtLocation(anchor, Gravity.NO_GRAVITY, 0, anchorCoordinates[1] - contentViewHeight)
         }
         contentView.doOnNextLayout {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                animateWindowInCircular(anchor, contentView)
-            } else {
-                animateWindowInTranslate(contentView)
-            }
+            animateWindowInCircular(anchor, contentView)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            animateButtonIn(galleryButton, ANIMATION_DURATION / 2)
-            animateButtonIn(cameraButton, ANIMATION_DURATION / 2)
-            animateButtonIn(fileButton, ANIMATION_DURATION / 4)
-            animateButtonIn(audioButton, ANIMATION_DURATION / 2)
-            animateButtonIn(contactButton, ANIMATION_DURATION / 4)
-            animateButtonIn(stickersButton, 0)
-        }
+        animateButtonIn(views.attachmentGalleryButton, ANIMATION_DURATION / 2)
+        animateButtonIn(views.attachmentCameraButton, ANIMATION_DURATION / 4)
+        animateButtonIn(views.attachmentFileButton, ANIMATION_DURATION / 2)
+        animateButtonIn(views.attachmentAudioButton, 0)
+        animateButtonIn(views.attachmentContactButton, ANIMATION_DURATION / 4)
+        animateButtonIn(views.attachmentStickersButton, ANIMATION_DURATION / 2)
     }
 
     override fun dismiss() {
         val capturedAnchor = anchor
-        if (capturedAnchor != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (capturedAnchor != null) {
             animateWindowOutCircular(capturedAnchor, contentView)
         } else {
             animateWindowOutTranslate(contentView)
@@ -144,7 +129,6 @@ class AttachmentTypeSelectorView(context: Context,
         button.startAnimation(animation)
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private fun animateWindowInCircular(anchor: View, contentView: View) {
         val coordinates = getClickCoordinates(anchor, contentView)
         val animator = ViewAnimationUtils.createCircularReveal(contentView,
@@ -162,7 +146,6 @@ class AttachmentTypeSelectorView(context: Context,
         getContentView().startAnimation(animation)
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private fun animateWindowOutCircular(anchor: View, contentView: View) {
         val coordinates = getClickCoordinates(anchor, contentView)
         val animator = ViewAnimationUtils.createCircularReveal(getContentView(),
@@ -223,12 +206,12 @@ class AttachmentTypeSelectorView(context: Context,
     /**
      * The all possible types to pick with their required permissions.
      */
-    enum class Type(val permissionsBit: Int) {
+    enum class Type(val permissions: List<String>) {
         CAMERA(PERMISSIONS_FOR_TAKING_PHOTO),
-        GALLERY(PERMISSIONS_FOR_WRITING_FILES),
-        FILE(PERMISSIONS_FOR_WRITING_FILES),
+        GALLERY(PERMISSIONS_EMPTY),
+        FILE(PERMISSIONS_EMPTY),
         STICKER(PERMISSIONS_EMPTY),
-        AUDIO(PERMISSIONS_FOR_WRITING_FILES),
+        AUDIO(PERMISSIONS_EMPTY),
         CONTACT(PERMISSIONS_FOR_PICKING_CONTACT)
     }
 }

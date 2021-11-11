@@ -17,14 +17,12 @@
 package im.vector.app.features.home.room.detail.timeline.action
 
 import com.airbnb.mvrx.Async
-import com.airbnb.mvrx.MvRxState
+import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.Uninitialized
 import im.vector.app.core.extensions.canReact
 import im.vector.app.features.home.room.detail.timeline.item.MessageInformationData
-import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import org.matrix.android.sdk.api.session.room.send.SendState
+import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
 
 /**
  * Quick reactions state
@@ -52,15 +50,13 @@ data class MessageActionState(
         val actions: List<EventSharedAction> = emptyList(),
         val expendedReportContentMenu: Boolean = false,
         val actionPermissions: ActionPermissions = ActionPermissions()
-) : MvRxState {
+) : MavericksState {
 
     constructor(args: TimelineEventFragmentArgs) : this(roomId = args.roomId, eventId = args.eventId, informationData = args.informationData)
 
-    private val dateFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm", Locale.getDefault())
-
     fun senderName(): String = informationData.memberName?.toString() ?: ""
 
-    fun time(): String? = timelineEvent()?.root?.originServerTs?.let { dateFormat.format(Date(it)) } ?: ""
-
     fun canReact() = timelineEvent()?.canReact() == true && actionPermissions.canReact
+
+    fun sendState(): SendState? = timelineEvent()?.root?.sendState
 }

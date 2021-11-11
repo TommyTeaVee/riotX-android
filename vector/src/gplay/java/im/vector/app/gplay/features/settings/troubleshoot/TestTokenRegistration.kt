@@ -15,29 +15,31 @@
  */
 package im.vector.app.gplay.features.settings.troubleshoot
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import im.vector.matrix.android.api.session.pushers.PusherState
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.pushers.PushersManager
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.settings.troubleshoot.TroubleshootTest
 import im.vector.app.push.fcm.FcmHelper
+import org.matrix.android.sdk.api.session.pushers.PusherState
 import javax.inject.Inject
 
 /**
  * Force registration of the token to HomeServer
  */
-class TestTokenRegistration @Inject constructor(private val context: AppCompatActivity,
+class TestTokenRegistration @Inject constructor(private val context: FragmentActivity,
                                                 private val stringProvider: StringProvider,
                                                 private val pushersManager: PushersManager,
-                                                private val activeSessionHolder: ActiveSessionHolder)
-    : TroubleshootTest(R.string.settings_troubleshoot_test_token_registration_title) {
+                                                private val activeSessionHolder: ActiveSessionHolder) :
+    TroubleshootTest(R.string.settings_troubleshoot_test_token_registration_title) {
 
-    override fun perform() {
+    override fun perform(activityResultLauncher: ActivityResultLauncher<Intent>) {
         // Check if we have a registered pusher for this token
         val fcmToken = FcmHelper.getFcmToken(context) ?: run {
             status = TestStatus.FAILED
@@ -55,13 +57,13 @@ class TestTokenRegistration @Inject constructor(private val context: AppCompatAc
                     stringProvider.getString(R.string.sas_error_unknown))
             quickFix = object : TroubleshootQuickFix(R.string.settings_troubleshoot_test_token_registration_quick_fix) {
                 override fun doFix() {
-                    val workId = pushersManager.registerPusherWithFcmKey(fcmToken)
+                    val workId = pushersManager.enqueueRegisterPusherWithFcmKey(fcmToken)
                     WorkManager.getInstance(context).getWorkInfoByIdLiveData(workId).observe(context, Observer { workInfo ->
                         if (workInfo != null) {
                             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-                                manager?.retry()
+                                manager?.retry(activityResultLauncher)
                             } else if (workInfo.state == WorkInfo.State.FAILED) {
-                                manager?.retry()
+                                manager?.retry(activityResultLauncher)
                             }
                         }
                     })

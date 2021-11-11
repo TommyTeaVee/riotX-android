@@ -22,9 +22,7 @@ import android.widget.TextView
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
 import im.vector.app.R
-import im.vector.app.core.utils.DebouncedClickListener
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 
 @EpoxyModelClass(layout = R.layout.item_timeline_event_base_noinfo)
 abstract class DefaultItem : BaseEventItem<DefaultItem.Holder>() {
@@ -32,16 +30,16 @@ abstract class DefaultItem : BaseEventItem<DefaultItem.Holder>() {
     @EpoxyAttribute
     lateinit var attributes: Attributes
 
-    private val _readReceiptsClickListener = DebouncedClickListener(View.OnClickListener {
-        attributes.readReceiptsCallback?.onReadReceiptsClicked(attributes.informationData.readReceipts)
-    })
-
     override fun bind(holder: Holder) {
         super.bind(holder)
         holder.messageTextView.text = attributes.text
         attributes.avatarRenderer.render(attributes.informationData.matrixItem, holder.avatarImageView)
         holder.view.setOnLongClickListener(attributes.itemLongClickListener)
-        holder.readReceiptsView.render(attributes.informationData.readReceipts, attributes.avatarRenderer, _readReceiptsClickListener)
+    }
+
+    override fun unbind(holder: Holder) {
+        attributes.avatarRenderer.clear(holder.avatarImageView)
+        super.unbind(holder)
     }
 
     override fun getEventIds(): List<String> {
@@ -59,8 +57,7 @@ abstract class DefaultItem : BaseEventItem<DefaultItem.Holder>() {
             val avatarRenderer: AvatarRenderer,
             val informationData: MessageInformationData,
             val text: CharSequence,
-            val itemLongClickListener: View.OnLongClickListener? = null,
-            val readReceiptsCallback: TimelineEventController.ReadReceiptsCallback? = null
+            val itemLongClickListener: View.OnLongClickListener? = null
     )
 
     companion object {

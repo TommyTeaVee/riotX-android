@@ -16,10 +16,9 @@
 
 package im.vector.app.features.widgets.permissions
 
-import im.vector.matrix.android.api.query.QueryStringValue
-import im.vector.matrix.android.api.session.integrationmanager.IntegrationManagerService
-import im.vector.matrix.android.api.session.widgets.WidgetService
-import im.vector.matrix.android.internal.util.awaitCallback
+import org.matrix.android.sdk.api.query.QueryStringValue
+import org.matrix.android.sdk.api.session.integrationmanager.IntegrationManagerService
+import org.matrix.android.sdk.api.session.widgets.WidgetService
 
 class WidgetPermissionsHelper(private val integrationManagerService: IntegrationManagerService,
                               private val widgetService: WidgetService) {
@@ -30,8 +29,6 @@ class WidgetPermissionsHelper(private val integrationManagerService: Integration
                 widgetId = QueryStringValue.Equals(widgetId, QueryStringValue.Case.SENSITIVE)
         ).firstOrNull()
         val eventId = widget?.event?.eventId ?: return
-        awaitCallback<Unit> {
-            integrationManagerService.setWidgetAllowed(eventId, allow, it)
-        }
+        integrationManagerService.setWidgetAllowed(eventId, allow)
     }
 }

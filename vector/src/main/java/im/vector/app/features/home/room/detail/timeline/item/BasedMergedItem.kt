@@ -19,11 +19,9 @@ package im.vector.app.features.home.room.detail.timeline.item
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.IdRes
-import androidx.core.view.isVisible
 import im.vector.app.R
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.app.features.home.room.detail.timeline.TimelineEventController
-import im.vector.matrix.android.api.util.MatrixItem
+import org.matrix.android.sdk.api.util.MatrixItem
 
 abstract class BasedMergedItem<H : BasedMergedItem.Holder> : BaseEventItem<H>() {
 
@@ -41,8 +39,6 @@ abstract class BasedMergedItem<H : BasedMergedItem.Holder> : BaseEventItem<H>() 
             holder.separatorView.visibility = View.VISIBLE
             holder.expandView.setText(R.string.merged_events_collapse)
         }
-        // No read receipt for this item
-        holder.readReceiptsView.isVisible = false
     }
 
     protected val distinctMergeData by lazy {
@@ -62,7 +58,8 @@ abstract class BasedMergedItem<H : BasedMergedItem.Holder> : BaseEventItem<H>() 
             val eventId: String,
             val userId: String,
             val memberName: String,
-            val avatarUrl: String?
+            val avatarUrl: String?,
+            val isDirectRoom: Boolean
     )
 
     fun Data.toMatrixItem() = MatrixItem.UserItem(userId, memberName, avatarUrl)
@@ -71,7 +68,6 @@ abstract class BasedMergedItem<H : BasedMergedItem.Holder> : BaseEventItem<H>() 
         val isCollapsed: Boolean
         val mergeData: List<Data>
         val avatarRenderer: AvatarRenderer
-        val readReceiptsCallback: TimelineEventController.ReadReceiptsCallback?
         val onCollapsedStateChanged: (Boolean) -> Unit
     }
 

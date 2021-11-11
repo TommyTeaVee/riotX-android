@@ -18,7 +18,7 @@
 package im.vector.app.features.home.room.list
 
 import im.vector.app.core.platform.VectorViewEvents
-import im.vector.matrix.android.api.session.room.model.RoomSummary
+import org.matrix.android.sdk.api.session.room.model.RoomSummary
 
 /**
  * Transient events for RoomList
@@ -29,4 +29,5 @@ sealed class RoomListViewEvents : VectorViewEvents {
 
     data class SelectRoom(val roomSummary: RoomSummary) : RoomListViewEvents()
     object Done : RoomListViewEvents()
+    data class NavigateToMxToBottomSheet(val link: String) : RoomListViewEvents()
 }

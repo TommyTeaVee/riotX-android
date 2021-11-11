@@ -16,8 +16,8 @@
 package im.vector.app.features.terms
 
 import android.os.Parcelable
-import im.vector.matrix.android.api.session.terms.TermsService
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
+import org.matrix.android.sdk.api.session.terms.TermsService
 
 @Parcelize
 data class ServiceTermsArgs(

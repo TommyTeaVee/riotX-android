@@ -18,12 +18,13 @@ package im.vector.app.features.roomprofile.uploads.files
 
 import com.airbnb.epoxy.TypedEpoxyController
 import com.airbnb.epoxy.VisibilityState
-import im.vector.matrix.android.api.session.room.uploads.UploadEvent
 import im.vector.app.R
+import im.vector.app.core.date.DateFormatKind
 import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.core.epoxy.loadingItem
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.roomprofile.uploads.RoomUploadsViewState
+import org.matrix.android.sdk.api.session.room.uploads.UploadEvent
 import javax.inject.Inject
 
 class UploadsFileController @Inject constructor(
@@ -48,16 +49,17 @@ class UploadsFileController @Inject constructor(
 
     override fun buildModels(data: RoomUploadsViewState?) {
         data ?: return
+        val host = this
 
         buildFileItems(data.fileEvents)
 
         if (data.hasMore) {
             loadingItem {
                 // Always use a different id, because we can be notified several times of visibility state changed
-                id("loadMore${idx++}")
+                id("loadMore${host.idx++}")
                 onVisibilityStateChanged { _, _, visibilityState ->
                     if (visibilityState == VisibilityState.VISIBLE) {
-                        listener?.loadMore()
+                        host.listener?.loadMore()
                     }
                 }
             }
@@ -65,24 +67,25 @@ class UploadsFileController @Inject constructor(
     }
 
     private fun buildFileItems(fileEvents: List<UploadEvent>) {
+        val host = this
         fileEvents.forEach { uploadEvent ->
             uploadsFileItem {
                 id(uploadEvent.eventId)
                 title(uploadEvent.contentWithAttachmentContent.body)
-                subtitle(stringProvider.getString(R.string.uploads_files_subtitle,
+                subtitle(host.stringProvider.getString(R.string.uploads_files_subtitle,
                         uploadEvent.senderInfo.disambiguatedDisplayName,
-                        dateFormatter.formatRelativeDateTime(uploadEvent.root.originServerTs)))
+                        host.dateFormatter.format(uploadEvent.root.originServerTs, DateFormatKind.DEFAULT_DATE_AND_TIME)))
                 listener(object : UploadsFileItem.Listener {
                     override fun onItemClicked() {
-                        listener?.onOpenClicked(uploadEvent)
+                        host.listener?.onOpenClicked(uploadEvent)
                     }
 
                     override fun onDownloadClicked() {
-                        listener?.onDownloadClicked(uploadEvent)
+                        host.listener?.onDownloadClicked(uploadEvent)
                     }
 
                     override fun onShareClicked() {
-                        listener?.onShareClicked(uploadEvent)
+                        host.listener?.onShareClicked(uploadEvent)
                     }
                 })
             }

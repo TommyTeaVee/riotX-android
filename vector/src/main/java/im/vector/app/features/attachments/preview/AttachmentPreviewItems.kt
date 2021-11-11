@@ -18,6 +18,7 @@ package im.vector.app.features.attachments.preview
 
 import android.view.View
 import android.widget.ImageView
+import androidx.core.view.isVisible
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
 import com.bumptech.glide.Glide
@@ -26,7 +27,7 @@ import im.vector.app.R
 import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.core.platform.CheckableImageView
-import im.vector.matrix.android.api.session.content.ContentAttachmentData
+import org.matrix.android.sdk.api.session.content.ContentAttachmentData
 
 abstract class AttachmentPreviewItem<H : AttachmentPreviewItem.Holder> : VectorEpoxyModel<H>() {
 
@@ -55,14 +56,17 @@ abstract class AttachmentPreviewItem<H : AttachmentPreviewItem.Holder> : VectorE
 abstract class AttachmentMiniaturePreviewItem : AttachmentPreviewItem<AttachmentMiniaturePreviewItem.Holder>() {
 
     @EpoxyAttribute override lateinit var attachment: ContentAttachmentData
+
     @EpoxyAttribute
     var clickListener: View.OnClickListener? = null
+
     @EpoxyAttribute
     var checked: Boolean = false
 
     override fun bind(holder: Holder) {
         super.bind(holder)
         holder.imageView.isChecked = checked
+        holder.miniatureVideoIndicator.isVisible = attachment.type == ContentAttachmentData.Type.VIDEO
         holder.view.setOnClickListener(clickListener)
     }
 
@@ -70,6 +74,7 @@ abstract class AttachmentMiniaturePreviewItem : AttachmentPreviewItem<Attachment
         override val imageView: CheckableImageView
             get() = miniatureImageView
         private val miniatureImageView by bind<CheckableImageView>(R.id.attachmentMiniatureImageView)
+        val miniatureVideoIndicator by bind<ImageView>(R.id.attachmentMiniatureVideoIndicator)
     }
 }
 

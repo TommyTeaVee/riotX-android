@@ -17,9 +17,9 @@
 package im.vector.app.features.share
 
 import com.airbnb.mvrx.Async
-import com.airbnb.mvrx.MvRxState
+import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.Uninitialized
-import im.vector.matrix.android.api.session.room.model.RoomSummary
+import org.matrix.android.sdk.api.session.room.model.RoomSummary
 
 data class IncomingShareViewState(
         val sharedData: SharedData? = null,
@@ -27,4 +27,4 @@ data class IncomingShareViewState(
         val filteredRoomSummaries: Async<List<RoomSummary>> = Uninitialized,
         val selectedRoomIds: Set<String> = emptySet(),
         val isInMultiSelectionMode: Boolean = false
-) : MvRxState
+) : MavericksState

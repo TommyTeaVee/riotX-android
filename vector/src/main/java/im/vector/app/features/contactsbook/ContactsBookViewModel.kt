@@ -16,60 +16,39 @@
 
 package im.vector.app.features.contactsbook
 
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
-import com.airbnb.mvrx.ActivityViewModelContext
-import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.Loading
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.Success
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import im.vector.app.core.contacts.ContactsDataSource
 import im.vector.app.core.contacts.MappedContact
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.EmptyViewEvents
 import im.vector.app.core.platform.VectorViewModel
-import im.vector.app.features.createdirect.CreateDirectRoomActivity
-import im.vector.app.features.invite.InviteUsersToRoomActivity
-import im.vector.matrix.android.api.MatrixCallback
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.identity.FoundThreePid
-import im.vector.matrix.android.api.session.identity.ThreePid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.identity.IdentityServiceError
+import org.matrix.android.sdk.api.session.identity.ThreePid
 import timber.log.Timber
 
-private typealias PhoneBookSearch = String
-
 class ContactsBookViewModel @AssistedInject constructor(@Assisted
-                                                     initialState: ContactsBookViewState,
+                                                        initialState: ContactsBookViewState,
                                                         private val contactsDataSource: ContactsDataSource,
-                                                        private val session: Session)
-    : VectorViewModel<ContactsBookViewState, ContactsBookAction, EmptyViewEvents>(initialState) {
+                                                        private val session: Session) :
+    VectorViewModel<ContactsBookViewState, ContactsBookAction, EmptyViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: ContactsBookViewState): ContactsBookViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<ContactsBookViewModel, ContactsBookViewState> {
+        override fun create(initialState: ContactsBookViewState): ContactsBookViewModel
     }
 
-    companion object : MvRxViewModelFactory<ContactsBookViewModel, ContactsBookViewState> {
-
-        override fun create(viewModelContext: ViewModelContext, state: ContactsBookViewState): ContactsBookViewModel? {
-            return when (viewModelContext) {
-                is FragmentViewModelContext -> (viewModelContext.fragment() as ContactsBookFragment).contactsBookViewModelFactory.create(state)
-                is ActivityViewModelContext -> {
-                    when (viewModelContext.activity<FragmentActivity>()) {
-                        is CreateDirectRoomActivity  -> viewModelContext.activity<CreateDirectRoomActivity>().contactsBookViewModelFactory.create(state)
-                        is InviteUsersToRoomActivity -> viewModelContext.activity<InviteUsersToRoomActivity>().contactsBookViewModelFactory.create(state)
-                        else                         -> error("Wrong activity or fragment")
-                    }
-                }
-                else                        -> error("Wrong activity or fragment")
-            }
-        }
-    }
+    companion object : MavericksViewModelFactory<ContactsBookViewModel, ContactsBookViewState> by hiltMavericksViewModelFactory()
 
     private var allContacts: List<MappedContact> = emptyList()
     private var mappedContacts: List<MappedContact> = emptyList()
@@ -77,7 +56,7 @@ class ContactsBookViewModel @AssistedInject constructor(@Assisted
     init {
         loadContacts()
 
-        selectSubscribe(ContactsBookViewState::searchTerm, ContactsBookViewState::onlyBoundContacts) { _, _ ->
+        onEach(ContactsBookViewState::searchTerm, ContactsBookViewState::onlyBoundContacts) { _, _ ->
             updateFilteredMappedContacts()
         }
     }
@@ -85,7 +64,9 @@ class ContactsBookViewModel @AssistedInject constructor(@Assisted
     private fun loadContacts() {
         setState {
             copy(
-                    mappedContacts = Loading()
+                    mappedContacts = Loading(),
+                    identityServerUrl = session.identityService().getCurrentIdentityServerUrl(),
+                    userConsent = session.identityService().getUserConsent()
             )
         }
 
@@ -108,47 +89,56 @@ class ContactsBookViewModel @AssistedInject constructor(@Assisted
         }
     }
 
-    private fun performLookup(data: List<MappedContact>) {
+    private fun performLookup(contacts: List<MappedContact>) {
+        if (!session.identityService().getUserConsent()) {
+            return
+        }
         viewModelScope.launch {
-            val threePids = data.flatMap { contact ->
+            val threePids = contacts.flatMap { contact ->
                 contact.emails.map { ThreePid.Email(it.email) } +
                         contact.msisdns.map { ThreePid.Msisdn(it.phoneNumber) }
             }
-            session.identityService().lookUp(threePids, object : MatrixCallback<List<FoundThreePid>> {
-                override fun onFailure(failure: Throwable) {
-                    // Ignore
-                    Timber.w(failure, "Unable to perform the lookup")
-                }
 
-                override fun onSuccess(data: List<FoundThreePid>) {
-                    mappedContacts = allContacts.map { contactModel ->
-                        contactModel.copy(
-                                emails = contactModel.emails.map { email ->
-                                    email.copy(
-                                            matrixId = data
-                                                    .firstOrNull { foundThreePid -> foundThreePid.threePid.value == email.email }
-                                                    ?.matrixId
-                                    )
-                                },
-                                msisdns = contactModel.msisdns.map { msisdn ->
-                                    msisdn.copy(
-                                            matrixId = data
-                                                    .firstOrNull { foundThreePid -> foundThreePid.threePid.value == msisdn.phoneNumber }
-                                                    ?.matrixId
-                                    )
-                                }
-                        )
-                    }
+            val data = try {
+                session.identityService().lookUp(threePids)
+            } catch (failure: Throwable) {
+                Timber.w(failure, "Unable to perform the lookup")
 
+                // Should not happen, but just to be sure
+                if (failure is IdentityServiceError.UserConsentNotProvided) {
                     setState {
-                        copy(
-                                isBoundRetrieved = true
-                        )
+                        copy(userConsent = false)
                     }
-
-                    updateFilteredMappedContacts()
                 }
-            })
+                return@launch
+            }
+
+            mappedContacts = allContacts.map { contactModel ->
+                contactModel.copy(
+                        emails = contactModel.emails.map { email ->
+                            email.copy(
+                                    matrixId = data
+                                            .firstOrNull { foundThreePid -> foundThreePid.threePid.value == email.email }
+                                            ?.matrixId
+                            )
+                        },
+                        msisdns = contactModel.msisdns.map { msisdn ->
+                            msisdn.copy(
+                                    matrixId = data
+                                            .firstOrNull { foundThreePid -> foundThreePid.threePid.value == msisdn.phoneNumber }
+                                            ?.matrixId
+                            )
+                        }
+                )
+            }
+
+            setState {
+                copy(
+                        isBoundRetrieved = true
+                )
+            }
+
+            updateFilteredMappedContacts()
         }
     }
 
@@ -156,8 +146,8 @@ class ContactsBookViewModel @AssistedInject constructor(@Assisted
         val filteredMappedContacts = mappedContacts
                 .filter { it.displayName.contains(state.searchTerm, true) }
                 .filter { contactModel ->
-                    !state.onlyBoundContacts
-                            || contactModel.emails.any { it.matrixId != null } || contactModel.msisdns.any { it.matrixId != null }
+                    !state.onlyBoundContacts ||
+                            contactModel.emails.any { it.matrixId != null } || contactModel.msisdns.any { it.matrixId != null }
                 }
 
         setState {
@@ -171,7 +161,19 @@ class ContactsBookViewModel @AssistedInject constructor(@Assisted
         when (action) {
             is ContactsBookAction.FilterWith        -> handleFilterWith(action)
             is ContactsBookAction.OnlyBoundContacts -> handleOnlyBoundContacts(action)
+            ContactsBookAction.UserConsentGranted   -> handleUserConsentGranted()
         }.exhaustive
+    }
+
+    private fun handleUserConsentGranted() {
+        session.identityService().setUserConsent(true)
+
+        setState {
+            copy(userConsent = true)
+        }
+
+        // Perform the lookup
+        performLookup(allContacts)
     }
 
     private fun handleOnlyBoundContacts(action: ContactsBookAction.OnlyBoundContacts) {

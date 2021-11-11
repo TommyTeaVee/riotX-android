@@ -15,23 +15,27 @@
  */
 package im.vector.app.features.notifications
 
-import androidx.core.app.NotificationCompat
 import im.vector.app.BuildConfig
 import im.vector.app.R
 import im.vector.app.core.resources.StringProvider
+import im.vector.app.features.displayname.getBestName
 import im.vector.app.features.home.room.detail.timeline.format.DisplayableEventFormatter
 import im.vector.app.features.home.room.detail.timeline.format.NoticeEventFormatter
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.content.ContentUrlResolver
-import im.vector.matrix.android.api.session.crypto.MXCryptoError
-import im.vector.matrix.android.api.session.events.model.Event
-import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.events.model.toModel
-import im.vector.matrix.android.api.session.room.model.Membership
-import im.vector.matrix.android.api.session.room.model.RoomMemberContent
-import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
-import im.vector.matrix.android.api.session.room.timeline.getEditedEventId
-import im.vector.matrix.android.internal.crypto.algorithms.olm.OlmDecryptionResult
+import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.content.ContentUrlResolver
+import org.matrix.android.sdk.api.session.crypto.MXCryptoError
+import org.matrix.android.sdk.api.session.events.model.Event
+import org.matrix.android.sdk.api.session.events.model.EventType
+import org.matrix.android.sdk.api.session.events.model.isEdition
+import org.matrix.android.sdk.api.session.events.model.toModel
+import org.matrix.android.sdk.api.session.room.model.Membership
+import org.matrix.android.sdk.api.session.room.model.RoomMemberContent
+import org.matrix.android.sdk.api.session.room.sender.SenderInfo
+import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
+import org.matrix.android.sdk.api.session.room.timeline.getEditedEventId
+import org.matrix.android.sdk.api.util.toMatrixItem
+import org.matrix.android.sdk.internal.crypto.algorithms.olm.OlmDecryptionResult
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -42,33 +46,32 @@ import javax.inject.Inject
  * The NotifiableEventResolver is the only aware of session/store, the NotificationDrawerManager has no knowledge of that,
  * this pattern allow decoupling between the object responsible of displaying notifications and the matrix sdk.
  */
-class NotifiableEventResolver @Inject constructor(private val stringProvider: StringProvider,
-                                                  private val noticeEventFormatter: NoticeEventFormatter,
-                                                  private val displayableEventFormatter: DisplayableEventFormatter) {
+class NotifiableEventResolver @Inject constructor(
+        private val stringProvider: StringProvider,
+        private val noticeEventFormatter: NoticeEventFormatter,
+        private val displayableEventFormatter: DisplayableEventFormatter) {
 
     // private val eventDisplay = RiotEventDisplay(context)
 
-    fun resolveEvent(event: Event/*, roomState: RoomState?, bingRule: PushRule?*/, session: Session): NotifiableEvent? {
+    fun resolveEvent(event: Event/*, roomState: RoomState?, bingRule: PushRule?*/, session: Session, isNoisy: Boolean): NotifiableEvent? {
         val roomID = event.roomId ?: return null
         val eventId = event.eventId ?: return null
         if (event.getClearType() == EventType.STATE_ROOM_MEMBER) {
-            return resolveStateRoomEvent(event, session)
+            return resolveStateRoomEvent(event, session, canBeReplaced = false, isNoisy = isNoisy)
         }
         val timelineEvent = session.getRoom(roomID)?.getTimeLineEvent(eventId) ?: return null
         when (event.getClearType()) {
             EventType.MESSAGE   -> {
-                return resolveMessageEvent(timelineEvent, session)
+                return resolveMessageEvent(timelineEvent, session, canBeReplaced = false, isNoisy = isNoisy)
             }
             EventType.ENCRYPTED -> {
-                val messageEvent = resolveMessageEvent(timelineEvent, session)
-                messageEvent?.lockScreenVisibility = NotificationCompat.VISIBILITY_PRIVATE
-                return messageEvent
+                return resolveMessageEvent(timelineEvent, session, canBeReplaced = false, isNoisy = isNoisy)
             }
             else                -> {
                 // If the event can be displayed, display it as is
                 Timber.w("NotifiableEventResolver Received an unsupported event matching a bing rule")
                 // TODO Better event text display
-                val bodyPreview = event.type
+                val bodyPreview = event.type ?: EventType.MISSING_TYPE
 
                 return SimpleNotifiableEvent(
                         session.myUserId,
@@ -79,35 +82,68 @@ class NotifiableEventResolver @Inject constructor(private val stringProvider: St
                         description = bodyPreview,
                         title = stringProvider.getString(R.string.notification_unknown_new_event),
                         soundName = null,
-                        type = event.type)
+                        type = event.type,
+                        canBeReplaced = false
+                )
             }
         }
     }
 
-    private fun resolveMessageEvent(event: TimelineEvent, session: Session): NotifiableEvent? {
+    fun resolveInMemoryEvent(session: Session, event: Event, canBeReplaced: Boolean): NotifiableEvent? {
+        if (event.getClearType() != EventType.MESSAGE) return null
+
+        // Ignore message edition
+        if (event.isEdition()) return null
+
+        val actions = session.getActions(event)
+        val notificationAction = actions.toNotificationAction()
+
+        return if (notificationAction.shouldNotify) {
+            val user = session.getUser(event.senderId!!) ?: return null
+
+            val timelineEvent = TimelineEvent(
+                    root = event,
+                    localId = -1,
+                    eventId = event.eventId!!,
+                    displayIndex = 0,
+                    senderInfo = SenderInfo(
+                            userId = user.userId,
+                            displayName = user.toMatrixItem().getBestName(),
+                            isUniqueDisplayName = true,
+                            avatarUrl = user.avatarUrl
+                    )
+            )
+            resolveMessageEvent(timelineEvent, session, canBeReplaced = canBeReplaced, isNoisy = !notificationAction.soundName.isNullOrBlank())
+        } else {
+            Timber.d("Matched push rule is set to not notify")
+            null
+        }
+    }
+
+    private fun resolveMessageEvent(event: TimelineEvent, session: Session, canBeReplaced: Boolean, isNoisy: Boolean): NotifiableEvent {
         // The event only contains an eventId, and roomId (type is m.room.*) , we need to get the displayable content (names, avatar, text, etc...)
         val room = session.getRoom(event.root.roomId!! /*roomID cannot be null*/)
 
         if (room == null) {
             Timber.e("## Unable to resolve room for eventId [$event]")
             // Ok room is not known in store, but we can still display something
-            val body = displayableEventFormatter.format(event, false)
+            val body = displayableEventFormatter.format(event, isDm = false, appendAuthor = false)
             val roomName = stringProvider.getString(R.string.notification_unknown_room_name)
             val senderDisplayName = event.senderInfo.disambiguatedDisplayName
 
-            val notifiableEvent = NotifiableMessageEvent(
+            return NotifiableMessageEvent(
                     eventId = event.root.eventId!!,
                     editedEventId = event.getEditedEventId(),
+                    canBeReplaced = canBeReplaced,
                     timestamp = event.root.originServerTs ?: 0,
-                    noisy = false, // will be updated
+                    noisy = isNoisy,
                     senderName = senderDisplayName,
                     senderId = event.root.senderId,
                     body = body.toString(),
                     roomId = event.root.roomId!!,
-                    roomName = roomName)
-
-            notifiableEvent.matrixID = session.myUserId
-            return notifiableEvent
+                    roomName = roomName,
+                    matrixID = session.myUserId
+            )
         } else {
             if (event.root.isEncrypted() && event.root.mxDecryptionResult == null) {
                 // TODO use a global event decryptor? attache to session and that listen to new sessionId?
@@ -124,61 +160,60 @@ class NotifiableEventResolver @Inject constructor(private val stringProvider: St
                 }
             }
 
-            val body = displayableEventFormatter.format(event, false).toString()
+            val body = displayableEventFormatter.format(event, isDm = room.roomSummary()?.isDirect.orFalse(), appendAuthor = false).toString()
             val roomName = room.roomSummary()?.displayName ?: ""
             val senderDisplayName = event.senderInfo.disambiguatedDisplayName
 
-            val notifiableEvent = NotifiableMessageEvent(
+            return NotifiableMessageEvent(
                     eventId = event.root.eventId!!,
                     editedEventId = event.getEditedEventId(),
+                    canBeReplaced = canBeReplaced,
                     timestamp = event.root.originServerTs ?: 0,
-                    noisy = false, // will be updated
+                    noisy = isNoisy,
                     senderName = senderDisplayName,
                     senderId = event.root.senderId,
                     body = body,
                     roomId = event.root.roomId!!,
                     roomName = roomName,
-                    roomIsDirect = room.roomSummary()?.isDirect ?: false)
-
-            notifiableEvent.matrixID = session.myUserId
-            notifiableEvent.soundName = null
-
-            // Get the avatars URL
-            notifiableEvent.roomAvatarPath = session.contentUrlResolver()
-                    .resolveThumbnail(room.roomSummary()?.avatarUrl,
-                            250,
-                            250,
-                            ContentUrlResolver.ThumbnailMethod.SCALE)
-
-            notifiableEvent.senderAvatarPath = session.contentUrlResolver()
-                    .resolveThumbnail(event.senderInfo.avatarUrl,
-                            250,
-                            250,
-                            ContentUrlResolver.ThumbnailMethod.SCALE)
-
-            return notifiableEvent
+                    roomIsDirect = room.roomSummary()?.isDirect ?: false,
+                    roomAvatarPath = session.contentUrlResolver()
+                            .resolveThumbnail(room.roomSummary()?.avatarUrl,
+                                    250,
+                                    250,
+                                    ContentUrlResolver.ThumbnailMethod.SCALE),
+                    senderAvatarPath = session.contentUrlResolver()
+                            .resolveThumbnail(event.senderInfo.avatarUrl,
+                                    250,
+                                    250,
+                                    ContentUrlResolver.ThumbnailMethod.SCALE),
+                    matrixID = session.myUserId,
+                    soundName = null
+            )
         }
     }
 
-    private fun resolveStateRoomEvent(event: Event, session: Session): NotifiableEvent? {
+    private fun resolveStateRoomEvent(event: Event, session: Session, canBeReplaced: Boolean, isNoisy: Boolean): NotifiableEvent? {
         val content = event.content?.toModel<RoomMemberContent>() ?: return null
         val roomId = event.roomId ?: return null
-        val dName = event.senderId?.let { session.getUser(it)?.displayName }
+        val dName = event.senderId?.let { session.getRoomMember(it, roomId)?.displayName }
         if (Membership.INVITE == content.membership) {
-            val body = noticeEventFormatter.format(event, dName)
+            val roomSummary = session.getRoomSummary(roomId)
+            val body = noticeEventFormatter.format(event, dName, isDm = roomSummary?.isDirect.orFalse())
                     ?: stringProvider.getString(R.string.notification_new_invitation)
             return InviteNotifiableEvent(
                     session.myUserId,
                     eventId = event.eventId!!,
                     editedEventId = null,
+                    canBeReplaced = canBeReplaced,
                     roomId = roomId,
+                    roomName = roomSummary?.displayName,
                     timestamp = event.originServerTs ?: 0,
-                    noisy = false, // will be set later
+                    noisy = isNoisy,
                     title = stringProvider.getString(R.string.notification_new_invitation),
                     description = body.toString(),
                     soundName = null, // will be set later
-                    type = event.getClearType(),
-                    isPushGatewayEvent = false)
+                    type = event.getClearType()
+            )
         } else {
             Timber.e("## unsupported notifiable event for eventId [${event.eventId}]")
             if (BuildConfig.LOW_PRIVACY_LOG_ENABLE) {

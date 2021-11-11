@@ -10,7 +10,7 @@
         android:layout_width="375dp"
         android:layout_height="0dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
+        android:contentDescription="@string/a11y_image"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,20 +19,10 @@
         tools:src="@tools:sample/backgrounds/scenic" />
 
     <ImageView
-        android:id="@+id/messageFailToSendIndicator"
-        android:layout_width="14dp"
-        android:layout_height="14dp"
-        android:layout_marginStart="2dp"
-        android:src="@drawable/ic_warning_badge"
-        android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/messageThumbnailView"
-        app:layout_constraintTop_toTopOf="@id/messageThumbnailView"
-        tools:visibility="visible" />
-
-    <ImageView
         android:id="@+id/messageMediaPlayView"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:contentDescription="@string/play_video"
         android:src="@drawable/ic_material_play_circle"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/messageThumbnailView"
@@ -49,7 +39,6 @@
         android:layout_height="46dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
         android:layout_marginBottom="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"

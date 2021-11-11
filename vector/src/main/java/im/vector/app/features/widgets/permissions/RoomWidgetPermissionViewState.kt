@@ -17,16 +17,16 @@
 package im.vector.app.features.widgets.permissions
 
 import com.airbnb.mvrx.Async
-import com.airbnb.mvrx.MvRxState
+import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.Uninitialized
-import im.vector.matrix.android.api.session.widgets.model.Widget
 import im.vector.app.features.widgets.WidgetArgs
+import org.matrix.android.sdk.api.session.widgets.model.Widget
 
 data class RoomWidgetPermissionViewState(
         val roomId: String,
         val widgetId: String?,
         val permissionData: Async<WidgetPermissionData> = Uninitialized
-) : MvRxState {
+) : MavericksState {
 
     constructor(widgetArgs: WidgetArgs) : this(
             roomId = widgetArgs.roomId,

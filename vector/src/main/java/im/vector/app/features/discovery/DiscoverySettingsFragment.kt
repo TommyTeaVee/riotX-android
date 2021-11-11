@@ -16,36 +16,45 @@
 package im.vector.app.features.discovery
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import androidx.appcompat.app.AlertDialog
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import com.airbnb.mvrx.args
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.extensions.observeEvent
-import im.vector.app.core.platform.VectorBaseActivity
+import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.utils.ensureProtocol
+import im.vector.app.core.utils.openUrlInChromeCustomTab
+import im.vector.app.core.utils.showIdentityServerConsentDialog
+import im.vector.app.databinding.FragmentGenericRecyclerBinding
 import im.vector.app.features.discovery.change.SetIdentityServerFragment
-import im.vector.app.features.terms.ReviewTermsActivity
-import im.vector.matrix.android.api.session.identity.SharedState
-import im.vector.matrix.android.api.session.identity.ThreePid
-import im.vector.matrix.android.api.session.terms.TermsService
-import kotlinx.android.synthetic.main.fragment_generic_recycler.*
+import im.vector.app.features.navigation.SettingsActivityPayload
+import im.vector.app.features.settings.VectorSettingsActivity
+import org.matrix.android.sdk.api.session.identity.SharedState
+import org.matrix.android.sdk.api.session.identity.ThreePid
+import org.matrix.android.sdk.api.session.terms.TermsService
 import javax.inject.Inject
 
 class DiscoverySettingsFragment @Inject constructor(
-        private val controller: DiscoverySettingsController,
-        val viewModelFactory: DiscoverySettingsViewModel.Factory
-) : VectorBaseFragment(), DiscoverySettingsController.Listener {
+        private val controller: DiscoverySettingsController
+) : VectorBaseFragment<FragmentGenericRecyclerBinding>(),
+        DiscoverySettingsController.Listener {
 
-    override fun getLayoutResId() = R.layout.fragment_generic_recycler
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentGenericRecyclerBinding {
+        return FragmentGenericRecyclerBinding.inflate(inflater, container, false)
+    }
 
     private val viewModel by fragmentViewModel(DiscoverySettingsViewModel::class)
+    private val discoveryArgs: SettingsActivityPayload.DiscoverySettings by args()
 
     lateinit var sharedViewModel: DiscoverySharedViewModel
 
@@ -55,7 +64,7 @@ class DiscoverySettingsFragment @Inject constructor(
         sharedViewModel = activityViewModelProvider.get(DiscoverySharedViewModel::class.java)
 
         controller.listener = this
-        recyclerView.configureWith(controller)
+        views.genericRecyclerView.configureWith(controller)
 
         sharedViewModel.navigateEvent.observeEvent(this) {
             when (it) {
@@ -71,10 +80,13 @@ class DiscoverySettingsFragment @Inject constructor(
                 }
             }.exhaustive
         }
+        if (discoveryArgs.expandIdentityPolicies) {
+            viewModel.handle(DiscoverySettingsAction.SetPoliciesExpandState(expanded = true))
+        }
     }
 
     override fun onDestroyView() {
-        recyclerView.cleanup()
+        views.genericRecyclerView.cleanup()
         controller.listener = null
         super.onDestroyView()
     }
@@ -85,30 +97,27 @@ class DiscoverySettingsFragment @Inject constructor(
 
     override fun onResume() {
         super.onResume()
-        (activity as? VectorBaseActivity)?.supportActionBar?.setTitle(R.string.settings_discovery_category)
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.settings_discovery_category)
 
         // If some 3pids are pending, we can try to check if they have been verified here
         viewModel.handle(DiscoverySettingsAction.Refresh)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == ReviewTermsActivity.TERMS_REQUEST_CODE) {
-            if (Activity.RESULT_OK == resultCode) {
-                viewModel.handle(DiscoverySettingsAction.RetrieveBinding)
-            } else {
-                // add some error?
-            }
+    private val termsActivityResultLauncher = registerStartForActivityResult {
+        if (it.resultCode == Activity.RESULT_OK) {
+            viewModel.handle(DiscoverySettingsAction.RetrieveBinding)
+        } else {
+            // add some error?
         }
-
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun openIdentityServerTerms() = withState(viewModel) { state ->
         if (state.termsNotSigned) {
             navigator.openTerms(
-                    this,
+                    requireContext(),
+                    termsActivityResultLauncher,
                     TermsService.ServiceType.IdentityService,
-                    state.identityServer()?.ensureProtocol() ?: "",
+                    state.identityServer()?.serverUrl?.ensureProtocol() ?: "",
                     null)
         }
     }
@@ -140,7 +149,7 @@ class DiscoverySettingsFragment @Inject constructor(
 
         if (hasBoundIds) {
             // we should prompt
-            AlertDialog.Builder(requireActivity())
+            MaterialAlertDialogBuilder(requireActivity())
                     .setTitle(R.string.change_identity_server)
                     .setMessage(getString(R.string.settings_discovery_disconnect_with_bound_pid, state.identityServer(), state.identityServer()))
                     .setPositiveButton(R.string._continue) { _, _ -> navigateToChangeIdentityServerFragment() }
@@ -164,7 +173,7 @@ class DiscoverySettingsFragment @Inject constructor(
                 getString(R.string.disconnect_identity_server_dialog_content, state.identityServer())
             }
 
-            AlertDialog.Builder(requireActivity())
+            MaterialAlertDialogBuilder(requireActivity())
                     .setTitle(R.string.disconnect_identity_server)
                     .setMessage(message)
                     .setPositiveButton(R.string.disconnect) { _, _ -> viewModel.handle(DiscoverySettingsAction.DisconnectIdentityServer) }
@@ -173,15 +182,33 @@ class DiscoverySettingsFragment @Inject constructor(
         }
     }
 
+    override fun onTapUpdateUserConsent(newValue: Boolean) {
+        if (newValue) {
+            withState(viewModel) { state ->
+                requireContext().showIdentityServerConsentDialog(
+                        state.identityServer.invoke()?.serverUrl,
+                        policyLinkCallback = { viewModel.handle(DiscoverySettingsAction.SetPoliciesExpandState(expanded = true)) },
+                        consentCallBack = { viewModel.handle(DiscoverySettingsAction.UpdateUserConsent(true)) }
+                )
+            }
+        } else {
+            viewModel.handle(DiscoverySettingsAction.UpdateUserConsent(false))
+        }
+    }
+
     override fun onTapRetryToRetrieveBindings() {
         viewModel.handle(DiscoverySettingsAction.RetrieveBinding)
     }
 
+    override fun onPolicyUrlsExpandedStateToggled(newExpandedState: Boolean) {
+        viewModel.handle(DiscoverySettingsAction.SetPoliciesExpandState(expanded = newExpandedState))
+    }
+
+    override fun onPolicyTapped(policy: IdentityServerPolicy) {
+        openUrlInChromeCustomTab(requireContext(), null, policy.url)
+    }
+
     private fun navigateToChangeIdentityServerFragment() {
-        parentFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.anim_slide_in_bottom, R.anim.anim_slide_out_bottom, R.anim.anim_slide_in_bottom, R.anim.anim_slide_out_bottom)
-                .replace(R.id.vector_settings_page, SetIdentityServerFragment::class.java, null)
-                .addToBackStack(null)
-                .commit()
+        (vectorBaseActivity as? VectorSettingsActivity)?.navigateTo(SetIdentityServerFragment::class.java)
     }
 }

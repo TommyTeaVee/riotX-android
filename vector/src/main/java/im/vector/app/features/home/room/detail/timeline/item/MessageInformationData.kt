@@ -17,10 +17,10 @@
 package im.vector.app.features.home.room.detail.timeline.item
 
 import android.os.Parcelable
-import im.vector.matrix.android.api.session.room.send.SendState
-import im.vector.matrix.android.api.util.MatrixItem
-import im.vector.matrix.android.internal.session.room.VerificationState
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
+import org.matrix.android.sdk.api.crypto.VerificationState
+import org.matrix.android.sdk.api.session.room.send.SendState
+import org.matrix.android.sdk.api.util.MatrixItem
 
 @Parcelize
 data class MessageInformationData(
@@ -28,20 +28,20 @@ data class MessageInformationData(
         val senderId: String,
         val sendState: SendState,
         val time: CharSequence? = null,
-        val ageLocalTS : Long?,
+        val ageLocalTS: Long?,
         val avatarUrl: String?,
         val memberName: CharSequence? = null,
         val showInformation: Boolean = true,
+        val forceShowTimestamp: Boolean = false,
         /*List of reactions (emoji,count,isSelected)*/
         val orderedReactionList: List<ReactionInfoData>? = null,
         val pollResponseAggregatedSummary: PollResponseData? = null,
-
         val hasBeenEdited: Boolean = false,
         val hasPendingEdits: Boolean = false,
-        val readReceipts: List<ReadReceiptData> = emptyList(),
         val referencesInfoData: ReferencesInfoData? = null,
-        val sentByMe : Boolean,
-        val e2eDecoration: E2EDecoration = E2EDecoration.NONE
+        val sentByMe: Boolean,
+        val e2eDecoration: E2EDecoration = E2EDecoration.NONE,
+        val sendStateDecoration: SendStateDecoration = SendStateDecoration.NONE
 ) : Parcelable {
 
     val matrixItem: MatrixItem
@@ -81,6 +81,14 @@ enum class E2EDecoration {
     WARN_IN_CLEAR,
     WARN_SENT_BY_UNVERIFIED,
     WARN_SENT_BY_UNKNOWN
+}
+
+enum class SendStateDecoration {
+    NONE,
+    SENDING_NON_MEDIA,
+    SENDING_MEDIA,
+    SENT,
+    FAILED
 }
 
 fun ReadReceiptData.toMatrixItem() = MatrixItem.UserItem(userId, displayName, avatarUrl)

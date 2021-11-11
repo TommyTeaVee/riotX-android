@@ -16,18 +16,18 @@
 
 package im.vector.app.features.settings
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.preference.Preference
-import im.vector.matrix.android.api.Matrix
+import im.vector.app.BuildConfig
 import im.vector.app.R
 import im.vector.app.core.preference.VectorPreference
+import im.vector.app.core.utils.FirstThrottler
 import im.vector.app.core.utils.copyToClipboard
 import im.vector.app.core.utils.displayInWebView
+import im.vector.app.core.utils.openAppSettingsPage
 import im.vector.app.core.utils.openUrlInChromeCustomTab
 import im.vector.app.features.version.VersionProvider
 import im.vector.app.openOssLicensesMenuActivity
+import org.matrix.android.sdk.api.Matrix
 import javax.inject.Inject
 
 class VectorSettingsHelpAboutFragment @Inject constructor(
@@ -37,28 +37,25 @@ class VectorSettingsHelpAboutFragment @Inject constructor(
     override var titleRes = R.string.preference_root_help_about
     override val preferenceXmlRes = R.xml.vector_settings_help_about
 
+    private val firstThrottler = FirstThrottler(1000)
+
     override fun bindPref() {
         // preference to start the App info screen, to facilitate App permissions access
         findPreference<VectorPreference>(APP_INFO_LINK_PREFERENCE_KEY)!!
                 .onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            activity?.let {
-                val intent = Intent().apply {
-                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-                    val uri = Uri.fromParts("package", requireContext().packageName, null)
-
-                    data = uri
-                }
-                it.applicationContext.startActivity(intent)
-            }
-
+            activity?.let { openAppSettingsPage(it) }
             true
         }
 
         // application version
         findPreference<VectorPreference>(VectorPreferences.SETTINGS_VERSION_PREFERENCE_KEY)!!.let {
-            it.summary = versionProvider.getVersion(longFormat = false, useBuildNumber = true)
+            it.summary = buildString {
+                append(versionProvider.getVersion(longFormat = false, useBuildNumber = true))
+                if (BuildConfig.DEBUG) {
+                    append(" ")
+                    append(BuildConfig.GIT_BRANCH_NAME)
+                }
+            }
 
             it.setOnPreferenceClickListener { pref ->
                 copyToClipboard(requireContext(), pref.summary)
@@ -104,7 +101,9 @@ class VectorSettingsHelpAboutFragment @Inject constructor(
         // third party notice
         findPreference<VectorPreference>(VectorPreferences.SETTINGS_THIRD_PARTY_NOTICES_PREFERENCE_KEY)!!
                 .onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            activity?.displayInWebView(VectorSettingsUrls.THIRD_PARTY_LICENSES)
+            if (firstThrottler.canHandle() is FirstThrottler.CanHandlerResult.Yes) {
+                activity?.displayInWebView(VectorSettingsUrls.THIRD_PARTY_LICENSES)
+            }
             false
         }
 

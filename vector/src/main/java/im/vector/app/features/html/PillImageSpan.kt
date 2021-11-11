@@ -30,9 +30,10 @@ import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.chip.ChipDrawable
 import im.vector.app.R
 import im.vector.app.core.glide.GlideRequests
+import im.vector.app.features.displayname.getBestName
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.matrix.android.api.session.room.send.MatrixItemSpan
-import im.vector.matrix.android.api.util.MatrixItem
+import org.matrix.android.sdk.api.session.room.send.MatrixItemSpan
+import org.matrix.android.sdk.api.util.MatrixItem
 import java.lang.ref.WeakReference
 
 /**
@@ -53,7 +54,7 @@ class PillImageSpan(private val glideRequests: GlideRequests,
     @UiThread
     fun bind(textView: TextView) {
         tv = WeakReference(textView)
-        avatarRenderer.render(context, glideRequests, matrixItem, target)
+        avatarRenderer.render(glideRequests, matrixItem, target)
     }
 
     // ReplacementSpan *****************************************************************************
@@ -99,7 +100,7 @@ class PillImageSpan(private val glideRequests: GlideRequests,
         val icon = try {
             avatarRenderer.getCachedDrawable(glideRequests, matrixItem)
         } catch (exception: Exception) {
-            avatarRenderer.getPlaceholderDrawable(context, matrixItem)
+            avatarRenderer.getPlaceholderDrawable(matrixItem)
         }
 
         return ChipDrawable.createFromResource(context, R.xml.pill_view).apply {

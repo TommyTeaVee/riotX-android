@@ -16,27 +16,33 @@
 package im.vector.app.features.widgets.permissions
 
 import android.content.DialogInterface
-import android.os.Build
+import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BulletSpan
-import butterknife.OnClick
-import com.airbnb.mvrx.MvRx
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.activityViewModel
 import com.airbnb.mvrx.withState
-import im.vector.matrix.android.api.util.toMatrixItem
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.extensions.withArgs
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
+import im.vector.app.databinding.BottomSheetRoomWidgetPermissionBinding
 import im.vector.app.features.home.AvatarRenderer
 import im.vector.app.features.widgets.WidgetArgs
-import kotlinx.android.synthetic.main.bottom_sheet_room_widget_permission.*
+import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
 
-class RoomWidgetPermissionBottomSheet : VectorBaseBottomSheetDialogFragment() {
+@AndroidEntryPoint
+class RoomWidgetPermissionBottomSheet :
+        VectorBaseBottomSheetDialogFragment<BottomSheetRoomWidgetPermissionBinding>() {
 
-    override fun getLayoutResId(): Int = R.layout.bottom_sheet_room_widget_permission
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): BottomSheetRoomWidgetPermissionBinding {
+        return BottomSheetRoomWidgetPermissionBinding.inflate(inflater, container, false)
+    }
 
     private val viewModel: RoomWidgetPermissionViewModel by activityViewModel()
 
@@ -44,17 +50,27 @@ class RoomWidgetPermissionBottomSheet : VectorBaseBottomSheetDialogFragment() {
 
     override val showExpanded = true
 
-    override fun injectWith(injector: ScreenComponent) {
-        injector.inject(this)
+    // Use this if you don't need the full activity view model
+    var directListener: ((Boolean) -> Unit)? = null
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupViews()
+    }
+
+    private fun setupViews() {
+        views.widgetPermissionDecline.debouncedClicks { doDecline() }
+        views.widgetPermissionContinue.debouncedClicks { doAccept() }
     }
 
     override fun invalidate() = withState(viewModel) { state ->
         super.invalidate()
         val permissionData = state.permissionData() ?: return@withState
-        widgetPermissionOwnerId.text = permissionData.widget.senderInfo?.userId ?: ""
-        widgetPermissionOwnerDisplayName.text = permissionData.widget.senderInfo?.disambiguatedDisplayName
+        views.widgetPermissionOwnerId.text = permissionData.widget.senderInfo?.userId ?: ""
+        views.widgetPermissionOwnerDisplayName.text = permissionData.widget.senderInfo?.disambiguatedDisplayName
         permissionData.widget.senderInfo?.toMatrixItem()?.also {
-            avatarRenderer.render(it, widgetPermissionOwnerAvatar)
+            avatarRenderer.render(it, views.widgetPermissionOwnerAvatar)
         }
 
         val domain = permissionData.widgetDomain ?: ""
@@ -68,33 +84,22 @@ class RoomWidgetPermissionBottomSheet : VectorBaseBottomSheetDialogFragment() {
         permissionData.permissionsList.forEach {
             infoBuilder.append("\n")
             val bulletPoint = getString(it)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                infoBuilder.append(bulletPoint, BulletSpan(resources.getDimension(R.dimen.quote_gap).toInt()), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            } else {
-                val start = infoBuilder.length
-                infoBuilder.append(bulletPoint)
-                infoBuilder.setSpan(
-                        BulletSpan(resources.getDimension(R.dimen.quote_gap).toInt()),
-                        start,
-                        bulletPoint.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+            infoBuilder.append(bulletPoint, BulletSpan(resources.getDimension(R.dimen.quote_gap).toInt()), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         infoBuilder.append("\n")
-        widgetPermissionSharedInfo.text = infoBuilder
+        views.widgetPermissionSharedInfo.text = infoBuilder
     }
 
-    @OnClick(R.id.widgetPermissionDecline)
-    fun doDecline() {
+    private fun doDecline() {
         viewModel.handle(RoomWidgetPermissionActions.BlockWidget)
+        directListener?.invoke(false)
         // optimistic dismiss
         dismiss()
     }
 
-    @OnClick(R.id.widgetPermissionContinue)
-    fun doAccept() {
+    private fun doAccept() {
         viewModel.handle(RoomWidgetPermissionActions.AllowWidget)
+        directListener?.invoke(true)
         // optimistic dismiss
         dismiss()
     }
@@ -107,7 +112,7 @@ class RoomWidgetPermissionBottomSheet : VectorBaseBottomSheetDialogFragment() {
     companion object {
 
         fun newInstance(widgetArgs: WidgetArgs) = RoomWidgetPermissionBottomSheet().withArgs {
-            putParcelable(MvRx.KEY_ARG, widgetArgs)
+            putParcelable(Mavericks.KEY_ARG, widgetArgs)
         }
     }
 }

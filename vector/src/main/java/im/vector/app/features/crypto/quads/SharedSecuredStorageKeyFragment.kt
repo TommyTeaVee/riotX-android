@@ -17,88 +17,91 @@
 package im.vector.app.features.crypto.quads
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.lifecycle.lifecycleScope
 import com.airbnb.mvrx.activityViewModel
-import com.jakewharton.rxbinding3.widget.editorActionEvents
-import com.jakewharton.rxbinding3.widget.textChanges
 import im.vector.app.R
+import im.vector.app.core.extensions.registerStartForActivityResult
+import im.vector.app.core.flow.throttleFirst
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.utils.startImportTextFromFileIntent
-import im.vector.matrix.android.api.extensions.tryThis
-import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_ssss_access_from_key.*
-import java.util.concurrent.TimeUnit
+import im.vector.app.databinding.FragmentSsssAccessFromKeyBinding
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import org.matrix.android.sdk.api.extensions.tryOrNull
+import reactivecircus.flowbinding.android.widget.editorActionEvents
+import reactivecircus.flowbinding.android.widget.textChanges
 import javax.inject.Inject
 
-class SharedSecuredStorageKeyFragment @Inject constructor() : VectorBaseFragment() {
+class SharedSecuredStorageKeyFragment @Inject constructor() : VectorBaseFragment<FragmentSsssAccessFromKeyBinding>() {
 
-    override fun getLayoutResId() = R.layout.fragment_ssss_access_from_key
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentSsssAccessFromKeyBinding {
+        return FragmentSsssAccessFromKeyBinding.inflate(inflater, container, false)
+    }
 
     val sharedViewModel: SharedSecureStorageViewModel by activityViewModel()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        ssss_restore_with_key_text.text = getString(R.string.enter_secret_storage_input_key)
+        views.ssssRestoreWithKeyText.text = getString(R.string.enter_secret_storage_input_key)
 
-        ssss_key_enter_edittext.editorActionEvents()
-                .throttleFirst(300, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
+        views.ssssKeyEnterEdittext.editorActionEvents()
+                .throttleFirst(300)
+                .onEach {
                     if (it.actionId == EditorInfo.IME_ACTION_DONE) {
                         submit()
                     }
                 }
-                .disposeOnDestroyView()
+                .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        ssss_key_enter_edittext.textChanges()
+        views.ssssKeyEnterEdittext.textChanges()
                 .skipInitialValue()
-                .subscribe {
-                    ssss_key_enter_til.error = null
-                    ssss_key_submit.isEnabled = it.isNotBlank()
+                .onEach {
+                    views.ssssKeyEnterTil.error = null
+                    views.ssssKeySubmit.isEnabled = it.isNotBlank()
                 }
-                .disposeOnDestroyView()
+                .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        ssss_key_use_file.debouncedClicks { startImportTextFromFileIntent(this, IMPORT_FILE_REQ) }
+        views.ssssKeyUseFile.debouncedClicks { startImportTextFromFileIntent(requireContext(), importFileStartForActivityResult) }
+
+        views.ssssKeyReset.views.bottomSheetActionClickableZone.debouncedClicks {
+            sharedViewModel.handle(SharedSecureStorageAction.ForgotResetAll)
+        }
 
         sharedViewModel.observeViewEvents {
             when (it) {
                 is SharedSecureStorageViewEvent.KeyInlineError -> {
-                    ssss_key_enter_til.error = it.message
+                    views.ssssKeyEnterTil.error = it.message
                 }
             }
         }
 
-        ssss_key_submit.debouncedClicks { submit() }
+        views.ssssKeySubmit.debouncedClicks { submit() }
     }
 
     fun submit() {
-        val text = ssss_key_enter_edittext.text.toString()
+        val text = views.ssssKeyEnterEdittext.text.toString()
         if (text.isBlank()) return // Should not reach this point as button disabled
-        ssss_key_submit.isEnabled = false
+        views.ssssKeySubmit.isEnabled = false
         sharedViewModel.handle(SharedSecureStorageAction.SubmitKey(text))
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == IMPORT_FILE_REQ && resultCode == Activity.RESULT_OK) {
-            data?.data?.let { dataURI ->
-                tryThis {
+    private val importFileStartForActivityResult = registerStartForActivityResult { activityResult ->
+        if (activityResult.resultCode == Activity.RESULT_OK) {
+            activityResult.data?.data?.let { dataURI ->
+                tryOrNull {
                     activity?.contentResolver?.openInputStream(dataURI)
                             ?.bufferedReader()
                             ?.use { it.readText() }
                             ?.let {
-                                ssss_key_enter_edittext.setText(it)
+                                views.ssssKeyEnterEdittext.setText(it)
                             }
                 }
             }
-            return
         }
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    companion object {
-        private const val IMPORT_FILE_REQ = 0
     }
 }

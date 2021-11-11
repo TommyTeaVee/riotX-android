@@ -20,8 +20,8 @@ import com.airbnb.epoxy.TypedEpoxyController
 import im.vector.app.features.autocomplete.AutocompleteClickListener
 import im.vector.app.features.autocomplete.autocompleteMatrixItem
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.matrix.android.api.session.group.model.GroupSummary
-import im.vector.matrix.android.api.util.toMatrixItem
+import org.matrix.android.sdk.api.session.group.model.GroupSummary
+import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
 
 class AutocompleteGroupController @Inject constructor() : TypedEpoxyController<List<GroupSummary>>() {
@@ -34,14 +34,13 @@ class AutocompleteGroupController @Inject constructor() : TypedEpoxyController<L
         if (data.isNullOrEmpty()) {
             return
         }
+        val host = this
         data.forEach { groupSummary ->
             autocompleteMatrixItem {
                 id(groupSummary.groupId)
                 matrixItem(groupSummary.toMatrixItem())
-                avatarRenderer(avatarRenderer)
-                clickListener { _ ->
-                    listener?.onItemClick(groupSummary)
-                }
+                avatarRenderer(host.avatarRenderer)
+                clickListener { host.listener?.onItemClick(groupSummary) }
             }
         }
     }

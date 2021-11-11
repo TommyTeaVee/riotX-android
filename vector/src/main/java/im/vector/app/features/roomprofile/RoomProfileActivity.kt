@@ -20,35 +20,50 @@ package im.vector.app.features.roomprofile
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
-import com.airbnb.mvrx.MvRx
+import androidx.lifecycle.lifecycleScope
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
+import com.google.android.material.appbar.MaterialToolbar
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.extensions.addFragment
 import im.vector.app.core.extensions.addFragmentToBackstack
+import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.ToolbarConfigurable
 import im.vector.app.core.platform.VectorBaseActivity
+import im.vector.app.databinding.ActivitySimpleBinding
+import im.vector.app.features.home.room.detail.RoomDetailPendingActionStore
 import im.vector.app.features.room.RequireActiveMembershipViewEvents
 import im.vector.app.features.room.RequireActiveMembershipViewModel
-import im.vector.app.features.room.RequireActiveMembershipViewState
+import im.vector.app.features.roomprofile.alias.RoomAliasFragment
 import im.vector.app.features.roomprofile.banned.RoomBannedMemberListFragment
 import im.vector.app.features.roomprofile.members.RoomMemberListFragment
+import im.vector.app.features.roomprofile.notifications.RoomNotificationSettingsFragment
+import im.vector.app.features.roomprofile.permissions.RoomPermissionsFragment
 import im.vector.app.features.roomprofile.settings.RoomSettingsFragment
 import im.vector.app.features.roomprofile.uploads.RoomUploadsFragment
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class RoomProfileActivity :
-        VectorBaseActivity(),
-        ToolbarConfigurable,
-        RequireActiveMembershipViewModel.Factory {
+        VectorBaseActivity<ActivitySimpleBinding>(),
+        ToolbarConfigurable {
 
     companion object {
 
-        fun newIntent(context: Context, roomId: String): Intent {
+        private const val EXTRA_DIRECT_ACCESS = "EXTRA_DIRECT_ACCESS"
+
+        const val EXTRA_DIRECT_ACCESS_ROOM_ROOT = 0
+        const val EXTRA_DIRECT_ACCESS_ROOM_SETTINGS = 1
+        const val EXTRA_DIRECT_ACCESS_ROOM_MEMBERS = 2
+
+        fun newIntent(context: Context, roomId: String, directAccess: Int?): Intent {
             val roomProfileArgs = RoomProfileArgs(roomId)
             return Intent(context, RoomProfileActivity::class.java).apply {
-                putExtra(MvRx.KEY_ARG, roomProfileArgs)
+                putExtra(Mavericks.KEY_ARG, roomProfileArgs)
+                putExtra(EXTRA_DIRECT_ACCESS, directAccess)
             }
         }
     }
@@ -59,41 +74,53 @@ class RoomProfileActivity :
     private val requireActiveMembershipViewModel: RequireActiveMembershipViewModel by viewModel()
 
     @Inject
-    lateinit var requireActiveMembershipViewModelFactory: RequireActiveMembershipViewModel.Factory
+    lateinit var roomDetailPendingActionStore: RoomDetailPendingActionStore
 
-    override fun create(initialState: RequireActiveMembershipViewState): RequireActiveMembershipViewModel {
-        return requireActiveMembershipViewModelFactory.create(initialState)
+    override fun getBinding(): ActivitySimpleBinding {
+        return ActivitySimpleBinding.inflate(layoutInflater)
     }
-
-    override fun injectWith(injector: ScreenComponent) {
-        super.injectWith(injector)
-        injector.inject(this)
-    }
-
-    override fun getLayoutRes() = R.layout.activity_simple
 
     override fun initUiAndData() {
         sharedActionViewModel = viewModelProvider.get(RoomProfileSharedActionViewModel::class.java)
-        roomProfileArgs = intent?.extras?.getParcelable(MvRx.KEY_ARG) ?: return
+        roomProfileArgs = intent?.extras?.getParcelable(Mavericks.KEY_ARG) ?: return
         if (isFirstCreation()) {
-            addFragment(R.id.simpleFragmentContainer, RoomProfileFragment::class.java, roomProfileArgs)
+            when (intent?.extras?.getInt(EXTRA_DIRECT_ACCESS, EXTRA_DIRECT_ACCESS_ROOM_ROOT)) {
+                EXTRA_DIRECT_ACCESS_ROOM_SETTINGS -> {
+                    addFragment(R.id.simpleFragmentContainer, RoomProfileFragment::class.java, roomProfileArgs)
+                    addFragmentToBackstack(R.id.simpleFragmentContainer, RoomSettingsFragment::class.java, roomProfileArgs)
+                }
+                EXTRA_DIRECT_ACCESS_ROOM_MEMBERS -> {
+                    addFragment(R.id.simpleFragmentContainer, RoomMemberListFragment::class.java, roomProfileArgs)
+                }
+                else -> addFragment(R.id.simpleFragmentContainer, RoomProfileFragment::class.java, roomProfileArgs)
+            }
         }
         sharedActionViewModel
-                .observe()
-                .subscribe { sharedAction ->
+                .stream()
+                .onEach { sharedAction ->
                     when (sharedAction) {
-                        is RoomProfileSharedAction.OpenRoomMembers       -> openRoomMembers()
-                        is RoomProfileSharedAction.OpenRoomSettings      -> openRoomSettings()
-                        is RoomProfileSharedAction.OpenRoomUploads       -> openRoomUploads()
-                        is RoomProfileSharedAction.OpenBannedRoomMembers -> openBannedRoomMembers()
-                    }
+                        RoomProfileSharedAction.OpenRoomMembers                 -> openRoomMembers()
+                        RoomProfileSharedAction.OpenRoomSettings                -> openRoomSettings()
+                        RoomProfileSharedAction.OpenRoomAliasesSettings         -> openRoomAlias()
+                        RoomProfileSharedAction.OpenRoomPermissionsSettings     -> openRoomPermissions()
+                        RoomProfileSharedAction.OpenRoomUploads                 -> openRoomUploads()
+                        RoomProfileSharedAction.OpenBannedRoomMembers        -> openBannedRoomMembers()
+                        RoomProfileSharedAction.OpenRoomNotificationSettings -> openRoomNotificationSettings()
+                    }.exhaustive
                 }
-                .disposeOnDestroy()
+                .launchIn(lifecycleScope)
 
         requireActiveMembershipViewModel.observeViewEvents {
             when (it) {
                 is RequireActiveMembershipViewEvents.RoomLeft -> handleRoomLeft(it)
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (roomDetailPendingActionStore.data != null) {
+            finish()
         }
     }
 
@@ -112,6 +139,14 @@ class RoomProfileActivity :
         addFragmentToBackstack(R.id.simpleFragmentContainer, RoomSettingsFragment::class.java, roomProfileArgs)
     }
 
+    private fun openRoomAlias() {
+        addFragmentToBackstack(R.id.simpleFragmentContainer, RoomAliasFragment::class.java, roomProfileArgs)
+    }
+
+    private fun openRoomPermissions() {
+        addFragmentToBackstack(R.id.simpleFragmentContainer, RoomPermissionsFragment::class.java, roomProfileArgs)
+    }
+
     private fun openRoomMembers() {
         addFragmentToBackstack(R.id.simpleFragmentContainer, RoomMemberListFragment::class.java, roomProfileArgs)
     }
@@ -120,7 +155,11 @@ class RoomProfileActivity :
         addFragmentToBackstack(R.id.simpleFragmentContainer, RoomBannedMemberListFragment::class.java, roomProfileArgs)
     }
 
-    override fun configure(toolbar: Toolbar) {
+    private fun openRoomNotificationSettings() {
+        addFragmentToBackstack(R.id.simpleFragmentContainer, RoomNotificationSettingsFragment::class.java, roomProfileArgs)
+    }
+
+    override fun configure(toolbar: MaterialToolbar) {
         configureToolbar(toolbar)
     }
 }

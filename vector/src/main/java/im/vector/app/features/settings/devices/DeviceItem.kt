@@ -18,23 +18,21 @@ package im.vector.app.features.settings.devices
 
 import android.graphics.Typeface
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
-import im.vector.matrix.android.internal.crypto.crosssigning.DeviceTrustLevel
-import im.vector.matrix.android.internal.crypto.model.rest.DeviceInfo
 import im.vector.app.R
+import im.vector.app.core.epoxy.ClickListener
 import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
+import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.resources.ColorProvider
+import im.vector.app.core.ui.views.ShieldImageView
 import im.vector.app.core.utils.DimensionConverter
 import me.gujun.android.span.span
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import org.matrix.android.sdk.internal.crypto.crosssigning.DeviceTrustLevel
+import org.matrix.android.sdk.internal.crypto.model.rest.DeviceInfo
 
 /**
  * A list item for Device.
@@ -46,10 +44,13 @@ abstract class DeviceItem : VectorEpoxyModel<DeviceItem.Holder>() {
     lateinit var deviceInfo: DeviceInfo
 
     @EpoxyAttribute
-    var currentDevice = false
+    var lastSeenFormatted: String? = null
 
     @EpoxyAttribute
-    var itemClickAction: (() -> Unit)? = null
+    var currentDevice = false
+
+    @EpoxyAttribute(EpoxyAttribute.Option.DoNotHash)
+    var itemClickAction: ClickListener? = null
 
     @EpoxyAttribute
     var detailedMode = false
@@ -74,19 +75,19 @@ abstract class DeviceItem : VectorEpoxyModel<DeviceItem.Holder>() {
 
     override fun bind(holder: Holder) {
         super.bind(holder)
-        holder.root.setOnClickListener { itemClickAction?.invoke() }
-
-        val shield = TrustUtils.shieldForTrust(
-                currentDevice,
-                trustedSession,
-                legacyMode,
-                trusted
-        )
+        holder.root.onClick(itemClickAction)
 
         if (e2eCapable) {
-            holder.trustIcon.setImageResource(shield)
+            val shield = TrustUtils.shieldForTrust(
+                    currentDevice,
+                    trustedSession,
+                    legacyMode,
+                    trusted
+            )
+
+            holder.trustIcon.render(shield)
         } else {
-            holder.trustIcon.setImageDrawable(null)
+            holder.trustIcon.render(null)
         }
 
         val detailedModeLabels = listOf(
@@ -105,15 +106,7 @@ abstract class DeviceItem : VectorEpoxyModel<DeviceItem.Holder>() {
 
             val lastSeenIp = deviceInfo.lastSeenIp?.takeIf { ip -> ip.isNotBlank() } ?: "-"
 
-            val lastSeenTime = deviceInfo.lastSeenTs?.let { ts ->
-                val dateFormatTime = SimpleDateFormat("HH:mm:ss", Locale.ROOT)
-                val date = Date(ts)
-
-                val time = dateFormatTime.format(date)
-                val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
-
-                dateFormat.format(date) + ", " + time
-            } ?: "-"
+            val lastSeenTime = lastSeenFormatted ?: "-"
 
             holder.deviceLastSeenText.text = holder.root.context.getString(R.string.devices_details_last_seen_format, lastSeenIp, lastSeenTime)
 
@@ -132,7 +125,7 @@ abstract class DeviceItem : VectorEpoxyModel<DeviceItem.Holder>() {
                                 span {
                                     text = "${deviceInfo.deviceId}"
                                     apply {
-                                        colorProvider?.getColorFromAttribute(R.attr.riotx_text_secondary)?.let {
+                                        colorProvider?.getColorFromAttribute(R.attr.vctr_content_secondary)?.let {
                                             textColor = it
                                         }
                                         dimensionConverter?.spToPx(12)?.let {
@@ -161,6 +154,6 @@ abstract class DeviceItem : VectorEpoxyModel<DeviceItem.Holder>() {
         val deviceLastSeenLabelText by bind<TextView>(R.id.itemDeviceLastSeenLabel)
         val deviceLastSeenText by bind<TextView>(R.id.itemDeviceLastSeen)
 
-        val trustIcon by bind<ImageView>(R.id.itemDeviceTrustLevelIcon)
+        val trustIcon by bind<ShieldImageView>(R.id.itemDeviceTrustLevelIcon)
     }
 }

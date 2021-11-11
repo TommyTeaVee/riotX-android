@@ -21,13 +21,13 @@ import im.vector.app.core.platform.VectorViewModelAction
 import im.vector.app.core.platform.WaitingViewData
 
 sealed class SharedSecureStorageAction : VectorViewModelAction {
-
-    object TogglePasswordVisibility : SharedSecureStorageAction()
     object UseKey : SharedSecureStorageAction()
     object Back : SharedSecureStorageAction()
     object Cancel : SharedSecureStorageAction()
     data class SubmitPassphrase(val passphrase: String) : SharedSecureStorageAction()
     data class SubmitKey(val recoveryKey: String) : SharedSecureStorageAction()
+    object ForgotResetAll : SharedSecureStorageAction()
+    object DoResetAll : SharedSecureStorageAction()
 }
 
 sealed class SharedSecureStorageViewEvent : VectorViewEvents {
@@ -40,4 +40,5 @@ sealed class SharedSecureStorageViewEvent : VectorViewEvents {
     object ShowModalLoading : SharedSecureStorageViewEvent()
     object HideModalLoading : SharedSecureStorageViewEvent()
     data class UpdateLoadingState(val waitingData: WaitingViewData) : SharedSecureStorageViewEvent()
+    object ShowResetBottomSheet : SharedSecureStorageViewEvent()
 }

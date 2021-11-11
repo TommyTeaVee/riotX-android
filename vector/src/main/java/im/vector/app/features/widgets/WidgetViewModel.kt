@@ -17,60 +17,50 @@
 package im.vector.app.features.widgets
 
 import android.net.Uri
-import androidx.lifecycle.viewModelScope
-import com.airbnb.mvrx.ActivityViewModelContext
 import com.airbnb.mvrx.Fail
-import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.Loading
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.Success
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.matrix.android.api.query.QueryStringValue
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.events.model.Content
-import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.events.model.toModel
-import im.vector.matrix.android.api.session.integrationmanager.IntegrationManagerService
-import im.vector.matrix.android.api.session.room.model.PowerLevelsContent
-import im.vector.matrix.android.api.session.room.powerlevels.PowerLevelsHelper
-import im.vector.matrix.android.api.session.widgets.WidgetManagementFailure
-import im.vector.matrix.android.internal.util.awaitCallback
-import im.vector.matrix.rx.mapOptional
-import im.vector.matrix.rx.rx
-import im.vector.matrix.rx.unwrap
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.widgets.permissions.WidgetPermissionsHelper
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.query.QueryStringValue
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.events.model.Content
+import org.matrix.android.sdk.api.session.events.model.EventType
+import org.matrix.android.sdk.api.session.events.model.toModel
+import org.matrix.android.sdk.api.session.integrationmanager.IntegrationManagerService
+import org.matrix.android.sdk.api.session.room.model.PowerLevelsContent
+import org.matrix.android.sdk.api.session.room.powerlevels.PowerLevelsHelper
+import org.matrix.android.sdk.api.session.widgets.WidgetManagementFailure
+import org.matrix.android.sdk.flow.flow
+import org.matrix.android.sdk.flow.mapOptional
+import org.matrix.android.sdk.flow.unwrap
 import timber.log.Timber
 import javax.net.ssl.HttpsURLConnection
 
 class WidgetViewModel @AssistedInject constructor(@Assisted val initialState: WidgetViewState,
-                                                  private val widgetPostAPIHandlerFactory: WidgetPostAPIHandler.Factory,
+                                                  widgetPostAPIHandlerFactory: WidgetPostAPIHandler.Factory,
                                                   private val stringProvider: StringProvider,
-                                                  private val session: Session)
-    : VectorViewModel<WidgetViewState, WidgetAction, WidgetViewEvents>(initialState),
+                                                  private val session: Session) :
+    VectorViewModel<WidgetViewState, WidgetAction, WidgetViewEvents>(initialState),
         WidgetPostAPIHandler.NavigationCallback,
         IntegrationManagerService.Listener {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: WidgetViewState): WidgetViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<WidgetViewModel, WidgetViewState> {
+        override fun create(initialState: WidgetViewState): WidgetViewModel
     }
 
-    companion object : MvRxViewModelFactory<WidgetViewModel, WidgetViewState> {
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: WidgetViewState): WidgetViewModel? {
-            val factory = when (viewModelContext) {
-                is FragmentViewModelContext -> viewModelContext.fragment as? Factory
-                is ActivityViewModelContext -> viewModelContext.activity as? Factory
-            }
-            return factory?.create(state) ?: error("You should let your activity/fragment implements Factory interface")
-        }
-    }
+    companion object : MavericksViewModelFactory<WidgetViewModel, WidgetViewState> by hiltMavericksViewModelFactory()
 
     private val room = session.getRoom(initialState.roomId)
     private val widgetService = session.widgetService()
@@ -101,7 +91,7 @@ class WidgetViewModel @AssistedInject constructor(@Assisted val initialState: Wi
     }
 
     private fun subscribeToWidget() {
-        asyncSubscribe(WidgetViewState::asyncWidget) {
+        onAsync(WidgetViewState::asyncWidget) {
             setState { copy(widgetName = it.name) }
         }
     }
@@ -118,14 +108,15 @@ class WidgetViewModel @AssistedInject constructor(@Assisted val initialState: Wi
         if (room == null) {
             return
         }
-        room.rx().liveStateEvent(EventType.STATE_ROOM_POWER_LEVELS, QueryStringValue.NoCondition)
+        room.flow().liveStateEvent(EventType.STATE_ROOM_POWER_LEVELS, QueryStringValue.NoCondition)
                 .mapOptional { it.content.toModel<PowerLevelsContent>() }
                 .unwrap()
                 .map {
                     PowerLevelsHelper(it).isUserAllowedToSend(session.myUserId, true, null)
-                }.subscribe {
-                    setState { copy(canManageWidgets = it) }
-                }.disposeOnClear()
+                }
+                .setOnEach {
+                    copy(canManageWidgets = it)
+                }
     }
 
     private fun observeWidgetIfNeeded() {
@@ -133,7 +124,7 @@ class WidgetViewModel @AssistedInject constructor(@Assisted val initialState: Wi
             return
         }
         val widgetId = initialState.widgetId ?: return
-        session.rx()
+        session.flow()
                 .liveRoomWidgets(initialState.roomId, QueryStringValue.Equals(widgetId))
                 .filter { it.isNotEmpty() }
                 .map { it.first() }
@@ -172,10 +163,8 @@ class WidgetViewModel @AssistedInject constructor(@Assisted val initialState: Wi
         viewModelScope.launch {
             val widgetId = initialState.widgetId ?: return@launch
             try {
-                awaitCallback<Unit> {
-                    widgetService.destroyRoomWidget(initialState.roomId, widgetId, it)
-                    _viewEvents.post(WidgetViewEvents.Close())
-                }
+                widgetService.destroyRoomWidget(initialState.roomId, widgetId)
+                _viewEvents.post(WidgetViewEvents.Close())
             } catch (failure: Throwable) {
                 _viewEvents.post(WidgetViewEvents.Failure(failure))
             }

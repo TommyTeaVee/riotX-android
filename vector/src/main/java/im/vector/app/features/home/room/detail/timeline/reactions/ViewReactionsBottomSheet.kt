@@ -17,54 +17,56 @@
 package im.vector.app.features.home.room.detail.timeline.reactions
 
 import android.os.Bundle
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import com.airbnb.mvrx.MvRx
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
+import im.vector.app.databinding.BottomSheetGenericListWithTitleBinding
 import im.vector.app.features.home.room.detail.timeline.action.EventSharedAction
 import im.vector.app.features.home.room.detail.timeline.action.MessageSharedActionViewModel
 import im.vector.app.features.home.room.detail.timeline.action.TimelineEventFragmentArgs
 import im.vector.app.features.home.room.detail.timeline.item.MessageInformationData
-import kotlinx.android.synthetic.main.bottom_sheet_generic_list_with_title.*
 import javax.inject.Inject
 
 /**
  * Bottom sheet displaying list of reactions for a given event ordered by timestamp
  */
-class ViewReactionsBottomSheet : VectorBaseBottomSheetDialogFragment(), ViewReactionsEpoxyController.Listener {
+@AndroidEntryPoint
+class ViewReactionsBottomSheet :
+        VectorBaseBottomSheetDialogFragment<BottomSheetGenericListWithTitleBinding>(),
+        ViewReactionsEpoxyController.Listener {
 
     private val viewModel: ViewReactionsViewModel by fragmentViewModel(ViewReactionsViewModel::class)
 
-    @Inject lateinit var viewReactionsViewModelFactory: ViewReactionsViewModel.Factory
     private lateinit var sharedActionViewModel: MessageSharedActionViewModel
-
-    @BindView(R.id.bottomSheetRecyclerView)
-    lateinit var recyclerView: RecyclerView
 
     @Inject lateinit var epoxyController: ViewReactionsEpoxyController
 
-    override fun injectWith(injector: ScreenComponent) {
-        injector.inject(this)
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): BottomSheetGenericListWithTitleBinding {
+        return BottomSheetGenericListWithTitleBinding.inflate(inflater, container, false)
     }
 
-    override fun getLayoutResId() = R.layout.bottom_sheet_generic_list_with_title
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         sharedActionViewModel = activityViewModelProvider.get(MessageSharedActionViewModel::class.java)
-        recyclerView.configureWith(epoxyController, hasFixedSize = false, showDivider = true)
-        bottomSheetTitle.text = context?.getString(R.string.reactions)
+        views.bottomSheetRecyclerView.configureWith(
+                epoxyController,
+                hasFixedSize = false,
+                dividerDrawable = R.drawable.divider_horizontal_on_secondary
+        )
+        views.bottomSheetTitle.text = context?.getString(R.string.reactions)
         epoxyController.listener = this
     }
 
     override fun onDestroyView() {
-        recyclerView.cleanup()
+        views.bottomSheetRecyclerView.cleanup()
         epoxyController.listener = null
         super.onDestroyView()
     }
@@ -86,7 +88,7 @@ class ViewReactionsBottomSheet : VectorBaseBottomSheetDialogFragment(), ViewReac
                     roomId,
                     informationData
             )
-            args.putParcelable(MvRx.KEY_ARG, parcelableArgs)
+            args.putParcelable(Mavericks.KEY_ARG, parcelableArgs)
             return ViewReactionsBottomSheet().apply { arguments = args }
         }
     }

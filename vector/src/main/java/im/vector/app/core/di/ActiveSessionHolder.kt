@@ -18,27 +18,27 @@ package im.vector.app.core.di
 
 import arrow.core.Option
 import im.vector.app.ActiveSessionDataSource
-import im.vector.app.features.call.WebRtcPeerConnectionManager
+import im.vector.app.core.services.GuardServiceStarter
+import im.vector.app.features.call.webrtc.WebRtcCallManager
 import im.vector.app.features.crypto.keysrequest.KeyRequestHandler
 import im.vector.app.features.crypto.verification.IncomingVerificationRequestHandler
 import im.vector.app.features.notifications.PushRuleTriggerListener
 import im.vector.app.features.session.SessionListener
-import im.vector.matrix.android.api.auth.AuthenticationService
-import im.vector.matrix.android.api.session.Session
+import org.matrix.android.sdk.api.session.Session
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ActiveSessionHolder @Inject constructor(private val authenticationService: AuthenticationService,
-                                              private val sessionObservableStore: ActiveSessionDataSource,
+class ActiveSessionHolder @Inject constructor(private val sessionObservableStore: ActiveSessionDataSource,
                                               private val keyRequestHandler: KeyRequestHandler,
                                               private val incomingVerificationRequestHandler: IncomingVerificationRequestHandler,
-                                              private val webRtcPeerConnectionManager: WebRtcPeerConnectionManager,
+                                              private val callManager: WebRtcCallManager,
                                               private val pushRuleTriggerListener: PushRuleTriggerListener,
                                               private val sessionListener: SessionListener,
-                                              private val imageManager: ImageManager
+                                              private val imageManager: ImageManager,
+                                              private val guardServiceStarter: GuardServiceStarter
 ) {
 
     private var activeSession: AtomicReference<Session?> = AtomicReference()
@@ -52,15 +52,16 @@ class ActiveSessionHolder @Inject constructor(private val authenticationService:
         incomingVerificationRequestHandler.start(session)
         session.addListener(sessionListener)
         pushRuleTriggerListener.startWithSession(session)
-        session.callSignalingService().addCallListener(webRtcPeerConnectionManager)
+        session.callSignalingService().addCallListener(callManager)
         imageManager.onSessionStarted(session)
+        guardServiceStarter.start()
     }
 
     fun clearActiveSession() {
         // Do some cleanup first
         getSafeActiveSession()?.let {
             Timber.w("clearActiveSession of ${it.myUserId}")
-            it.callSignalingService().removeCallListener(webRtcPeerConnectionManager)
+            it.callSignalingService().removeCallListener(callManager)
             it.removeListener(sessionListener)
         }
 

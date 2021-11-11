@@ -23,13 +23,13 @@ import com.nulabinc.zxcvbn.Strength
 import im.vector.app.R
 import im.vector.app.core.platform.WaitingViewData
 import im.vector.app.core.utils.LiveEvent
-import im.vector.matrix.android.api.MatrixCallback
-import im.vector.matrix.android.api.listeners.ProgressListener
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.crypto.keysbackup.KeysBackupService
-import im.vector.matrix.android.internal.crypto.keysbackup.model.MegolmBackupCreationInfo
-import im.vector.matrix.android.internal.crypto.keysbackup.model.rest.KeysVersion
-import im.vector.matrix.android.internal.crypto.keysbackup.model.rest.KeysVersionResult
+import org.matrix.android.sdk.api.MatrixCallback
+import org.matrix.android.sdk.api.listeners.ProgressListener
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupService
+import org.matrix.android.sdk.internal.crypto.keysbackup.model.MegolmBackupCreationInfo
+import org.matrix.android.sdk.internal.crypto.keysbackup.model.rest.KeysVersion
+import org.matrix.android.sdk.internal.crypto.keysbackup.model.rest.KeysVersionResult
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -64,7 +64,6 @@ class KeysBackupSetupSharedViewModel @Inject constructor() : ViewModel() {
     var confirmPassphraseError: MutableLiveData<String> = MutableLiveData()
 
     var passwordStrength: MutableLiveData<Strength> = MutableLiveData()
-    var showPasswordMode: MutableLiveData<Boolean> = MutableLiveData()
 
     // Step 3
     // Var to ignore events from previous request(s) to generate a recovery key
@@ -80,7 +79,6 @@ class KeysBackupSetupSharedViewModel @Inject constructor() : ViewModel() {
     var loadingStatus: MutableLiveData<WaitingViewData> = MutableLiveData()
 
     init {
-        showPasswordMode.value = false
         recoveryKey.value = null
         isCreatingBackupVersion.value = false
         prepareRecoverFailError.value = null
@@ -96,9 +94,6 @@ class KeysBackupSetupSharedViewModel @Inject constructor() : ViewModel() {
         // Update requestId
         currentRequestId.value = System.currentTimeMillis()
         isCreatingBackupVersion.value = true
-
-        // Ensure passphrase is hidden during the process
-        showPasswordMode.value = false
 
         recoveryKey.value = null
         prepareRecoverFailError.value = null

@@ -17,19 +17,24 @@
 
 package im.vector.app.features.settings.devices
 
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.internal.crypto.model.CryptoDeviceInfo
-import im.vector.matrix.android.internal.crypto.model.rest.DeviceInfo
 import im.vector.app.core.platform.VectorViewEvents
+import org.matrix.android.sdk.api.auth.registration.RegistrationFlowResponse
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.internal.crypto.model.CryptoDeviceInfo
+import org.matrix.android.sdk.internal.crypto.model.rest.DeviceInfo
 
 /**
  * Transient events for Ignored users screen
  */
 sealed class DevicesViewEvents : VectorViewEvents {
     data class Loading(val message: CharSequence? = null) : DevicesViewEvents()
+
+//    object HideLoading : DevicesViewEvents()
     data class Failure(val throwable: Throwable) : DevicesViewEvents()
 
-    object RequestPassword : DevicesViewEvents()
+//    object RequestPassword : DevicesViewEvents()
+
+    data class RequestReAuth(val registrationFlowResponse: RegistrationFlowResponse, val lastErrorCode: String?) : DevicesViewEvents()
 
     data class PromptRenameDevice(val deviceInfo: DeviceInfo) : DevicesViewEvents()
 

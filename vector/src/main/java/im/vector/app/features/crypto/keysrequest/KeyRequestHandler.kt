@@ -1,7 +1,4 @@
 /*
- * Copyright 2016 OpenMarket Ltd
- * Copyright 2017 Vector Creations Ltd
- * Copyright 2018 New Vector Ltd
  * Copyright 2019 New Vector Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,27 +18,25 @@ package im.vector.app.features.crypto.keysrequest
 
 import android.content.Context
 import im.vector.app.R
+import im.vector.app.core.date.DateFormatKind
+import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.features.popup.DefaultVectorAlert
 import im.vector.app.features.popup.PopupAlertManager
-import im.vector.matrix.android.api.MatrixCallback
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.crypto.keyshare.GossipingRequestListener
-import im.vector.matrix.android.api.session.crypto.verification.SasVerificationTransaction
-import im.vector.matrix.android.api.session.crypto.verification.VerificationService
-import im.vector.matrix.android.api.session.crypto.verification.VerificationTransaction
-import im.vector.matrix.android.api.session.crypto.verification.VerificationTxState
-import im.vector.matrix.android.internal.crypto.IncomingRequestCancellation
-import im.vector.matrix.android.internal.crypto.IncomingRoomKeyRequest
-import im.vector.matrix.android.internal.crypto.IncomingSecretShareRequest
-import im.vector.matrix.android.internal.crypto.crosssigning.DeviceTrustLevel
-import im.vector.matrix.android.internal.crypto.model.CryptoDeviceInfo
-import im.vector.matrix.android.internal.crypto.model.MXUsersDevicesMap
-import im.vector.matrix.android.internal.crypto.model.rest.DeviceInfo
+import org.matrix.android.sdk.api.MatrixCallback
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.crypto.keyshare.GossipingRequestListener
+import org.matrix.android.sdk.api.session.crypto.verification.SasVerificationTransaction
+import org.matrix.android.sdk.api.session.crypto.verification.VerificationService
+import org.matrix.android.sdk.api.session.crypto.verification.VerificationTransaction
+import org.matrix.android.sdk.api.session.crypto.verification.VerificationTxState
+import org.matrix.android.sdk.internal.crypto.IncomingRequestCancellation
+import org.matrix.android.sdk.internal.crypto.IncomingRoomKeyRequest
+import org.matrix.android.sdk.internal.crypto.IncomingSecretShareRequest
+import org.matrix.android.sdk.internal.crypto.crosssigning.DeviceTrustLevel
+import org.matrix.android.sdk.internal.crypto.model.CryptoDeviceInfo
+import org.matrix.android.sdk.internal.crypto.model.MXUsersDevicesMap
+import org.matrix.android.sdk.internal.crypto.model.rest.DeviceInfo
 import timber.log.Timber
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,8 +49,11 @@ import javax.inject.Singleton
  */
 
 @Singleton
-class KeyRequestHandler @Inject constructor(private val context: Context, private val popupAlertManager: PopupAlertManager)
-    : GossipingRequestListener,
+class KeyRequestHandler @Inject constructor(
+        private val context: Context,
+        private val popupAlertManager: PopupAlertManager,
+        private val dateFormatter: VectorDateFormatter
+) : GossipingRequestListener,
         VerificationService.Listener {
 
     private val alertsToRequests = HashMap<String, ArrayList<IncomingRoomKeyRequest>>()
@@ -75,7 +73,7 @@ class KeyRequestHandler @Inject constructor(private val context: Context, privat
     }
 
     override fun onSecretShareRequest(request: IncomingSecretShareRequest): Boolean {
-        // By default riotX will not prompt if the SDK has decided that the request should not be fulfilled
+        // By default Element will not prompt if the SDK has decided that the request should not be fulfilled
         Timber.v("## onSecretShareRequest() : Ignoring $request")
         request.ignore?.run()
         return true
@@ -125,7 +123,7 @@ class KeyRequestHandler @Inject constructor(private val context: Context, privat
                     // can we get more info on this device?
                     session?.cryptoService()?.getMyDevicesInfo()?.firstOrNull { it.deviceId == deviceId }?.let {
                         postAlert(context, userId, deviceId, true, deviceInfo, it)
-                    } ?: kotlin.run {
+                    } ?: run {
                         postAlert(context, userId, deviceId, true, deviceInfo)
                     }
                 } else {
@@ -156,16 +154,7 @@ class KeyRequestHandler @Inject constructor(private val context: Context, privat
                 moreInfo.lastSeenIp
             }
 
-            val lastSeenTime = moreInfo.lastSeenTs?.let { ts ->
-                val dateFormatTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-                val date = Date(ts)
-
-                val time = dateFormatTime.format(date)
-                val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
-
-                dateFormat.format(date) + ", " + time
-            } ?: "-"
-
+            val lastSeenTime = dateFormatter.format(moreInfo.lastSeenTs, DateFormatKind.DEFAULT_DATE_AND_TIME)
             val lastSeenInfo = context.getString(R.string.devices_details_last_seen_format, lastSeenIp, lastSeenTime)
             dialogText = if (wasNewDevice) {
                 context.getString(R.string.you_added_a_new_device_with_info, deviceName, lastSeenInfo)
@@ -194,11 +183,11 @@ class KeyRequestHandler @Inject constructor(private val context: Context, privat
             denyAllRequests(mappingKey)
         }
 
-        alert.addButton(context.getString(R.string.share_without_verifying_short_label), Runnable {
+        alert.addButton(context.getString(R.string.share_without_verifying_short_label), {
             shareAllSessions(mappingKey)
         })
 
-        alert.addButton(context.getString(R.string.ignore_request_short_label), Runnable {
+        alert.addButton(context.getString(R.string.ignore_request_short_label), {
             denyAllRequests(mappingKey)
         })
 
@@ -237,9 +226,9 @@ class KeyRequestHandler @Inject constructor(private val context: Context, privat
 
         val alertMgrUniqueKey = alertManagerId(userId, deviceId)
         alertsToRequests[alertMgrUniqueKey]?.removeAll {
-            it.deviceId == request.deviceId
-                    && it.userId == request.userId
-                    && it.requestId == request.requestId
+            it.deviceId == request.deviceId &&
+                    it.userId == request.userId &&
+                    it.requestId == request.requestId
         }
         if (alertsToRequests[alertMgrUniqueKey]?.isEmpty() == true) {
             popupAlertManager.cancelAlert(alertMgrUniqueKey)

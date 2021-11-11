@@ -20,64 +20,79 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
+import com.google.android.material.appbar.MaterialToolbar
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.extensions.hideKeyboard
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.ToolbarConfigurable
 import im.vector.app.core.platform.VectorBaseActivity
+import im.vector.app.databinding.ActivityRoomDetailBinding
 import im.vector.app.features.home.room.breadcrumbs.BreadcrumbsFragment
+import im.vector.app.features.matrixto.MatrixToBottomSheet
+import im.vector.app.features.navigation.Navigator
 import im.vector.app.features.room.RequireActiveMembershipAction
 import im.vector.app.features.room.RequireActiveMembershipViewEvents
 import im.vector.app.features.room.RequireActiveMembershipViewModel
-import im.vector.app.features.room.RequireActiveMembershipViewState
-import kotlinx.android.synthetic.main.activity_room_detail.*
-import kotlinx.android.synthetic.main.merge_overlay_waiting_view.*
-import javax.inject.Inject
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
+@AndroidEntryPoint
 class RoomDetailActivity :
-        VectorBaseActivity(),
+        VectorBaseActivity<ActivityRoomDetailBinding>(),
         ToolbarConfigurable,
-        RequireActiveMembershipViewModel.Factory {
+        MatrixToBottomSheet.InteractionListener {
 
-    override fun getLayoutRes() = R.layout.activity_room_detail
+    override fun getBinding(): ActivityRoomDetailBinding {
+        return ActivityRoomDetailBinding.inflate(layoutInflater)
+    }
+
+    private val fragmentLifecycleCallbacks = object : FragmentManager.FragmentLifecycleCallbacks() {
+
+        override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+            if (f is MatrixToBottomSheet) {
+                f.interactionListener = this@RoomDetailActivity
+            }
+            super.onFragmentResumed(fm, f)
+        }
+
+        override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+            if (f is MatrixToBottomSheet) {
+                f.interactionListener = null
+            }
+            super.onFragmentPaused(fm, f)
+        }
+    }
+
+    override fun getCoordinatorLayout() = views.coordinatorLayout
 
     private lateinit var sharedActionViewModel: RoomDetailSharedActionViewModel
     private val requireActiveMembershipViewModel: RequireActiveMembershipViewModel by viewModel()
 
-    @Inject
-    lateinit var requireActiveMembershipViewModelFactory: RequireActiveMembershipViewModel.Factory
-
-    override fun create(initialState: RequireActiveMembershipViewState): RequireActiveMembershipViewModel {
-        // Due to shortcut, we cannot use MvRx args. Pass the first roomId here
-        return requireActiveMembershipViewModelFactory.create(initialState.copy(roomId = currentRoomId ?: ""))
-    }
-
-    override fun injectWith(injector: ScreenComponent) {
-        super.injectWith(injector)
-        injector.inject(this)
-    }
-
     // Simple filter
-    private var currentRoomId: String? = null
+    var currentRoomId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        waitingView = waiting_view
+        supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false)
+        waitingView = views.waitingView.waitingView
+        val roomDetailArgs: RoomDetailArgs? = if (intent?.action == ACTION_ROOM_DETAILS_FROM_SHORTCUT) {
+            RoomDetailArgs(roomId = intent?.extras?.getString(EXTRA_ROOM_ID)!!)
+        } else {
+            intent?.extras?.getParcelable(EXTRA_ROOM_DETAIL_ARGS)
+        }
+        if (roomDetailArgs == null) return
+        intent.putExtra(Mavericks.KEY_ARG, roomDetailArgs)
+        currentRoomId = roomDetailArgs.roomId
+
         if (isFirstCreation()) {
-            val roomDetailArgs: RoomDetailArgs? = if (intent?.action == ACTION_ROOM_DETAILS_FROM_SHORTCUT) {
-                RoomDetailArgs(roomId = intent?.extras?.getString(EXTRA_ROOM_ID)!!)
-            } else {
-                intent?.extras?.getParcelable(EXTRA_ROOM_DETAIL_ARGS)
-            }
-
-            if (roomDetailArgs == null) return
-
-            currentRoomId = roomDetailArgs.roomId
             replaceFragment(R.id.roomDetailContainer, RoomDetailFragment::class.java, roomDetailArgs)
             replaceFragment(R.id.roomDetailDrawerContainer, BreadcrumbsFragment::class.java)
         }
@@ -85,20 +100,20 @@ class RoomDetailActivity :
         sharedActionViewModel = viewModelProvider.get(RoomDetailSharedActionViewModel::class.java)
 
         sharedActionViewModel
-                .observe()
-                .subscribe { sharedAction ->
+                .stream()
+                .onEach { sharedAction ->
                     when (sharedAction) {
                         is RoomDetailSharedAction.SwitchToRoom -> switchToRoom(sharedAction)
                     }
                 }
-                .disposeOnDestroy()
+                .launchIn(lifecycleScope)
 
         requireActiveMembershipViewModel.observeViewEvents {
             when (it) {
                 is RequireActiveMembershipViewEvents.RoomLeft -> handleRoomLeft(it)
             }
         }
-        drawerLayout.addDrawerListener(drawerListener)
+        views.drawerLayout.addDrawerListener(drawerListener)
     }
 
     private fun handleRoomLeft(roomLeft: RequireActiveMembershipViewEvents.RoomLeft) {
@@ -109,7 +124,7 @@ class RoomDetailActivity :
     }
 
     private fun switchToRoom(switchToRoom: RoomDetailSharedAction.SwitchToRoom) {
-        drawerLayout.closeDrawer(GravityCompat.START)
+        views.drawerLayout.closeDrawer(GravityCompat.START)
         // Do not replace the Fragment if it's the same roomId
         if (currentRoomId != switchToRoom.roomId) {
             currentRoomId = switchToRoom.roomId
@@ -119,11 +134,12 @@ class RoomDetailActivity :
     }
 
     override fun onDestroy() {
-        drawerLayout.removeDrawerListener(drawerListener)
+        supportFragmentManager.unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks)
+        views.drawerLayout.removeDrawerListener(drawerListener)
         super.onDestroy()
     }
 
-    override fun configure(toolbar: Toolbar) {
+    override fun configure(toolbar: MaterialToolbar) {
         configureToolbar(toolbar)
     }
 
@@ -131,7 +147,7 @@ class RoomDetailActivity :
         override fun onDrawerStateChanged(newState: Int) {
             hideKeyboard()
 
-            if (!drawerLayout.isDrawerOpen(GravityCompat.START) && newState == DrawerLayout.STATE_DRAGGING) {
+            if (!views.drawerLayout.isDrawerOpen(GravityCompat.START) && newState == DrawerLayout.STATE_DRAGGING) {
                 // User is starting to open the drawer, scroll the list to top
                 scrollBreadcrumbsToTop()
             }
@@ -144,8 +160,8 @@ class RoomDetailActivity :
     }
 
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
+        if (views.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            views.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
         }
@@ -170,5 +186,13 @@ class RoomDetailActivity :
                 putExtra(EXTRA_ROOM_ID, roomId)
             }
         }
+    }
+
+    override fun mxToBottomSheetNavigateToRoom(roomId: String) {
+        navigator.openRoom(this, roomId)
+    }
+
+    override fun mxToBottomSheetSwitchToSpace(spaceId: String) {
+        navigator.switchToSpace(this, spaceId, Navigator.PostSwitchSpaceAction.None)
     }
 }

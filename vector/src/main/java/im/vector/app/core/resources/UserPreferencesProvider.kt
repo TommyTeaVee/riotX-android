@@ -40,4 +40,12 @@ class UserPreferencesProvider @Inject constructor(private val vectorPreferences:
     fun neverShowLongClickOnRoomHelpAgain() {
         vectorPreferences.neverShowLongClickOnRoomHelpAgain()
     }
+
+    fun shouldShowJoinLeaves(): Boolean {
+        return vectorPreferences.showJoinLeaveMessages()
+    }
+
+    fun shouldShowAvatarDisplayNameChanges(): Boolean {
+        return vectorPreferences.showAvatarDisplayNameChangeMessages()
+    }
 }

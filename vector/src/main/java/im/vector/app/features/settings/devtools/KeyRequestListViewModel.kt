@@ -16,32 +16,33 @@
 
 package im.vector.app.features.settings.devtools
 
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.asFlow
+import androidx.paging.PagedList
 import com.airbnb.mvrx.Async
-import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxState
-import com.airbnb.mvrx.MvRxViewModelFactory
-import com.airbnb.mvrx.Success
+import com.airbnb.mvrx.MavericksState
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.Uninitialized
-import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.internal.crypto.IncomingRoomKeyRequest
-import im.vector.matrix.android.internal.crypto.OutgoingRoomKeyRequest
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.EmptyAction
 import im.vector.app.core.platform.EmptyViewEvents
 import im.vector.app.core.platform.VectorViewModel
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.internal.crypto.IncomingRoomKeyRequest
+import org.matrix.android.sdk.internal.crypto.OutgoingRoomKeyRequest
 
 data class KeyRequestListViewState(
-        val incomingRequests: Async<List<IncomingRoomKeyRequest>> = Uninitialized,
-        val outgoingRoomKeyRequests: Async<List<OutgoingRoomKeyRequest>> = Uninitialized
-) : MvRxState
+        val incomingRequests: Async<PagedList<IncomingRoomKeyRequest>> = Uninitialized,
+        val outgoingRoomKeyRequests: Async<PagedList<OutgoingRoomKeyRequest>> = Uninitialized
+) : MavericksState
 
 class KeyRequestListViewModel @AssistedInject constructor(@Assisted initialState: KeyRequestListViewState,
-                                                          private val session: Session)
-    : VectorViewModel<KeyRequestListViewState, EmptyAction, EmptyViewEvents>(initialState) {
+                                                          private val session: Session) :
+        VectorViewModel<KeyRequestListViewState, EmptyAction, EmptyViewEvents>(initialState) {
 
     init {
         refresh()
@@ -49,39 +50,25 @@ class KeyRequestListViewModel @AssistedInject constructor(@Assisted initialState
 
     fun refresh() {
         viewModelScope.launch {
-            session.cryptoService().getOutgoingRoomKeyRequests().let {
-                setState {
-                    copy(
-                            outgoingRoomKeyRequests = Success(it)
-                    )
-                }
-            }
-            session.cryptoService().getIncomingRoomKeyRequests().let {
-                setState {
-                    copy(
-                            incomingRequests = Success(it)
-                    )
-                }
-            }
+            session.cryptoService().getOutgoingRoomKeyRequestsPaged().asFlow()
+                    .execute {
+                        copy(outgoingRoomKeyRequests = it)
+                    }
+
+            session.cryptoService().getIncomingRoomKeyRequestsPaged()
+                    .asFlow()
+                    .execute {
+                        copy(incomingRequests = it)
+                    }
         }
     }
 
     override fun handle(action: EmptyAction) {}
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: KeyRequestListViewState): KeyRequestListViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<KeyRequestListViewModel, KeyRequestListViewState> {
+        override fun create(initialState: KeyRequestListViewState): KeyRequestListViewModel
     }
 
-    companion object : MvRxViewModelFactory<KeyRequestListViewModel, KeyRequestListViewState> {
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: KeyRequestListViewState): KeyRequestListViewModel? {
-            val context = viewModelContext as FragmentViewModelContext
-            val factory = (context.fragment as? IncomingKeyRequestListFragment)?.viewModelFactory
-                    ?: (context.fragment as? OutgoingKeyRequestListFragment)?.viewModelFactory
-
-            return factory?.create(state)
-        }
-    }
+    companion object : MavericksViewModelFactory<KeyRequestListViewModel, KeyRequestListViewState> by hiltMavericksViewModelFactory()
 }

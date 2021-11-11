@@ -18,34 +18,37 @@ package im.vector.app.features.roommemberprofile.devices
 
 import android.content.DialogInterface
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.airbnb.mvrx.MvRx
+import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.extensions.commitTransaction
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
+import im.vector.app.databinding.BottomSheetWithFragmentsBinding
 import im.vector.app.features.crypto.verification.VerificationBottomSheet
-import javax.inject.Inject
+import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
-class DeviceListBottomSheet : VectorBaseBottomSheetDialogFragment() {
+@AndroidEntryPoint
+class DeviceListBottomSheet :
+        VectorBaseBottomSheetDialogFragment<BottomSheetWithFragmentsBinding>() {
 
-    override fun getLayoutResId() = R.layout.bottom_sheet_with_fragments
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): BottomSheetWithFragmentsBinding {
+        return BottomSheetWithFragmentsBinding.inflate(inflater, container, false)
+    }
 
     private val viewModel: DeviceListBottomSheetViewModel by fragmentViewModel(DeviceListBottomSheetViewModel::class)
 
-    @Inject lateinit var viewModelFactory: DeviceListBottomSheetViewModel.Factory
-
-    override fun injectWith(injector: ScreenComponent) {
-        injector.inject(this)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         viewModel.observeViewEvents {
             when (it) {
                 is DeviceListBottomSheetViewEvents.Verify -> {
@@ -104,10 +107,16 @@ class DeviceListBottomSheet : VectorBaseBottomSheetDialogFragment() {
         }
     }
 
+    @Parcelize
+    data class Args(
+            val userId: String,
+            val allowDeviceAction: Boolean
+    ) : Parcelable
+
     companion object {
-        fun newInstance(userId: String): DeviceListBottomSheet {
+        fun newInstance(userId: String, allowDeviceAction: Boolean = true): DeviceListBottomSheet {
             val args = Bundle()
-            args.putString(MvRx.KEY_ARG, userId)
+            args.putParcelable(Mavericks.KEY_ARG, Args(userId, allowDeviceAction))
             return DeviceListBottomSheet().apply { arguments = args }
         }
     }

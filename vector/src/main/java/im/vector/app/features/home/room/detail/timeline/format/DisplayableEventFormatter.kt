@@ -20,15 +20,18 @@ import im.vector.app.EmojiCompatWrapper
 import im.vector.app.R
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
-import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.events.model.toModel
-import im.vector.matrix.android.api.session.room.model.message.MessageType
-import im.vector.matrix.android.api.session.room.model.relation.ReactionContent
-import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
-import im.vector.matrix.android.api.session.room.timeline.getLastMessageContent
-import im.vector.matrix.android.api.session.room.timeline.getTextEditableContent
-import im.vector.matrix.android.api.session.room.timeline.isReply
 import me.gujun.android.span.span
+import org.matrix.android.sdk.api.session.events.model.EventType
+import org.matrix.android.sdk.api.session.events.model.toModel
+import org.matrix.android.sdk.api.session.room.model.message.MessageAudioContent
+import org.matrix.android.sdk.api.session.room.model.message.MessageOptionsContent
+import org.matrix.android.sdk.api.session.room.model.message.MessageType
+import org.matrix.android.sdk.api.session.room.model.message.OPTION_TYPE_BUTTONS
+import org.matrix.android.sdk.api.session.room.model.relation.ReactionContent
+import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
+import org.matrix.android.sdk.api.session.room.timeline.getLastMessageContent
+import org.matrix.android.sdk.api.session.room.timeline.getTextEditableContent
+import org.matrix.android.sdk.api.session.room.timeline.isReply
 import javax.inject.Inject
 
 class DisplayableEventFormatter @Inject constructor(
@@ -38,29 +41,29 @@ class DisplayableEventFormatter @Inject constructor(
         private val noticeEventFormatter: NoticeEventFormatter
 ) {
 
-    fun format(timelineEvent: TimelineEvent, appendAuthor: Boolean): CharSequence {
+    fun format(timelineEvent: TimelineEvent, isDm: Boolean, appendAuthor: Boolean): CharSequence {
         if (timelineEvent.root.isRedacted()) {
             return noticeEventFormatter.formatRedactedEvent(timelineEvent.root)
         }
 
-        if (timelineEvent.root.isEncrypted()
-                && timelineEvent.root.mxDecryptionResult == null) {
+        if (timelineEvent.root.isEncrypted() &&
+                timelineEvent.root.mxDecryptionResult == null) {
             return stringProvider.getString(R.string.encrypted_message)
         }
 
         val senderName = timelineEvent.senderInfo.disambiguatedDisplayName
 
         when (timelineEvent.root.getClearType()) {
-            EventType.STICKER  -> {
+            EventType.STICKER               -> {
                 return simpleFormat(senderName, stringProvider.getString(R.string.send_a_sticker), appendAuthor)
             }
-            EventType.REACTION -> {
+            EventType.REACTION              -> {
                 timelineEvent.root.getClearContent().toModel<ReactionContent>()?.relatesTo?.let {
-                    val emojiSpanned = emojiCompatWrapper.safeEmojiSpanify(it.key)
+                    val emojiSpanned = emojiCompatWrapper.safeEmojiSpanify(stringProvider.getString(R.string.sent_a_reaction, it.key))
                     return simpleFormat(senderName, emojiSpanned, appendAuthor)
                 }
             }
-            EventType.MESSAGE  -> {
+            EventType.MESSAGE               -> {
                 timelineEvent.getLastMessageContent()?.let { messageContent ->
                     when (messageContent.msgType) {
                         MessageType.MSGTYPE_VERIFICATION_REQUEST -> {
@@ -70,7 +73,11 @@ class DisplayableEventFormatter @Inject constructor(
                             return simpleFormat(senderName, stringProvider.getString(R.string.sent_an_image), appendAuthor)
                         }
                         MessageType.MSGTYPE_AUDIO                -> {
-                            return simpleFormat(senderName, stringProvider.getString(R.string.sent_an_audio_file), appendAuthor)
+                            if ((messageContent as? MessageAudioContent)?.voiceMessageIndicator != null) {
+                                return simpleFormat(senderName, stringProvider.getString(R.string.sent_a_voice_message), appendAuthor)
+                            } else {
+                                return simpleFormat(senderName, stringProvider.getString(R.string.sent_an_audio_file), appendAuthor)
+                            }
                         }
                         MessageType.MSGTYPE_VIDEO                -> {
                             return simpleFormat(senderName, stringProvider.getString(R.string.sent_a_video), appendAuthor)
@@ -88,15 +95,47 @@ class DisplayableEventFormatter @Inject constructor(
                                 simpleFormat(senderName, messageContent.body, appendAuthor)
                             }
                         }
+                        MessageType.MSGTYPE_RESPONSE             -> {
+                            // do not show that?
+                            return span { }
+                        }
+                        MessageType.MSGTYPE_OPTIONS              -> {
+                            return when (messageContent) {
+                                is MessageOptionsContent -> {
+                                    val previewText = if (messageContent.optionType == OPTION_TYPE_BUTTONS) {
+                                        stringProvider.getString(R.string.sent_a_bot_buttons)
+                                    } else {
+                                        stringProvider.getString(R.string.sent_a_poll)
+                                    }
+                                    simpleFormat(senderName, previewText, appendAuthor)
+                                }
+                                else                     -> {
+                                    span { }
+                                }
+                            }
+                        }
                         else                                     -> {
                             return simpleFormat(senderName, messageContent.body, appendAuthor)
                         }
                     }
                 }
             }
-            else               -> {
+            EventType.KEY_VERIFICATION_CANCEL,
+            EventType.KEY_VERIFICATION_DONE -> {
+                // cancel and done can appear in timeline, so should have representation
+                return simpleFormat(senderName, stringProvider.getString(R.string.sent_verification_conclusion), appendAuthor)
+            }
+            EventType.KEY_VERIFICATION_START,
+            EventType.KEY_VERIFICATION_ACCEPT,
+            EventType.KEY_VERIFICATION_MAC,
+            EventType.KEY_VERIFICATION_KEY,
+            EventType.KEY_VERIFICATION_READY,
+            EventType.CALL_CANDIDATES       -> {
+                return span { }
+            }
+            else                            -> {
                 return span {
-                    text = noticeEventFormatter.format(timelineEvent) ?: ""
+                    text = noticeEventFormatter.format(timelineEvent, isDm) ?: ""
                     textStyle = "italic"
                 }
             }
@@ -109,7 +148,7 @@ class DisplayableEventFormatter @Inject constructor(
         return if (appendAuthor) {
             span {
                 text = senderName
-                textColor = colorProvider.getColorFromAttribute(R.attr.riotx_text_primary)
+                textColor = colorProvider.getColorFromAttribute(R.attr.vctr_content_primary)
             }
                     .append(": ")
                     .append(body)

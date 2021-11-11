@@ -20,36 +20,35 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.widget.SearchView
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.ScreenComponent
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.VectorBaseActivity
+import im.vector.app.databinding.ActivityFilteredRoomsBinding
 import im.vector.app.features.home.RoomListDisplayMode
 import im.vector.app.features.home.room.list.RoomListFragment
 import im.vector.app.features.home.room.list.RoomListParams
-import kotlinx.android.synthetic.main.activity_filtered_rooms.*
 
-class FilteredRoomsActivity : VectorBaseActivity() {
+@AndroidEntryPoint
+class FilteredRoomsActivity : VectorBaseActivity<ActivityFilteredRoomsBinding>() {
 
     private val roomListFragment: RoomListFragment?
         get() {
             return supportFragmentManager.findFragmentByTag(FRAGMENT_TAG) as? RoomListFragment
         }
 
-    override fun getLayoutRes() = R.layout.activity_filtered_rooms
+    override fun getBinding() = ActivityFilteredRoomsBinding.inflate(layoutInflater)
 
-    override fun injectWith(injector: ScreenComponent) {
-        injector.inject(this)
-    }
+    override fun getCoordinatorLayout() = views.coordinatorLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        configureToolbar(filteredRoomsToolbar)
+        configureToolbar(views.filteredRoomsToolbar)
         if (isFirstCreation()) {
             val params = RoomListParams(RoomListDisplayMode.FILTERED)
             replaceFragment(R.id.filteredRoomsFragmentContainer, RoomListFragment::class.java, params, FRAGMENT_TAG)
         }
-        filteredRoomsSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        views.filteredRoomsSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 return true
             }
@@ -60,7 +59,7 @@ class FilteredRoomsActivity : VectorBaseActivity() {
             }
         })
         // Open the keyboard immediately
-        filteredRoomsSearchView.requestFocus()
+        views.filteredRoomsSearchView.requestFocus()
     }
 
     companion object {

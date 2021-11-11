@@ -24,6 +24,9 @@ import androidx.core.view.isVisible
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
 import im.vector.app.R
+import im.vector.app.core.epoxy.ClickListener
+import im.vector.app.core.epoxy.onClick
+import im.vector.app.core.files.LocalFilesHelper
 import im.vector.app.core.glide.GlideApp
 import im.vector.app.features.home.room.detail.timeline.helper.ContentUploadStateTrackerBinder
 import im.vector.app.features.media.ImageContentRenderer
@@ -33,14 +36,19 @@ abstract class MessageImageVideoItem : AbsMessageItem<MessageImageVideoItem.Hold
 
     @EpoxyAttribute
     lateinit var mediaData: ImageContentRenderer.Data
+
     @EpoxyAttribute
     var playable: Boolean = false
+
     @EpoxyAttribute
     var mode = ImageContentRenderer.Mode.THUMBNAIL
+
     @EpoxyAttribute(EpoxyAttribute.Option.DoNotHash)
-    var clickListener: View.OnClickListener? = null
+    var clickListener: ClickListener? = null
+
     @EpoxyAttribute
     lateinit var imageContentRenderer: ImageContentRenderer
+
     @EpoxyAttribute
     lateinit var contentUploadStateTrackerBinder: ContentUploadStateTrackerBinder
 
@@ -48,22 +56,25 @@ abstract class MessageImageVideoItem : AbsMessageItem<MessageImageVideoItem.Hold
         super.bind(holder)
         imageContentRenderer.render(mediaData, mode, holder.imageView)
         if (!attributes.informationData.sendState.hasFailed()) {
-            contentUploadStateTrackerBinder.bind(attributes.informationData.eventId, mediaData.isLocalFile(), holder.progressLayout)
+            contentUploadStateTrackerBinder.bind(
+                    attributes.informationData.eventId,
+                    LocalFilesHelper(holder.view.context).isLocalFile(mediaData.url),
+                    holder.progressLayout
+            )
         } else {
             holder.progressLayout.isVisible = false
         }
-        holder.imageView.setOnClickListener(clickListener)
+        holder.imageView.onClick(clickListener)
         holder.imageView.setOnLongClickListener(attributes.itemLongClickListener)
         ViewCompat.setTransitionName(holder.imageView, "imagePreview_${id()}")
-        holder.mediaContentView.setOnClickListener(attributes.itemClickListener)
+        holder.mediaContentView.onClick(attributes.itemClickListener)
         holder.mediaContentView.setOnLongClickListener(attributes.itemLongClickListener)
-        // The sending state color will be apply to the progress text
-        renderSendState(holder.imageView, null, holder.failedToSendIndicator)
         holder.playContentView.visibility = if (playable) View.VISIBLE else View.GONE
     }
 
     override fun unbind(holder: Holder) {
         GlideApp.with(holder.view.context.applicationContext).clear(holder.imageView)
+        imageContentRenderer.clear(holder.imageView)
         contentUploadStateTrackerBinder.unbind(attributes.informationData.eventId)
         holder.imageView.setOnClickListener(null)
         holder.imageView.setOnLongClickListener(null)
@@ -76,9 +87,7 @@ abstract class MessageImageVideoItem : AbsMessageItem<MessageImageVideoItem.Hold
         val progressLayout by bind<ViewGroup>(R.id.messageMediaUploadProgressLayout)
         val imageView by bind<ImageView>(R.id.messageThumbnailView)
         val playContentView by bind<ImageView>(R.id.messageMediaPlayView)
-
         val mediaContentView by bind<ViewGroup>(R.id.messageContentMedia)
-        val failedToSendIndicator by bind<ImageView>(R.id.messageFailToSendIndicator)
     }
 
     companion object {

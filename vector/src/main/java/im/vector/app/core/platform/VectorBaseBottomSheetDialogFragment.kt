@@ -17,6 +17,7 @@ package im.vector.app.core.platform
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -24,43 +25,39 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.CallSuper
-import androidx.annotation.LayoutRes
 import androidx.lifecycle.ViewModelProvider
-import butterknife.ButterKnife
-import butterknife.Unbinder
-import com.airbnb.mvrx.MvRx
-import com.airbnb.mvrx.MvRxView
-import com.airbnb.mvrx.MvRxViewId
+import androidx.lifecycle.lifecycleScope
+import androidx.viewbinding.ViewBinding
+import com.airbnb.mvrx.Mavericks
+import com.airbnb.mvrx.MavericksView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.jakewharton.rxbinding3.view.clicks
-import im.vector.app.core.di.DaggerScreenComponent
-import im.vector.app.core.di.ScreenComponent
+import dagger.hilt.android.EntryPointAccessors
+import im.vector.app.core.di.ActivityEntryPoint
+import im.vector.app.core.flow.throttleFirst
 import im.vector.app.core.utils.DimensionConverter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 
 /**
- * Add MvRx capabilities to bottomsheetdialog (like BaseMvRxFragment)
+ * Add Mavericks capabilities, handle DI and bindings.
  */
-abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment(), MvRxView {
-
-    private val mvrxViewIdProperty = MvRxViewId()
-    final override val mvrxViewId: String by mvrxViewIdProperty
-    private lateinit var screenComponent: ScreenComponent
+abstract class VectorBaseBottomSheetDialogFragment<VB : ViewBinding> : BottomSheetDialogFragment(), MavericksView {
 
     /* ==========================================================================================
      * View
      * ========================================================================================== */
 
-    @LayoutRes
-    abstract fun getLayoutResId(): Int
+    private var _binding: VB? = null
 
-    private var unBinder: Unbinder? = null
+    // This property is only valid between onCreateView and onDestroyView.
+    protected val views: VB
+        get() = _binding!!
+
+    abstract fun getBinding(inflater: LayoutInflater, container: ViewGroup?): VB
 
     /* ==========================================================================================
      * View model
@@ -80,49 +77,55 @@ abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment()
 
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
 
-    val vectorBaseActivity: VectorBaseActivity by lazy {
-        activity as VectorBaseActivity
+    val vectorBaseActivity: VectorBaseActivity<*> by lazy {
+        activity as VectorBaseActivity<*>
     }
 
     open val showExpanded = false
 
+    interface ResultListener {
+        fun onBottomSheetResult(resultCode: Int, data: Any?)
+
+        companion object {
+            const val RESULT_OK = 1
+            const val RESULT_CANCEL = 0
+        }
+    }
+
+    var resultListener: ResultListener? = null
+    var bottomSheetResult: Int = ResultListener.RESULT_CANCEL
+    var bottomSheetResultData: Any? = null
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        resultListener?.onBottomSheetResult(bottomSheetResult, bottomSheetResultData)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(getLayoutResId(), container, false)
-        unBinder = ButterKnife.bind(this, view)
-        return view
+        _binding = getBinding(inflater, container)
+        return views.root
     }
 
     @CallSuper
     override fun onDestroyView() {
+        _binding = null
         super.onDestroyView()
-        unBinder?.unbind()
-        unBinder = null
-        uiDisposables.clear()
     }
 
     @CallSuper
     override fun onDestroy() {
-        uiDisposables.dispose()
         super.onDestroy()
     }
 
     override fun onAttach(context: Context) {
-        screenComponent = DaggerScreenComponent.factory().create(vectorBaseActivity.getVectorComponent(), vectorBaseActivity)
-        viewModelFactory = screenComponent.viewModelFactory()
+        val activityEntryPoint = EntryPointAccessors.fromActivity(vectorBaseActivity, ActivityEntryPoint::class.java)
+        viewModelFactory = activityEntryPoint.viewModelFactory()
         super.onAttach(context)
-        injectWith(screenComponent)
-    }
-
-    protected open fun injectWith(injector: ScreenComponent) = Unit
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        mvrxViewIdProperty.restoreFrom(savedInstanceState)
-        super.onCreate(savedInstanceState)
     }
 
     override fun onResume() {
         super.onResume()
-        Timber.i("onResume BottomSheet ${this.javaClass.simpleName}")
+        Timber.i("onResume BottomSheet ${javaClass.simpleName}")
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -136,11 +139,6 @@ abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment()
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        mvrxViewIdProperty.saveTo(outState)
-    }
-
     override fun onStart() {
         super.onStart()
         // This ensures that invalidate() is called for static screens that don't
@@ -150,6 +148,10 @@ abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment()
 
     @CallSuper
     override fun invalidate() {
+        forceExpandState()
+    }
+
+    protected fun forceExpandState() {
         if (showExpanded) {
             // Force the bottom sheet to be expanded
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -157,18 +159,7 @@ abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment()
     }
 
     protected fun setArguments(args: Parcelable? = null) {
-        arguments = args?.let { Bundle().apply { putParcelable(MvRx.KEY_ARG, it) } }
-    }
-
-    /* ==========================================================================================
-     * Disposable
-     * ========================================================================================== */
-
-    private val uiDisposables = CompositeDisposable()
-
-    protected fun Disposable.disposeOnDestroyView(): Disposable {
-        uiDisposables.add(this)
-        return this
+        arguments = args?.let { Bundle().apply { putParcelable(Mavericks.KEY_ARG, it) } }
     }
 
     /* ==========================================================================================
@@ -177,10 +168,9 @@ abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment()
 
     protected fun View.debouncedClicks(onClicked: () -> Unit) {
         clicks()
-                .throttleFirst(300, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { onClicked() }
-                .disposeOnDestroyView()
+                .throttleFirst(300)
+                .onEach { onClicked() }
+                .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     /* ==========================================================================================
@@ -189,11 +179,10 @@ abstract class VectorBaseBottomSheetDialogFragment : BottomSheetDialogFragment()
 
     protected fun <T : VectorViewEvents> VectorViewModel<*, *, T>.observeViewEvents(observer: (T) -> Unit) {
         viewEvents
-                .observe()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
+                .stream()
+                .onEach {
                     observer(it)
                 }
-                .disposeOnDestroyView()
+                .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 }

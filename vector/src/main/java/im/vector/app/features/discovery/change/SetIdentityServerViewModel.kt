@@ -15,53 +15,46 @@
  */
 package im.vector.app.features.discovery.change
 
-import androidx.lifecycle.viewModelScope
-import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxViewModelFactory
+import com.airbnb.mvrx.MavericksViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.EntryPoints
 import im.vector.app.R
-import im.vector.app.core.di.HasScreenInjector
+import im.vector.app.core.di.MavericksAssistedViewModelFactory
+import im.vector.app.core.di.SingletonEntryPoint
+import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.ensureProtocol
-import im.vector.matrix.android.api.failure.Failure
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.identity.IdentityServiceError
-import im.vector.matrix.android.api.session.terms.GetTermsResponse
-import im.vector.matrix.android.api.session.terms.TermsService
-import im.vector.matrix.android.internal.util.awaitCallback
 import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.failure.Failure
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.identity.IdentityServiceError
+import org.matrix.android.sdk.api.session.terms.TermsService
 import java.net.UnknownHostException
 
 class SetIdentityServerViewModel @AssistedInject constructor(
         @Assisted initialState: SetIdentityServerState,
         private val mxSession: Session,
-        stringProvider: StringProvider)
-    : VectorViewModel<SetIdentityServerState, SetIdentityServerAction, SetIdentityServerViewEvents>(initialState) {
+        stringProvider: StringProvider) :
+    VectorViewModel<SetIdentityServerState, SetIdentityServerAction, SetIdentityServerViewEvents>(initialState) {
 
-    @AssistedInject.Factory
-    interface Factory {
-        fun create(initialState: SetIdentityServerState): SetIdentityServerViewModel
+    @AssistedFactory
+    interface Factory : MavericksAssistedViewModelFactory<SetIdentityServerViewModel, SetIdentityServerState> {
+        override fun create(initialState: SetIdentityServerState): SetIdentityServerViewModel
     }
 
-    companion object : MvRxViewModelFactory<SetIdentityServerViewModel, SetIdentityServerState> {
+    companion object : MavericksViewModelFactory<SetIdentityServerViewModel, SetIdentityServerState> by hiltMavericksViewModelFactory() {
 
-        override fun initialState(viewModelContext: ViewModelContext): SetIdentityServerState? {
-            val session = (viewModelContext.activity as HasScreenInjector).injector().activeSessionHolder().getActiveSession()
-
+        override fun initialState(viewModelContext: ViewModelContext): SetIdentityServerState {
+            val session = EntryPoints.get(viewModelContext.app(), SingletonEntryPoint::class.java).activeSessionHolder().getActiveSession()
             return SetIdentityServerState(
                     homeServerUrl = session.sessionParams.homeServerUrl,
                     defaultIdentityServerUrl = session.identityService().getDefaultIdentityServer()
             )
-        }
-
-        @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: SetIdentityServerState): SetIdentityServerViewModel? {
-            val fragment: SetIdentityServerFragment = (viewModelContext as FragmentViewModelContext).fragment()
-            return fragment.viewModelFactory.create(state)
         }
     }
 
@@ -97,9 +90,7 @@ class SetIdentityServerViewModel @AssistedInject constructor(
         viewModelScope.launch {
             try {
                 // First ping the identity server v2 API
-                awaitCallback<Unit> {
-                    mxSession.identityService().isValidIdentityServer(baseUrl, it)
-                }
+                mxSession.identityService().isValidIdentityServer(baseUrl)
                 // Ok, next step
                 checkTerms(baseUrl)
             } catch (failure: Throwable) {
@@ -117,9 +108,7 @@ class SetIdentityServerViewModel @AssistedInject constructor(
 
     private suspend fun checkTerms(baseUrl: String) {
         try {
-            val data = awaitCallback<GetTermsResponse> {
-                mxSession.getTerms(TermsService.ServiceType.IdentityService, baseUrl, it)
-            }
+            val data = mxSession.getTerms(TermsService.ServiceType.IdentityService, baseUrl)
 
             // has all been accepted?
             val resp = data.serverResponse

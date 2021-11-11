@@ -24,9 +24,9 @@ import android.widget.EditText
 import com.otaliastudios.autocomplete.Autocomplete
 import com.otaliastudios.autocomplete.AutocompleteCallback
 import com.otaliastudios.autocomplete.CharPolicy
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import im.vector.app.R
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import im.vector.app.core.glide.GlideApp
 import im.vector.app.core.glide.GlideRequests
 import im.vector.app.features.autocomplete.command.AutocompleteCommandPresenter
@@ -36,15 +36,16 @@ import im.vector.app.features.autocomplete.group.AutocompleteGroupPresenter
 import im.vector.app.features.autocomplete.member.AutocompleteMemberPresenter
 import im.vector.app.features.autocomplete.room.AutocompleteRoomPresenter
 import im.vector.app.features.command.Command
+import im.vector.app.features.displayname.getBestName
 import im.vector.app.features.home.AvatarRenderer
 import im.vector.app.features.html.PillImageSpan
 import im.vector.app.features.themes.ThemeUtils
-import im.vector.matrix.android.api.session.group.model.GroupSummary
-import im.vector.matrix.android.api.session.room.model.RoomMemberSummary
-import im.vector.matrix.android.api.session.room.model.RoomSummary
-import im.vector.matrix.android.api.util.MatrixItem
-import im.vector.matrix.android.api.util.toMatrixItem
-import im.vector.matrix.android.api.util.toRoomAliasMatrixItem
+import org.matrix.android.sdk.api.session.group.model.GroupSummary
+import org.matrix.android.sdk.api.session.room.model.RoomMemberSummary
+import org.matrix.android.sdk.api.session.room.model.RoomSummary
+import org.matrix.android.sdk.api.util.MatrixItem
+import org.matrix.android.sdk.api.util.toMatrixItem
+import org.matrix.android.sdk.api.util.toRoomAliasMatrixItem
 
 class AutoCompleter @AssistedInject constructor(
         @Assisted val roomId: String,
@@ -59,7 +60,7 @@ class AutoCompleter @AssistedInject constructor(
 
     private lateinit var autocompleteMemberPresenter: AutocompleteMemberPresenter
 
-    @AssistedInject.Factory
+    @AssistedFactory
     interface Factory {
         fun create(roomId: String): AutoCompleter
     }
@@ -79,7 +80,7 @@ class AutoCompleter @AssistedInject constructor(
     fun setup(editText: EditText) {
         this.editText = editText
         glideRequests = GlideApp.with(editText)
-        val backgroundDrawable = ColorDrawable(ThemeUtils.getColor(editText.context, R.attr.riotx_background))
+        val backgroundDrawable = ColorDrawable(ThemeUtils.getColor(editText.context, android.R.attr.colorBackground))
         setupCommands(backgroundDrawable, editText)
         setupMembers(backgroundDrawable, editText)
         setupGroups(backgroundDrawable, editText)
@@ -219,8 +220,15 @@ class AutoCompleter @AssistedInject constructor(
         // Replace the word by its completion
         val displayName = matrixItem.getBestName()
 
-        // with a trailing space
-        editable.replace(startIndex, endIndex, "$displayName ")
+        // Adding trailing space " " or ": " if the user started mention someone
+        val displayNameSuffix =
+                if (firstChar == "@" && startIndex == 0) {
+                    ": "
+                } else {
+                    " "
+                }
+
+        editable.replace(startIndex, endIndex, "$displayName$displayNameSuffix")
 
         // Add the span
         val span = PillImageSpan(

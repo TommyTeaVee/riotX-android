@@ -17,53 +17,57 @@
 package im.vector.app.features.roomprofile.uploads
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 import com.airbnb.mvrx.args
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import im.vector.matrix.android.api.util.toMatrixItem
 import im.vector.app.R
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.intent.getMimeTypeFromUri
 import im.vector.app.core.platform.VectorBaseFragment
-import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.saveMedia
 import im.vector.app.core.utils.shareMedia
+import im.vector.app.databinding.FragmentRoomUploadsBinding
 import im.vector.app.features.home.AvatarRenderer
 import im.vector.app.features.notifications.NotificationUtils
 import im.vector.app.features.roomprofile.RoomProfileArgs
-import kotlinx.android.synthetic.main.fragment_room_uploads.*
+import kotlinx.coroutines.launch
+import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
 
 class RoomUploadsFragment @Inject constructor(
-        private val viewModelFactory: RoomUploadsViewModel.Factory,
-        private val stringProvider: StringProvider,
         private val avatarRenderer: AvatarRenderer,
         private val notificationUtils: NotificationUtils
-) : VectorBaseFragment(), RoomUploadsViewModel.Factory by viewModelFactory {
+) : VectorBaseFragment<FragmentRoomUploadsBinding>() {
 
     private val roomProfileArgs: RoomProfileArgs by args()
 
     private val viewModel: RoomUploadsViewModel by fragmentViewModel()
 
-    override fun getLayoutResId() = R.layout.fragment_room_uploads
+    override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentRoomUploadsBinding {
+        return FragmentRoomUploadsBinding.inflate(inflater, container, false)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val sectionsPagerAdapter = RoomUploadsPagerAdapter(this)
-        roomUploadsViewPager.adapter = sectionsPagerAdapter
+        views.roomUploadsViewPager.adapter = sectionsPagerAdapter
 
-        TabLayoutMediator(roomUploadsTabs, roomUploadsViewPager) { tab, position ->
+        TabLayoutMediator(views.roomUploadsTabs, views.roomUploadsViewPager) { tab, position ->
             when (position) {
-                0 -> tab.text = stringProvider.getString(R.string.uploads_media_title)
-                1 -> tab.text = stringProvider.getString(R.string.uploads_files_title)
+                0 -> tab.text = getString(R.string.uploads_media_title)
+                1 -> tab.text = getString(R.string.uploads_files_title)
             }
         }.attach()
 
-        setupToolbar(roomUploadsToolbar)
+        setupToolbar(views.roomUploadsToolbar)
 
         viewModel.observeViewEvents {
             when (it) {
@@ -71,13 +75,21 @@ class RoomUploadsFragment @Inject constructor(
                     shareMedia(requireContext(), it.file, getMimeTypeFromUri(requireContext(), it.file.toUri()))
                 }
                 is RoomUploadsViewEvents.FileReadyForSaving  -> {
-                    saveMedia(
-                            context = requireContext(),
-                            file = it.file,
-                            title = it.title,
-                            mediaMimeType = getMimeTypeFromUri(requireContext(), it.file.toUri()),
-                            notificationUtils = notificationUtils
-                    )
+                    lifecycleScope.launch {
+                        runCatching {
+                            saveMedia(
+                                    context = requireContext(),
+                                    file = it.file,
+                                    title = it.title,
+                                    mediaMimeType = getMimeTypeFromUri(requireContext(), it.file.toUri()),
+                                    notificationUtils = notificationUtils
+                            )
+                        }.onFailure { failure ->
+                            if (!isAdded) return@onFailure
+                            showErrorInSnackbar(failure)
+                        }
+                    }
+                    Unit
                 }
                 is RoomUploadsViewEvents.Failure             -> showFailure(it.throwable)
             }.exhaustive
@@ -90,8 +102,12 @@ class RoomUploadsFragment @Inject constructor(
 
     private fun renderRoomSummary(state: RoomUploadsViewState) {
         state.roomSummary()?.let {
-            roomUploadsToolbarTitleView.text = it.displayName
-            avatarRenderer.render(it.toMatrixItem(), roomUploadsToolbarAvatarImageView)
+            views.roomUploadsToolbarTitleView.text = it.displayName
+            views.roomUploadsDecorationToolbarAvatarImageView.render(it.roomEncryptionTrustLevel)
+            avatarRenderer.render(it.toMatrixItem(), views.roomUploadsToolbarAvatarImageView)
         }
     }
+
+    val roomUploadsAppBar: AppBarLayout
+        get() = views.roomUploadsAppBar
 }

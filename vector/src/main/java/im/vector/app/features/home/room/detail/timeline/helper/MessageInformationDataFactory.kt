@@ -1,44 +1,47 @@
 /*
-
-  * Copyright 2019 New Vector Ltd
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *     http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-
+ * Copyright 2019 New Vector Ltd
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package im.vector.app.features.home.room.detail.timeline.helper
 
+import im.vector.app.core.date.DateFormatKind
 import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.core.extensions.localDateTime
-import im.vector.app.core.resources.ColorProvider
+import im.vector.app.features.home.room.detail.timeline.factory.TimelineItemFactoryParams
 import im.vector.app.features.home.room.detail.timeline.item.E2EDecoration
 import im.vector.app.features.home.room.detail.timeline.item.MessageInformationData
 import im.vector.app.features.home.room.detail.timeline.item.PollResponseData
 import im.vector.app.features.home.room.detail.timeline.item.ReactionInfoData
-import im.vector.app.features.home.room.detail.timeline.item.ReadReceiptData
 import im.vector.app.features.home.room.detail.timeline.item.ReferencesInfoData
-import im.vector.matrix.android.api.extensions.orFalse
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.events.model.EventType
-import im.vector.matrix.android.api.session.events.model.toModel
-import im.vector.matrix.android.api.session.room.model.ReferencesAggregatedContent
-import im.vector.matrix.android.api.session.room.model.message.MessageVerificationRequestContent
-import im.vector.matrix.android.api.session.room.send.SendState
-import im.vector.matrix.android.api.session.room.timeline.TimelineEvent
-import im.vector.matrix.android.api.session.room.timeline.getLastMessageContent
-import im.vector.matrix.android.api.session.room.timeline.hasBeenEdited
-import im.vector.matrix.android.internal.crypto.model.event.EncryptedEventContent
-import im.vector.matrix.android.internal.session.room.VerificationState
+import im.vector.app.features.home.room.detail.timeline.item.SendStateDecoration
+import im.vector.app.features.settings.VectorPreferences
+import org.matrix.android.sdk.api.crypto.VerificationState
+import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.events.model.EventType
+import org.matrix.android.sdk.api.session.events.model.isAttachmentMessage
+import org.matrix.android.sdk.api.session.events.model.toModel
+import org.matrix.android.sdk.api.session.room.model.ReferencesAggregatedContent
+import org.matrix.android.sdk.api.session.room.model.RoomSummary
+import org.matrix.android.sdk.api.session.room.model.message.MessageVerificationRequestContent
+import org.matrix.android.sdk.api.session.room.send.SendState
+import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
+import org.matrix.android.sdk.api.session.room.timeline.getLastMessageContent
+import org.matrix.android.sdk.api.session.room.timeline.hasBeenEdited
+import org.matrix.android.sdk.api.session.room.timeline.isEdition
+import org.matrix.android.sdk.internal.crypto.model.event.EncryptedEventContent
 import javax.inject.Inject
 
 /**
@@ -46,30 +49,45 @@ import javax.inject.Inject
  * This class compute if data of an event (such has avatar, display name, ...) should be displayed, depending on the previous event in the timeline
  */
 class MessageInformationDataFactory @Inject constructor(private val session: Session,
-                                                        private val roomSummaryHolder: RoomSummaryHolder,
                                                         private val dateFormatter: VectorDateFormatter,
-                                                        private val colorProvider: ColorProvider) {
+                                                        private val visibilityHelper: TimelineEventVisibilityHelper,
+                                                        private val vectorPreferences: VectorPreferences) {
 
-    fun create(event: TimelineEvent, nextEvent: TimelineEvent?): MessageInformationData {
-        // Non nullability has been tested before
-        val eventId = event.root.eventId!!
+    fun create(params: TimelineItemFactoryParams): MessageInformationData {
+        val event = params.event
+        val nextDisplayableEvent = params.nextDisplayableEvent
+        val eventId = event.eventId
 
         val date = event.root.localDateTime()
-        val nextDate = nextEvent?.root?.localDateTime()
+        val nextDate = nextDisplayableEvent?.root?.localDateTime()
         val addDaySeparator = date.toLocalDate() != nextDate?.toLocalDate()
         val isNextMessageReceivedMoreThanOneHourAgo = nextDate?.isBefore(date.minusMinutes(60))
                 ?: false
 
         val showInformation =
-                addDaySeparator
-                        || event.senderInfo.avatarUrl != nextEvent?.senderInfo?.avatarUrl
-                        || event.senderInfo.disambiguatedDisplayName != nextEvent?.senderInfo?.disambiguatedDisplayName
-                        || (nextEvent.root.getClearType() != EventType.MESSAGE && nextEvent.root.getClearType() != EventType.ENCRYPTED)
-                        || isNextMessageReceivedMoreThanOneHourAgo
-                        || isTileTypeMessage(nextEvent)
+                addDaySeparator ||
+                        event.senderInfo.avatarUrl != nextDisplayableEvent?.senderInfo?.avatarUrl ||
+                        event.senderInfo.disambiguatedDisplayName != nextDisplayableEvent?.senderInfo?.disambiguatedDisplayName ||
+                        nextDisplayableEvent.root.getClearType() !in listOf(EventType.MESSAGE, EventType.STICKER, EventType.ENCRYPTED) ||
+                        isNextMessageReceivedMoreThanOneHourAgo ||
+                        isTileTypeMessage(nextDisplayableEvent) ||
+                        nextDisplayableEvent.isEdition()
 
-        val time = dateFormatter.formatMessageHour(date)
-        val e2eDecoration = getE2EDecoration(event)
+        val time = dateFormatter.format(event.root.originServerTs, DateFormatKind.MESSAGE_SIMPLE)
+        val roomSummary = params.partialState.roomSummary
+        val e2eDecoration = getE2EDecoration(roomSummary, event)
+
+        // SendState Decoration
+        val isSentByMe = event.root.senderId == session.myUserId
+        val sendStateDecoration = if (isSentByMe) {
+            getSendStateDecoration(
+                    event = event,
+                    lastSentEventWithoutReadReceipts = params.lastSentEventIdWithoutReadReceipts,
+                    isMedia = event.root.isAttachmentMessage()
+            )
+        } else {
+            SendStateDecoration.NONE
+        }
 
         return MessageInformationData(
                 eventId = eventId,
@@ -80,6 +98,7 @@ class MessageInformationDataFactory @Inject constructor(private val session: Ses
                 avatarUrl = event.senderInfo.avatarUrl,
                 memberName = event.senderInfo.disambiguatedDisplayName,
                 showInformation = showInformation,
+                forceShowTimestamp = vectorPreferences.alwaysShowTimeStamps(),
                 orderedReactionList = event.annotations?.reactionsSummary
                         // ?.filter { isSingleEmoji(it.key) }
                         ?.map {
@@ -96,32 +115,38 @@ class MessageInformationDataFactory @Inject constructor(private val session: Ses
                 },
                 hasBeenEdited = event.hasBeenEdited(),
                 hasPendingEdits = event.annotations?.editSummary?.localEchos?.any() ?: false,
-                readReceipts = event.readReceipts
-                        .asSequence()
-                        .filter {
-                            it.user.userId != session.myUserId
-                        }
-                        .map {
-                            ReadReceiptData(it.user.userId, it.user.avatarUrl, it.user.displayName, it.originServerTs)
-                        }
-                        .toList(),
                 referencesInfoData = event.annotations?.referencesAggregatedSummary?.let { referencesAggregatedSummary ->
                     val verificationState = referencesAggregatedSummary.content.toModel<ReferencesAggregatedContent>()?.verificationState
                             ?: VerificationState.REQUEST
                     ReferencesInfoData(verificationState)
                 },
-                sentByMe = event.root.senderId == session.myUserId,
-                e2eDecoration = e2eDecoration
+                sentByMe = isSentByMe,
+                e2eDecoration = e2eDecoration,
+                sendStateDecoration = sendStateDecoration
         )
     }
 
-    private fun getE2EDecoration(event: TimelineEvent): E2EDecoration {
-        val roomSummary = roomSummaryHolder.roomSummary
+    private fun getSendStateDecoration(event: TimelineEvent,
+                                       lastSentEventWithoutReadReceipts: String?,
+                                       isMedia: Boolean): SendStateDecoration {
+        val eventSendState = event.root.sendState
+        return if (eventSendState.isSending()) {
+            if (isMedia) SendStateDecoration.SENDING_MEDIA else SendStateDecoration.SENDING_NON_MEDIA
+        } else if (eventSendState.hasFailed()) {
+            SendStateDecoration.FAILED
+        } else if (lastSentEventWithoutReadReceipts == event.eventId) {
+            SendStateDecoration.SENT
+        } else {
+            SendStateDecoration.NONE
+        }
+    }
+
+    private fun getE2EDecoration(roomSummary: RoomSummary?, event: TimelineEvent): E2EDecoration {
         return if (
-                event.root.sendState == SendState.SYNCED
-                && roomSummary?.isEncrypted.orFalse()
+                event.root.sendState == SendState.SYNCED &&
+                roomSummary?.isEncrypted.orFalse() &&
                 // is user verified
-                && session.cryptoService().crossSigningService().getUserCrossSigningKeys(event.root.senderId ?: "")?.isTrusted() == true) {
+                session.cryptoService().crossSigningService().getUserCrossSigningKeys(event.root.senderId ?: "")?.isTrusted() == true) {
             val ts = roomSummary?.encryptionEventTs ?: 0
             val eventTs = event.root.originServerTs ?: 0
             if (event.isEncrypted()) {

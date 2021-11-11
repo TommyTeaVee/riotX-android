@@ -19,18 +19,20 @@ package im.vector.app.features.home.room.detail.timeline
 import androidx.annotation.ColorInt
 import im.vector.app.R
 import im.vector.app.core.resources.ColorProvider
-import im.vector.app.core.utils.getColorFromUserId
+import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorProvider
 import im.vector.app.features.settings.VectorPreferences
-import im.vector.matrix.android.api.session.room.send.SendState
+import org.matrix.android.sdk.api.session.room.send.SendState
+import org.matrix.android.sdk.api.util.MatrixItem
 import javax.inject.Inject
 
 class MessageColorProvider @Inject constructor(
         private val colorProvider: ColorProvider,
+        private val matrixItemColorProvider: MatrixItemColorProvider,
         private val vectorPreferences: VectorPreferences) {
 
     @ColorInt
-    fun getMemberNameTextColor(userId: String): Int {
-        return colorProvider.getColor(getColorFromUserId(userId))
+    fun getMemberNameTextColor(matrixItem: MatrixItem): Int {
+        return matrixItemColorProvider.getColor(matrixItem)
     }
 
     @ColorInt
@@ -48,17 +50,8 @@ class MessageColorProvider @Inject constructor(
                 SendState.FAILED_UNKNOWN_DEVICES -> colorProvider.getColorFromAttribute(R.attr.vctr_unsent_message_text_color)
             }
         } else {
-            // When not in developer mode, we do not use special color for the encrypting state
-            when (sendState) {
-                SendState.UNKNOWN,
-                SendState.UNSENT,
-                SendState.ENCRYPTING,
-                SendState.SENDING                -> colorProvider.getColorFromAttribute(R.attr.vctr_sending_message_text_color)
-                SendState.SENT,
-                SendState.SYNCED                 -> colorProvider.getColorFromAttribute(R.attr.vctr_message_text_color)
-                SendState.UNDELIVERED,
-                SendState.FAILED_UNKNOWN_DEVICES -> colorProvider.getColorFromAttribute(R.attr.vctr_unsent_message_text_color)
-            }
+            // When not in developer mode, we use only one color
+            colorProvider.getColorFromAttribute(R.attr.vctr_message_text_color)
         }
     }
 }

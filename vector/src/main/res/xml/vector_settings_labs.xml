@@ -39,17 +39,18 @@
         android:key="SETTINGS_LABS_ENABLE_SWIPE_TO_REPLY"
         android:title="@string/labs_swipe_to_reply_in_timeline" />
 
-
-    <im.vector.app.core.preference.VectorSwitchPreference
-        android:defaultValue="false"
-        android:key="SETTINGS_LABS_MERGE_E2E_ERRORS"
-        android:title="@string/labs_merge_e2e_in_timeline" />
-
-
     <im.vector.app.core.preference.VectorSwitchPreference
         android:defaultValue="false"
         android:key="SETTINGS_LABS_UNREAD_NOTIFICATIONS_AS_TAB"
         android:title="@string/labs_show_unread_notifications_as_tab" />
+
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_USE_RESTRICTED_JOIN_RULE"
+        android:title="@string/labs_use_restricted_join_rule"
+        android:summary="@string/labs_use_restricted_join_rule_desc"/>
     <!--</im.vector.app.core.preference.VectorPreferenceCategory>-->
+
 
 </androidx.preference.PreferenceScreen>

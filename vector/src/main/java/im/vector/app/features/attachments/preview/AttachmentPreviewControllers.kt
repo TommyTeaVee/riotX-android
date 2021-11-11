@@ -17,7 +17,7 @@
 package im.vector.app.features.attachments.preview
 
 import com.airbnb.epoxy.TypedEpoxyController
-import im.vector.matrix.android.api.session.content.ContentAttachmentData
+import org.matrix.android.sdk.api.session.content.ContentAttachmentData
 import javax.inject.Inject
 
 class AttachmentBigPreviewController @Inject constructor() : TypedEpoxyController<AttachmentsPreviewViewState>() {
@@ -41,13 +41,14 @@ class AttachmentMiniaturePreviewController @Inject constructor() : TypedEpoxyCon
     var callback: Callback? = null
 
     override fun buildModels(data: AttachmentsPreviewViewState) {
+        val host = this
         data.attachments.forEachIndexed { index, contentAttachmentData ->
             attachmentMiniaturePreviewItem {
                 id(contentAttachmentData.queryUri.toString())
                 attachment(contentAttachmentData)
                 checked(data.currentAttachmentIndex == index)
                 clickListener { _ ->
-                    callback?.onAttachmentClicked(index, contentAttachmentData)
+                    host.callback?.onAttachmentClicked(index, contentAttachmentData)
                 }
             }
         }

@@ -20,19 +20,19 @@ import im.vector.app.R
 import im.vector.app.core.platform.ViewModelTask
 import im.vector.app.core.platform.WaitingViewData
 import im.vector.app.core.resources.StringProvider
-import im.vector.matrix.android.api.NoOpMatrixCallback
-import im.vector.matrix.android.api.listeners.ProgressListener
-import im.vector.matrix.android.api.session.Session
-import im.vector.matrix.android.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
-import im.vector.matrix.android.api.session.securestorage.EmptyKeySigner
-import im.vector.matrix.android.api.session.securestorage.RawBytesKeySpec
-import im.vector.matrix.android.api.session.securestorage.SharedSecretStorageService
-import im.vector.matrix.android.api.session.securestorage.SsssKeyCreationInfo
-import im.vector.matrix.android.internal.crypto.crosssigning.toBase64NoPadding
-import im.vector.matrix.android.internal.crypto.keysbackup.deriveKey
-import im.vector.matrix.android.internal.crypto.keysbackup.util.computeRecoveryKey
-import im.vector.matrix.android.internal.crypto.keysbackup.util.extractCurveKeyFromRecoveryKey
-import im.vector.matrix.android.internal.util.awaitCallback
+import org.matrix.android.sdk.api.NoOpMatrixCallback
+import org.matrix.android.sdk.api.listeners.ProgressListener
+import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
+import org.matrix.android.sdk.api.session.securestorage.EmptyKeySigner
+import org.matrix.android.sdk.api.session.securestorage.RawBytesKeySpec
+import org.matrix.android.sdk.api.session.securestorage.SharedSecretStorageService
+import org.matrix.android.sdk.api.session.securestorage.SsssKeyCreationInfo
+import org.matrix.android.sdk.internal.crypto.crosssigning.toBase64NoPadding
+import org.matrix.android.sdk.internal.crypto.keysbackup.deriveKey
+import org.matrix.android.sdk.internal.crypto.keysbackup.util.computeRecoveryKey
+import org.matrix.android.sdk.internal.crypto.keysbackup.util.extractCurveKeyFromRecoveryKey
+import org.matrix.android.sdk.internal.util.awaitCallback
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -97,37 +97,31 @@ class BackupToQuadSMigrationTask @Inject constructor(
                     when {
                         params.passphrase?.isNotEmpty() == true -> {
                             reportProgress(params, R.string.bootstrap_progress_generating_ssss)
-                            awaitCallback<SsssKeyCreationInfo> {
-                                quadS.generateKeyWithPassphrase(
-                                        UUID.randomUUID().toString(),
-                                        "ssss_key",
-                                        params.passphrase,
-                                        EmptyKeySigner(),
-                                        object : ProgressListener {
-                                            override fun onProgress(progress: Int, total: Int) {
-                                                params.progressListener?.onProgress(
-                                                        WaitingViewData(
-                                                                stringProvider.getString(
-                                                                        R.string.bootstrap_progress_generating_ssss_with_info,
-                                                                        "$progress/$total")
-                                                        ))
-                                            }
-                                        },
-                                        it
-                                )
-                            }
+                            quadS.generateKeyWithPassphrase(
+                                    UUID.randomUUID().toString(),
+                                    "ssss_key",
+                                    params.passphrase,
+                                    EmptyKeySigner(),
+                                    object : ProgressListener {
+                                        override fun onProgress(progress: Int, total: Int) {
+                                            params.progressListener?.onProgress(
+                                                    WaitingViewData(
+                                                            stringProvider.getString(
+                                                                    R.string.bootstrap_progress_generating_ssss_with_info,
+                                                                    "$progress/$total")
+                                                    ))
+                                        }
+                                    }
+                            )
                         }
                         params.recoveryKey != null              -> {
                             reportProgress(params, R.string.bootstrap_progress_generating_ssss_recovery)
-                            awaitCallback {
-                                quadS.generateKey(
-                                        UUID.randomUUID().toString(),
-                                        extractCurveKeyFromRecoveryKey(params.recoveryKey)?.let { RawBytesKeySpec(it) },
-                                        "ssss_key",
-                                        EmptyKeySigner(),
-                                        it
-                                )
-                            }
+                            quadS.generateKey(
+                                    UUID.randomUUID().toString(),
+                                    extractCurveKeyFromRecoveryKey(params.recoveryKey)?.let { RawBytesKeySpec(it) },
+                                    "ssss_key",
+                                    EmptyKeySigner()
+                            )
                         }
                         else                                    -> {
                             return Result.IllegalParams
@@ -137,14 +131,11 @@ class BackupToQuadSMigrationTask @Inject constructor(
             // Ok, so now we have migrated the old keybackup secret as the quadS key
             // Now we need to store the keybackup key in SSSS in a compatible way
             reportProgress(params, R.string.bootstrap_progress_storing_in_sss)
-            awaitCallback<Unit> {
-                quadS.storeSecret(
-                        KEYBACKUP_SECRET_SSSS_NAME,
-                        curveKey.toBase64NoPadding(),
-                        listOf(SharedSecretStorageService.KeyRef(info.keyId, info.keySpec)),
-                        it
-                )
-            }
+            quadS.storeSecret(
+                    KEYBACKUP_SECRET_SSSS_NAME,
+                    curveKey.toBase64NoPadding(),
+                    listOf(SharedSecretStorageService.KeyRef(info.keyId, info.keySpec))
+            )
 
             // save for gossiping
             keysBackupService.saveBackupRecoveryKey(recoveryKey, version.version)

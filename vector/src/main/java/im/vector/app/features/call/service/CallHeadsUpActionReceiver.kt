@@ -19,33 +19,25 @@ package im.vector.app.features.call.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import im.vector.app.core.di.HasVectorInjector
-import im.vector.app.features.call.WebRtcPeerConnectionManager
-import im.vector.app.features.notifications.NotificationUtils
-import im.vector.app.features.settings.VectorLocale.context
+import im.vector.app.core.extensions.singletonEntryPoint
+import im.vector.app.features.call.webrtc.WebRtcCallManager
 import timber.log.Timber
 
 class CallHeadsUpActionReceiver : BroadcastReceiver() {
 
     companion object {
         const val EXTRA_CALL_ACTION_KEY = "EXTRA_CALL_ACTION_KEY"
+        const val EXTRA_CALL_ID = "EXTRA_CALL_ID"
         const val CALL_ACTION_REJECT = 0
     }
 
-    private lateinit var peerConnectionManager: WebRtcPeerConnectionManager
-    private lateinit var notificationUtils: NotificationUtils
-
-    init {
-        val appContext = context.applicationContext
-        if (appContext is HasVectorInjector) {
-            peerConnectionManager = appContext.injector().webRtcPeerConnectionManager()
-            notificationUtils = appContext.injector().notificationUtils()
-        }
-    }
-
     override fun onReceive(context: Context, intent: Intent?) {
+        val webRtcCallManager = context.singletonEntryPoint().webRtcCallManager()
         when (intent?.getIntExtra(EXTRA_CALL_ACTION_KEY, 0)) {
-            CALL_ACTION_REJECT -> onCallRejectClicked()
+            CALL_ACTION_REJECT -> {
+                val callId = intent.getStringExtra(EXTRA_CALL_ID) ?: return
+                onCallRejectClicked(webRtcCallManager, callId)
+            }
         }
 
         // Not sure why this should be needed
@@ -56,9 +48,9 @@ class CallHeadsUpActionReceiver : BroadcastReceiver() {
 //        context.stopService(Intent(context, CallHeadsUpService::class.java))
     }
 
-    private fun onCallRejectClicked() {
+    private fun onCallRejectClicked(callManager: WebRtcCallManager, callId: String) {
         Timber.d("onCallRejectClicked")
-        peerConnectionManager.endCall()
+        callManager.getCallById(callId)?.endCall()
     }
 
 //    private fun onCallAnswerClicked(context: Context) {

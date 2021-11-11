@@ -16,7 +16,8 @@
 
 package im.vector.app.features.command
 
-import im.vector.matrix.android.api.session.identity.ThreePid
+import im.vector.app.features.home.room.detail.ChatEffect
+import org.matrix.android.sdk.api.session.identity.ThreePid
 
 /**
  * Represent a parsed command
@@ -41,19 +42,32 @@ sealed class ParsedCommand {
     class SendRainbowEmote(val message: CharSequence) : ParsedCommand()
     class BanUser(val userId: String, val reason: String?) : ParsedCommand()
     class UnbanUser(val userId: String, val reason: String?) : ParsedCommand()
+    class IgnoreUser(val userId: String) : ParsedCommand()
+    class UnignoreUser(val userId: String) : ParsedCommand()
     class SetUserPowerLevel(val userId: String, val powerLevel: Int?) : ParsedCommand()
+    class ChangeRoomName(val name: String) : ParsedCommand()
     class Invite(val userId: String, val reason: String?) : ParsedCommand()
     class Invite3Pid(val threePid: ThreePid) : ParsedCommand()
     class JoinRoom(val roomAlias: String, val reason: String?) : ParsedCommand()
-    class PartRoom(val roomAlias: String, val reason: String?) : ParsedCommand()
+    class PartRoom(val roomAlias: String?) : ParsedCommand()
     class ChangeTopic(val topic: String) : ParsedCommand()
     class KickUser(val userId: String, val reason: String?) : ParsedCommand()
     class ChangeDisplayName(val displayName: String) : ParsedCommand()
+    class ChangeDisplayNameForRoom(val displayName: String) : ParsedCommand()
+    class ChangeRoomAvatar(val url: String) : ParsedCommand()
+    class ChangeAvatarForRoom(val url: String) : ParsedCommand()
     class SetMarkdown(val enable: Boolean) : ParsedCommand()
     object ClearScalarToken : ParsedCommand()
     class SendSpoiler(val message: String) : ParsedCommand()
     class SendShrug(val message: CharSequence) : ParsedCommand()
-    class VerifyUser(val userId: String) : ParsedCommand()
+    class SendLenny(val message: CharSequence) : ParsedCommand()
     class SendPoll(val question: String, val options: List<String>) : ParsedCommand()
-    object DiscardSession: ParsedCommand()
+    object DiscardSession : ParsedCommand()
+    class ShowUser(val userId: String) : ParsedCommand()
+    class SendChatEffect(val chatEffect: ChatEffect, val message: String) : ParsedCommand()
+    class CreateSpace(val name: String, val invitees: List<String>) : ParsedCommand()
+    class AddToSpace(val spaceId: String) : ParsedCommand()
+    class JoinSpace(val spaceIdOrAlias: String) : ParsedCommand()
+    class LeaveRoom(val roomId: String) : ParsedCommand()
+    class UpgradeRoom(val newVersion: String) : ParsedCommand()
 }

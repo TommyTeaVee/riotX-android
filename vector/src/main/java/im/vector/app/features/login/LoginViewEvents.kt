@@ -18,7 +18,7 @@
 package im.vector.app.features.login
 
 import im.vector.app.core.platform.VectorViewEvents
-import im.vector.matrix.android.api.auth.registration.FlowResult
+import org.matrix.android.sdk.api.auth.registration.FlowResult
 
 /**
  * Transient events for Login
@@ -34,7 +34,7 @@ sealed class LoginViewEvents : VectorViewEvents {
 
     object OpenServerSelection : LoginViewEvents()
     data class OnServerSelectionDone(val serverType: ServerType) : LoginViewEvents()
-    data class OnLoginFlowRetrieved(val isSso: Boolean) : LoginViewEvents()
+    object OnLoginFlowRetrieved : LoginViewEvents()
     data class OnSignModeSelected(val signMode: SignMode) : LoginViewEvents()
     object OnForgetPasswordClicked : LoginViewEvents()
     object OnResetPasswordSendThreePidDone : LoginViewEvents()

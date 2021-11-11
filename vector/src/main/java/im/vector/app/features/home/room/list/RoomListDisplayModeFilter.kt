@@ -16,10 +16,10 @@
 
 package im.vector.app.features.home.room.list
 
+import androidx.core.util.Predicate
 import im.vector.app.features.home.RoomListDisplayMode
-import im.vector.matrix.android.api.session.room.model.Membership
-import im.vector.matrix.android.api.session.room.model.RoomSummary
-import io.reactivex.functions.Predicate
+import org.matrix.android.sdk.api.session.room.model.Membership
+import org.matrix.android.sdk.api.session.room.model.RoomSummary
 
 class RoomListDisplayModeFilter(private val displayMode: RoomListDisplayMode) : Predicate<RoomSummary> {
 
@@ -31,8 +31,8 @@ class RoomListDisplayModeFilter(private val displayMode: RoomListDisplayMode) : 
             RoomListDisplayMode.NOTIFICATIONS ->
                 roomSummary.notificationCount > 0 || roomSummary.membership == Membership.INVITE || roomSummary.userDrafts.isNotEmpty()
             RoomListDisplayMode.PEOPLE        -> roomSummary.isDirect && roomSummary.membership.isActive()
-            RoomListDisplayMode.ROOMS    -> !roomSummary.isDirect && roomSummary.membership.isActive()
-            RoomListDisplayMode.FILTERED -> roomSummary.membership == Membership.JOIN
+            RoomListDisplayMode.ROOMS         -> !roomSummary.isDirect && roomSummary.membership.isActive()
+            RoomListDisplayMode.FILTERED      -> roomSummary.membership == Membership.JOIN
         }
     }
 }

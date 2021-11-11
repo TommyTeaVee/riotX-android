@@ -17,11 +17,12 @@
 package im.vector.app.features.home.room.detail
 
 import android.net.Uri
-import androidx.annotation.StringRes
+import android.view.View
 import im.vector.app.core.platform.VectorViewEvents
-import im.vector.app.features.command.Command
-import im.vector.matrix.android.api.session.widgets.model.Widget
-import im.vector.matrix.android.internal.crypto.model.event.WithHeldCode
+import im.vector.app.features.call.webrtc.WebRtcCall
+import org.matrix.android.sdk.api.session.widgets.model.Widget
+import org.matrix.android.sdk.api.util.MatrixItem
+import org.matrix.android.sdk.internal.crypto.model.event.WithHeldCode
 import java.io.File
 
 /**
@@ -35,15 +36,22 @@ sealed class RoomDetailViewEvents : VectorViewEvents {
     data class ActionFailure(val action: RoomDetailAction, val throwable: Throwable) : RoomDetailViewEvents()
 
     data class ShowMessage(val message: String) : RoomDetailViewEvents()
+    data class ShowInfoOkDialog(val message: String) : RoomDetailViewEvents()
     data class ShowE2EErrorMessage(val withHeldCode: WithHeldCode?) : RoomDetailViewEvents()
 
-    data class NavigateToEvent(val eventId: String) : RoomDetailViewEvents()
+    data class OpenRoom(val roomId: String, val closeCurrentRoom: Boolean = false) : RoomDetailViewEvents()
 
-    data class FileTooBigError(
-            val filename: String,
-            val fileSizeInBytes: Long,
-            val homeServerLimitInBytes: Long
-    ) : RoomDetailViewEvents()
+    data class NavigateToEvent(val eventId: String) : RoomDetailViewEvents()
+    data class JoinJitsiConference(val widget: Widget, val withVideo: Boolean) : RoomDetailViewEvents()
+    object LeaveJitsiConference : RoomDetailViewEvents()
+
+    object OpenInvitePeople : RoomDetailViewEvents()
+    object OpenSetRoomAvatarDialog : RoomDetailViewEvents()
+    object OpenRoomSettings : RoomDetailViewEvents()
+    data class ShowRoomAvatarFullScreen(val matrixItem: MatrixItem?, val view: View?) : RoomDetailViewEvents()
+
+    object ShowWaitingView : RoomDetailViewEvents()
+    object HideWaitingView : RoomDetailViewEvents()
 
     data class DownloadFileState(
             val mimeType: String?,
@@ -52,28 +60,25 @@ sealed class RoomDetailViewEvents : VectorViewEvents {
     ) : RoomDetailViewEvents()
 
     data class OpenFile(
-            val mimeType: String?,
-            val uri: Uri?,
-            val throwable: Throwable?
+            val uri: Uri,
+            val mimeType: String?
     ) : RoomDetailViewEvents()
 
-    abstract class SendMessageResult : RoomDetailViewEvents()
+    data class DisplayAndAcceptCall(val call: WebRtcCall) : RoomDetailViewEvents()
 
-    object DisplayPromptForIntegrationManager: RoomDetailViewEvents()
+    object DisplayPromptForIntegrationManager : RoomDetailViewEvents()
 
-    object DisplayEnableIntegrationsWarning: RoomDetailViewEvents()
+    object DisplayEnableIntegrationsWarning : RoomDetailViewEvents()
 
-    data class OpenStickerPicker(val widget: Widget): RoomDetailViewEvents()
+    data class OpenStickerPicker(val widget: Widget) : RoomDetailViewEvents()
 
-    object OpenIntegrationManager: RoomDetailViewEvents()
+    object OpenIntegrationManager : RoomDetailViewEvents()
+    object OpenActiveWidgetBottomSheet : RoomDetailViewEvents()
+    data class RequestNativeWidgetPermission(val widget: Widget,
+                                             val domain: String,
+                                             val grantedEvents: RoomDetailViewEvents) : RoomDetailViewEvents()
 
-    object MessageSent : SendMessageResult()
-    data class JoinRoomCommandSuccess(val roomId: String) : SendMessageResult()
-    class SlashCommandError(val command: Command) : SendMessageResult()
-    class SlashCommandUnknown(val command: String) : SendMessageResult()
-    data class SlashCommandHandled(@StringRes val messageRes: Int? = null) : SendMessageResult()
-    object SlashCommandResultOk : SendMessageResult()
-    class SlashCommandResultError(val throwable: Throwable) : SendMessageResult()
-    // TODO Remove
-    object SlashCommandNotImplemented : SendMessageResult()
+    data class StartChatEffect(val type: ChatEffect) : RoomDetailViewEvents()
+    object StopChatEffects : RoomDetailViewEvents()
+    object RoomReplacementStarted : RoomDetailViewEvents()
 }

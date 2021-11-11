@@ -21,18 +21,18 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
+import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
-import im.vector.app.core.di.HasScreenInjector
-import im.vector.app.core.platform.ButtonStateView
+import im.vector.app.databinding.VectorInviteViewBinding
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.matrix.android.api.session.room.members.ChangeMembershipState
-import im.vector.matrix.android.api.session.user.model.User
-import im.vector.matrix.android.api.util.toMatrixItem
-import kotlinx.android.synthetic.main.vector_invite_view.view.*
+import org.matrix.android.sdk.api.session.room.members.ChangeMembershipState
+import org.matrix.android.sdk.api.session.room.model.RoomMemberSummary
+import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
 
-class VectorInviteView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0)
-    : ConstraintLayout(context, attrs, defStyle) {
+@AndroidEntryPoint
+class VectorInviteView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
+    ConstraintLayout(context, attrs, defStyle) {
 
     interface Callback {
         fun onAcceptInvite()
@@ -44,49 +44,32 @@ class VectorInviteView @JvmOverloads constructor(context: Context, attrs: Attrib
         SMALL
     }
 
+    private val views: VectorInviteViewBinding
+
     @Inject lateinit var avatarRenderer: AvatarRenderer
     var callback: Callback? = null
 
     init {
-        if (context is HasScreenInjector) {
-            context.injector().inject(this)
-        }
-        View.inflate(context, R.layout.vector_invite_view, this)
-        inviteAcceptView.callback = object : ButtonStateView.Callback {
-            override fun onButtonClicked() {
-                callback?.onAcceptInvite()
-            }
-
-            override fun onRetryClicked() {
-                callback?.onAcceptInvite()
-            }
-        }
-
-        inviteRejectView.callback = object : ButtonStateView.Callback {
-            override fun onButtonClicked() {
-                callback?.onRejectInvite()
-            }
-
-            override fun onRetryClicked() {
-                callback?.onRejectInvite()
-            }
-        }
+        inflate(context, R.layout.vector_invite_view, this)
+        views = VectorInviteViewBinding.bind(this)
+        views.inviteAcceptView.commonClicked = { callback?.onAcceptInvite() }
+        views.inviteRejectView.commonClicked = { callback?.onRejectInvite() }
     }
 
-    fun render(sender: User, mode: Mode = Mode.LARGE, changeMembershipState: ChangeMembershipState) {
+    fun render(sender: RoomMemberSummary, mode: Mode = Mode.LARGE, changeMembershipState: ChangeMembershipState) {
         if (mode == Mode.LARGE) {
             updateLayoutParams { height = LayoutParams.MATCH_CONSTRAINT }
-            avatarRenderer.render(sender.toMatrixItem(), inviteAvatarView)
-            inviteIdentifierView.text = sender.userId
-            inviteNameView.text = sender.displayName
-            inviteLabelView.text = context.getString(R.string.send_you_invite)
+            avatarRenderer.render(sender.toMatrixItem(), views.inviteAvatarView)
+            views.inviteIdentifierView.text = sender.userId
+            views.inviteNameView.text = sender.displayName
+            views.inviteLabelView.text = context.getString(R.string.send_you_invite)
         } else {
             updateLayoutParams { height = LayoutParams.WRAP_CONTENT }
-            inviteAvatarView.visibility = View.GONE
-            inviteIdentifierView.visibility = View.GONE
-            inviteNameView.visibility = View.GONE
-            inviteLabelView.text = context.getString(R.string.invited_by, sender.userId)
+            views.inviteAvatarView.visibility = View.GONE
+            views.inviteIdentifierView.visibility = View.GONE
+            views.inviteNameView.visibility = View.GONE
+            views.inviteLabelView.text = context.getString(R.string.invited_by, sender.userId)
         }
-        InviteButtonStateBinder.bind(inviteAcceptView, inviteRejectView, changeMembershipState)
+        InviteButtonStateBinder.bind(views.inviteAcceptView, views.inviteRejectView, changeMembershipState)
     }
 }
